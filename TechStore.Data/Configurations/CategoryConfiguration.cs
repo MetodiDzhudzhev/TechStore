@@ -27,6 +27,41 @@ namespace TechStore.Data.Configurations
 
             entity
                 .HasQueryFilter(c => c.IsDeleted == false);
+
+            entity
+                .HasData(this.GenerateSeedCategories());
+        }
+
+        private List<Category> GenerateSeedCategories()
+        {
+            List<Category> seedCategories = new List<Category>()
+            {
+                new Category
+                {
+                    Id = 1,
+                    Name = "Laptops"
+                },
+
+                new Category
+                {
+                    Id = 2,
+                    Name = "Smartphones"
+                },
+
+                new Category
+                {
+                    Id = 3,
+                    Name = "TV"
+                },
+
+                new Category
+                {
+                    Id = 4,
+                    Name = "PC periphery"
+                }
+            };
+
+            return seedCategories;
         }
     }
 }
