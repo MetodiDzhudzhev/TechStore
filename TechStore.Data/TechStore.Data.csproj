@@ -17,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TechStore.Data.Common\TechStore.Data.Common.csproj" />
     <ProjectReference Include="..\TechStore.Data.Models\TechStore.Data.Models.csproj" />
     <ProjectReference Include="..\TechStore.GCommon\TechStore.GCommon.csproj" />
   </ItemGroup>

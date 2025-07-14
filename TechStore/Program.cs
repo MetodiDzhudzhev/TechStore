@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using TechStore.Data;
 using TechStore.Data.Configurations;
 using TechStore.Data.Models;
+using TechStore.Data.Repository;
+using TechStore.Data.Repository.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +24,12 @@ builder.Services
     })
     .AddRoles<IdentityRole<Guid>>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
+
+builder.Services.AddScoped<IBrandRepository, BrandRepository>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();

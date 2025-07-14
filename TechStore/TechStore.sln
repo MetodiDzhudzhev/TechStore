@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TechStore.Services.Core", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TechStore.Web.ViewModels", "..\TechStore.Web.ViewModels\TechStore.Web.ViewModels.csproj", "{D1A0CF59-E5C5-4CB8-8B1F-890BE2C4816E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TechStore.Data.Common", "..\TechStore.Data.Common\TechStore.Data.Common.csproj", "{D5FD38FB-9EA5-4E6A-A68D-E54AA5F35367}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,10 @@ Global
 		{D1A0CF59-E5C5-4CB8-8B1F-890BE2C4816E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D1A0CF59-E5C5-4CB8-8B1F-890BE2C4816E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D1A0CF59-E5C5-4CB8-8B1F-890BE2C4816E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D5FD38FB-9EA5-4E6A-A68D-E54AA5F35367}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D5FD38FB-9EA5-4E6A-A68D-E54AA5F35367}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D5FD38FB-9EA5-4E6A-A68D-E54AA5F35367}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D5FD38FB-9EA5-4E6A-A68D-E54AA5F35367}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -61,6 +67,7 @@ Global
 		{AE81BE01-6A7A-40F1-B894-877D48A30098} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{0DB9E05F-5A1C-44AA-94B9-75534315AFA8} = {60947623-416A-47F1-AD02-6528450DE5EE}
 		{D1A0CF59-E5C5-4CB8-8B1F-890BE2C4816E} = {90C1C477-1BE4-4FD8-9D08-94961DCC115D}
+		{D5FD38FB-9EA5-4E6A-A68D-E54AA5F35367} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {27624AF0-9671-40CE-A508-3B6D3A9C675A}
