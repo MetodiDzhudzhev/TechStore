@@ -13,8 +13,4 @@
     <ProjectReference Include="..\TechStore.Web.ViewModels\TechStore.Web.ViewModels.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Contracts\" />
-  </ItemGroup>
-
 </Project>

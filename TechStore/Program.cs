@@ -5,6 +5,8 @@ using TechStore.Data.Configurations;
 using TechStore.Data.Models;
 using TechStore.Data.Repository;
 using TechStore.Data.Repository.Interfaces;
+using TechStore.Services.Core;
+using TechStore.Services.Core.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +32,7 @@ builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
