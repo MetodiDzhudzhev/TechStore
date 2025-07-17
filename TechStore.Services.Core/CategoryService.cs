@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 using TechStore.Data.Models;
 using TechStore.Data.Repository.Interfaces;
 using TechStore.Services.Core.Interfaces;
@@ -47,6 +48,40 @@ namespace TechStore.Services.Core
             };
 
             await this.categoryRepository.AddAsync(category);
+        }
+
+        public async Task<CategoryFormEditViewModel?> GetEditableCategoryByIdAsync(int? id)
+        {
+            CategoryFormEditViewModel? editableCategory = await this.categoryRepository
+                .GetAllAttached()
+                .AsNoTracking()
+                .Where(c => c.Id == id)
+                .Select(c => new CategoryFormEditViewModel()
+                {
+                    Name = c.Name,
+                    ImageUrl = c.ImageUrl,
+                })
+                .SingleOrDefaultAsync();
+
+            return editableCategory;
+        }
+
+        public async Task<bool> EditCategoryAsync(CategoryFormEditViewModel inputModel)
+        {
+            bool result = false;
+
+            Category? editableCategory = await this.categoryRepository.GetByIdAsync(inputModel.Id);
+            if (editableCategory == null)
+            {
+                return false;
+            }
+
+            editableCategory.Name = inputModel.Name;
+            editableCategory.ImageUrl = inputModel.ImageUrl;
+
+            result = await this.categoryRepository.UpdateAsync(editableCategory);
+
+            return result;
         }
     }
 }

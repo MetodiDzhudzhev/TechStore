@@ -6,5 +6,9 @@ namespace TechStore.Services.Core.Interfaces
     {
         Task<IEnumerable<AllCategoriesIndexViewModel>> GetAllCategoriesAsync();
         Task AddCategoryAsync(CategoryFormInputViewModel inputModel);
+
+        Task<CategoryFormEditViewModel?> GetEditableCategoryByIdAsync(int? id);
+
+        Task<bool> EditCategoryAsync(CategoryFormEditViewModel inputModel);
     }
 }
