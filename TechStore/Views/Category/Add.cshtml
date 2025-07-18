@@ -16,13 +16,21 @@
         <span asp-validation-for="Name" class="text-danger"></span>
     </div>
 
-    <div class="form-group mb-3">
+    <div class="form-group mb-4">
         <label asp-for="ImageUrl" class="form-label">Image URL (optional)</label>
         <input asp-for="ImageUrl" class="form-control" />
         <span asp-validation-for="ImageUrl" class="text-danger"></span>
     </div>
 
-    <button type="submit" class="btn btn-primary w-100">Add Category</button>
+    <div class="d-flex justify-content-between gap-2">
+        <a asp-action="Index" class="btn btn-secondary w-50">
+            <i class="bi bi-arrow-left-circle"></i> Back to Categories
+        </a>
+
+        <button type="submit" class="btn btn-primary w-50">
+            <i class="bi bi-plus-circle"></i> Add Category
+        </button>
+    </div>
 </form>
 
 @section Scripts {
