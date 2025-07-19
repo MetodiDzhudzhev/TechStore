@@ -1,18 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using static TechStore.GCommon.ValidationConstants.Category;
 using static TechStore.GCommon.ValidationConstants.Shared;
 
 namespace TechStore.Web.ViewModels.Category
 {
-    public class CategoryFormEditViewModel
+    public class DeleteCategoryViewModel
     {
         [Required]
         [Range(IntIdMinValue, IntIdMaxValue)]
         public int Id { get; set; }
-
-        [Required]
-        [MinLength(NameMinLength)]
-        [MaxLength(NameMaxLength)]
         public string Name { get; set; } = null!;
         public string? ImageUrl { get; set; }
     }

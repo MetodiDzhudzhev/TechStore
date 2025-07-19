@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System.Globalization;
 using TechStore.Data.Models;
 using TechStore.Data.Repository.Interfaces;
 using TechStore.Services.Core.Interfaces;
@@ -80,6 +79,40 @@ namespace TechStore.Services.Core
             editableCategory.ImageUrl = inputModel.ImageUrl;
 
             result = await this.categoryRepository.UpdateAsync(editableCategory);
+
+            return result;
+        }
+
+        public async Task<DeleteCategoryViewModel?> GetCategoryForDeleteByIdAsync(int id)
+        {
+            DeleteCategoryViewModel? categoryForDeleteViewModel = null;
+
+            Category? categoryForDelete = await this.categoryRepository.GetByIdAsync(id);
+
+            if (categoryForDelete != null)
+            {
+                categoryForDeleteViewModel = new DeleteCategoryViewModel()
+                {
+                    Id = categoryForDelete.Id,
+                    Name = categoryForDelete.Name,
+                    ImageUrl = categoryForDelete.ImageUrl,
+                };
+            }
+
+            return categoryForDeleteViewModel;
+        }
+
+        public async Task<bool> SoftDeleteCategoryAsync(int id)
+        {
+            bool result = false;
+
+            Category? categoryToDelete = await this.categoryRepository
+                .GetByIdAsync(id);
+
+            if (categoryToDelete != null)
+            {
+                result = await this.categoryRepository.DeleteAsync(categoryToDelete);
+            }
 
             return result;
         }

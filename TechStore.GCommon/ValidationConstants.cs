@@ -54,5 +54,12 @@
             public const int DescriptionMinLength = 10;
             public const int DescriptionMaxLength = 500;
         }
+
+        public static class Shared
+        {
+            public const int IntIdMinValue = 1;
+            public const int IntIdMaxValue = int.MaxValue;
+            public const long LongIdMaxValue = long.MaxValue;
+        }
     }
 }

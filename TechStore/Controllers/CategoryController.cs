@@ -47,7 +47,7 @@ namespace TechStore.Web.Controllers
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
-                
+
                 this.ModelState.AddModelError(string.Empty, CategoryCreateError);
                 return this.View(inputModel);
             }
@@ -98,6 +98,65 @@ namespace TechStore.Web.Controllers
                 }
 
                 return this.RedirectToAction(nameof(Index), new { id = inputModel.Id });
+            }
+            catch (Exception e)
+            {
+                // TODO: Implement it with the ILogger
+                // TODO: Add JS bars
+                Console.WriteLine(e.Message);
+
+                return this.RedirectToAction(nameof(Index));
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Delete(int id)
+        {
+            try
+            {
+                DeleteCategoryViewModel? categoryToDelete = await this.categoryService
+                    .GetCategoryForDeleteByIdAsync(id);
+
+                if (categoryToDelete == null)
+                {
+                    //TODO: Custom 404 page
+                    return this.RedirectToAction(nameof(Index));
+                }
+
+                return this.View(categoryToDelete);
+            }
+            catch (Exception e)
+            {
+                // TODO: Implement it with the ILogger
+                // TODO: Add JS bars 
+                Console.WriteLine(e.Message);
+
+                return this.RedirectToAction(nameof(Index));
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Delete(DeleteCategoryViewModel model)
+        {
+
+            try
+            {
+                if (!this.ModelState.IsValid)
+                {
+                    return this.RedirectToAction(nameof(Index));
+                }
+
+                bool result = await this.categoryService
+                    .SoftDeleteCategoryAsync(model.Id);
+
+                if (result == false)
+                {
+                    // TODO: Implement JS or redirect to Not Found page
+                    return this.RedirectToAction(nameof(Index));
+                }
+
+                // TODO: Implement Js for success notification
+                return this.RedirectToAction(nameof(Index));
             }
             catch (Exception e)
             {

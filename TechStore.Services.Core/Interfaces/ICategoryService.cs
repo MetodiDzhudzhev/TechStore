@@ -10,5 +10,9 @@ namespace TechStore.Services.Core.Interfaces
         Task<CategoryFormEditViewModel?> GetEditableCategoryByIdAsync(int? id);
 
         Task<bool> EditCategoryAsync(CategoryFormEditViewModel inputModel);
+
+        Task<DeleteCategoryViewModel?> GetCategoryForDeleteByIdAsync(int id);
+
+        Task<bool> SoftDeleteCategoryAsync(int id);
     }
 }

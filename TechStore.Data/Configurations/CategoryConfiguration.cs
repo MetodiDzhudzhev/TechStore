@@ -26,6 +26,10 @@ namespace TechStore.Data.Configurations
                  .IsUnique();
 
             entity
+                 .Property(c => c.ImageUrl)
+                 .IsRequired(false);
+
+            entity
                 .HasQueryFilter(c => c.IsDeleted == false);
 
             entity

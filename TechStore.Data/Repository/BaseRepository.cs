@@ -182,8 +182,6 @@ namespace TechStore.Data.Repository
             }
         }
 
-
-
         private void PerformSoftDeleteOfEntity(TEntity entity)
         {
             PropertyInfo? isDeletedProperty =
