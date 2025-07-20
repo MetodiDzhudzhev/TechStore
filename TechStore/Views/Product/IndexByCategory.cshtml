@@ -1,0 +1,46 @@
+﻿@model IEnumerable<TechStore.Web.ViewModels.Product.AllProductsByCategoryIdViewModel>
+
+@{
+    ViewData["Title"] = "Products in Category";
+}
+
+<div class="container mt-5">
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">There are no products in this category.</div>
+    }
+    else
+    {
+        @foreach (var product in Model)
+        {
+            <div class="card bg-light text-dark shadow rounded mb-4 p-3" style="max-width: 100%;">
+                <div class="row g-0 align-items-center">
+                    <div class="col-md-4 text-center">
+                        <img src="@product.ImageUrl"
+                             alt="@product.Name"
+                             class="img-fluid rounded"
+                             style="max-height: 300px; object-fit: contain;" />
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card-body">
+                            <h4 class="card-title fw-bold">@product.Name</h4>
+                            <p class="card-text">
+                                <strong>Price:</strong> @product.Price.ToString("F2") lv.<br />
+                                <strong>Quantity in Stock:</strong> @product.QuantityInStock
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+
+    <div class="mt-4">
+        <a asp-controller="Category"
+           asp-action="Index"
+           class="btn btn-outline-secondary fw-bold px-4 rounded-pill">
+            <i class="fas fa-arrow-left"></i> Back to Categories
+        </a>
+    </div>
+</div>

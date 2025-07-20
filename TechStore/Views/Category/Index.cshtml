@@ -33,8 +33,12 @@
 				<div class="card-body d-flex flex-column">
 					<h5 class="card-title" style="color: black;">@category.Name</h5>
 					<div class="d-flex gap-2 mt-auto flex-wrap">
-						<a asp-controller="Category" asp-action="Explore" asp-route-id="@category.Id" class="btn btn-info w-100">
-							<i class="fas fa-info-circle"></i> Explore
+						<a asp-controller="Product"
+						   asp-action="IndexByCategory"
+						   asp-route-categoryId="@category.Id"
+						   asp-route-categoryName="@category.Name"
+						   class="btn btn-info w-100">
+							<i class="fas fa-search"></i> Explore
 						</a>
 
 						<a asp-controller="Category" asp-action="Edit" asp-route-id="@category.Id" class="btn btn-warning w-100">
