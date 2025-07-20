@@ -20,5 +20,30 @@ namespace TechStore.Web.Controllers
 
             return View(allProducts);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> Details(string id)
+        {
+            try
+            {
+                ProductDetailsViewModel? productDetails = await this.productService.GetProductDetailsViewModelAsync(id);
+
+                if (productDetails == null)
+                {
+                    // TODO: Custom 404 page
+                    return this.RedirectToAction(nameof(Index));
+                }
+
+                return this.View(productDetails);
+            }
+            catch (Exception e)
+            {
+                // TODO: Implement it with the ILogger
+                // TODO: Add JS bars
+                Console.WriteLine(e.Message);
+
+                return this.RedirectToAction(nameof(Index));
+            }
+        }
     }
 }

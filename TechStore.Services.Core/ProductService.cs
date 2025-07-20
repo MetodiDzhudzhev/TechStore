@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 using TechStore.Data.Models;
 using TechStore.Data.Repository.Interfaces;
 using TechStore.Services.Core.Interfaces;
@@ -40,6 +41,43 @@ namespace TechStore.Services.Core
             }
 
             return result;
+        }
+
+        public async Task<ProductDetailsViewModel?> GetProductDetailsViewModelAsync(string? id)
+        {
+
+            bool isIdValid = Guid.TryParse(id, out Guid productId);
+
+            if (isIdValid)
+            {
+
+                Product? currentProduct = await this.productRepository
+                        .GetAllAttached()
+                        .Include(p => p.Brand)
+                        .FirstOrDefaultAsync(p => p.Id == productId);
+
+                if (currentProduct != null)
+                {
+                    ProductDetailsViewModel viewModel = new ProductDetailsViewModel
+                    {
+
+                        Id = currentProduct.Id,
+                        Name = currentProduct.Name,
+                        Brand = currentProduct.Brand.Name,
+                        Description = currentProduct.Description,
+                        ImageUrl = string.IsNullOrEmpty(currentProduct.ImageUrl)
+                                                        ? DefaultImageUrl
+                                                        : currentProduct.ImageUrl,
+                        Price = currentProduct.Price,
+                        QuantityInStock = currentProduct.QuantityInStock,
+                        CategoryId = currentProduct.CategoryId,
+                    };
+
+                    return viewModel;
+                }
+            }
+
+            return null;
         }
     }
 }
