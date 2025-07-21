@@ -25,7 +25,7 @@ namespace TechStore.Web.Controllers
 
             if (model == null)
             {
-                return null;
+                return NotFound();
             }
 
             return View(model);
@@ -57,7 +57,7 @@ namespace TechStore.Web.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Add()
+        public async Task<IActionResult> Add(int? categoryId)
         {
             try
             {
@@ -65,12 +65,15 @@ namespace TechStore.Web.Controllers
                 {
                     Categories = await this.categoryService.GetCategoriesDropDownDataAsync(),
                     Brands = await this.brandService.GetBrandsDropDownDataAsync(),
+                    CategoryId = categoryId ?? 0,
                 };
 
                 return this.View(inputModel);
             }
             catch (Exception e)
             {
+                // TODO: Implement it with the ILogger
+                // TODO: Add JS bars
                 Console.WriteLine(e.Message);
 
                 return this.RedirectToAction(nameof(Index));
@@ -95,10 +98,12 @@ namespace TechStore.Web.Controllers
                     return this.View(inputModel);
                 }
 
-                return this.RedirectToAction(nameof(Index));
+                return this.RedirectToAction("IndexByCategory", "Product", new { categoryId = inputModel.CategoryId });
             }
             catch (Exception e)
             {
+                // TODO: Implement it with the ILogger
+                // TODO: Add JS bars
                 Console.WriteLine(e.Message);
 
                 return this.RedirectToAction(nameof(Index));

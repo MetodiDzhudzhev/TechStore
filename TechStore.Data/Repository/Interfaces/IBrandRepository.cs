@@ -5,6 +5,6 @@ namespace TechStore.Data.Repository.Interfaces
     public interface IBrandRepository
         : IRepository<Brand, int>, IAsyncRepository<Brand, int>
     {
-
+        Task<bool> ExistsAsync(int id);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using TechStore.Web.ViewModels.Category;
+using TechStore.Web.ViewModels.Product;
 
 namespace TechStore.Services.Core.Interfaces
 {
@@ -14,5 +15,7 @@ namespace TechStore.Services.Core.Interfaces
         Task<DeleteCategoryViewModel?> GetCategoryForDeleteByIdAsync(int id);
 
         Task<bool> SoftDeleteCategoryAsync(int id);
+
+        Task<IEnumerable<AddProductCategoryDropDownModel>> GetCategoriesDropDownDataAsync();
     }
 }

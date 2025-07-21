@@ -10,5 +10,18 @@ namespace TechStore.Data.Repository
         {
 
         }
+
+        public async Task<bool> ExistsAsync(int id)
+        {
+            bool result = false;
+
+            Brand? brand = await this.GetByIdAsync(id);
+
+            if (brand != null)
+            {
+                result = true;
+            }
+            return result;
+        }
     }
 }
