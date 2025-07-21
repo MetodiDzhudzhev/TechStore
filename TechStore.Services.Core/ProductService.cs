@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using TechStore.Data.Models;
 using TechStore.Data.Repository.Interfaces;
 using TechStore.Services.Core.Interfaces;
@@ -61,15 +62,15 @@ namespace TechStore.Services.Core
 
         public async Task<ProductsByCategoryViewModel?> GetProductsByCategoryAsync(int categoryId)
         {
-            var category = await this.categoryRepository.GetByIdAsync(categoryId);
+            Category? category = await this.categoryRepository.GetByIdAsync(categoryId);
             if (category == null)
             {
                 return null;
             }
 
-            var products = await this.GetAllProductsByCategoryIdAsync(categoryId);
+            IEnumerable<ProductInCategoryViewModel?> products = await this.GetAllProductsByCategoryIdAsync(categoryId);
 
-            var viewModel = new ProductsByCategoryViewModel
+            ProductsByCategoryViewModel viewModel = new ProductsByCategoryViewModel
             {
                 CategoryId = category.Id,
                 CategoryName = category.Name,
@@ -147,6 +148,58 @@ namespace TechStore.Services.Core
             }
 
             return result;
+        }
+
+        public async Task<ProductFormInputModel?> GetEditableProductByIdAsync(string? id)
+        {
+            ProductFormInputModel? model = null;
+
+            bool isIdValid = Guid.TryParse(id, out Guid productId);
+
+            if (isIdValid)
+            {
+                Product? product = await this.productRepository.GetByIdAsync(productId);
+
+                if (product != null)
+                {
+                    model = new ProductFormInputModel
+                    {
+                        Id = product.Id.ToString(),
+                        Name = product.Name,
+                        Description = product.Description,
+                        ImageUrl = product.ImageUrl,
+                        Price = product.Price,
+                        QuantityInStock = product.QuantityInStock,
+                        CategoryId = product.CategoryId,
+                        BrandId = product.BrandId
+                    };
+                }
+            }
+
+            return model;
+        }
+
+        public async Task<bool> EditProductAsync(string userId, ProductFormInputModel inputModel)
+        {
+            Product? product = await this.productRepository.GetByIdAsync(Guid.Parse(inputModel.Id));
+
+            if (product != null)
+            {
+                product.Name = inputModel.Name;
+                product.Description = inputModel.Description;
+                product.ImageUrl = string.IsNullOrWhiteSpace(inputModel.ImageUrl)
+                                                            ? DefaultImageUrl
+                                                            : inputModel.ImageUrl;
+                product.Price = inputModel.Price;
+                product.QuantityInStock = inputModel.QuantityInStock;
+                product.CategoryId = inputModel.CategoryId;
+                product.BrandId = inputModel.BrandId;
+
+                await this.productRepository.UpdateAsync(product);
+                return true;
+            }
+
+            return false;
         }
     }
 }

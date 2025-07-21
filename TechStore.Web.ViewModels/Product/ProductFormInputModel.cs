@@ -5,12 +5,16 @@ namespace TechStore.Web.ViewModels.Product
 {
     public class ProductFormInputModel
     {
+        
+        public string Id { get; set; } = null!;
+
+
         [Required]
         [MinLength(NameMinLength)]
         [MaxLength(NameMaxLength)]
         public string Name { get; set; } = null!;
 
-
+        [Required]
         [MinLength(DescriptionMinLength)]
         [MaxLength(DescriptionMaxLength)]
         public string Description { get; set; } = null!;

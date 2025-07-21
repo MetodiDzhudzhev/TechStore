@@ -9,5 +9,9 @@ namespace TechStore.Services.Core.Interfaces
         Task<ProductDetailsViewModel?> GetProductDetailsViewModelAsync(string? id);
         Task<bool> AddProductAsync(string userId, ProductFormInputModel inputModel);
         Task<ProductsByCategoryViewModel?> GetProductsByCategoryAsync(int categoryId);
+
+        Task<ProductFormInputModel?> GetEditableProductByIdAsync(string? id);
+
+        Task<bool> EditProductAsync(string userId, ProductFormInputModel inputModel);
     }
 }

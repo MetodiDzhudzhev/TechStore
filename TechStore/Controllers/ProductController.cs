@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TechStore.Services.Core.Interfaces;
 using TechStore.Web.ViewModels.Product;
 
@@ -99,6 +100,63 @@ namespace TechStore.Web.Controllers
                 }
 
                 return this.RedirectToAction("IndexByCategory", "Product", new { categoryId = inputModel.CategoryId });
+            }
+            catch (Exception e)
+            {
+                // TODO: Implement it with the ILogger
+                // TODO: Add JS bars
+                Console.WriteLine(e.Message);
+
+                return this.RedirectToAction(nameof(Index));
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Edit(string? id)
+        {
+            try
+            {
+                ProductFormInputModel? model = await this.productService.GetEditableProductByIdAsync(id);
+
+                if (model == null)
+                {
+                    return this.RedirectToAction(nameof(Index));
+                }
+
+                model.Categories = await this.categoryService.GetCategoriesDropDownDataAsync();
+                model.Brands = await this.brandService.GetBrandsDropDownDataAsync();
+
+                return this.View(model);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+
+                return this.RedirectToAction(nameof(Index));
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Edit(ProductFormInputModel inputModel)
+        {
+            try
+            {
+                if (!this.ModelState.IsValid)
+                {
+                    return this.View(inputModel);
+                }
+
+                bool result = await this.productService
+                    .EditProductAsync(this.GetUserId()!, inputModel);
+
+                if (result == false)
+                {
+                    this.ModelState.AddModelError(String.Empty, "Error occured while editing a product");
+                    return this.View(inputModel);
+                }
+
+                return this.RedirectToAction(nameof(Details), new { id = inputModel.Id });
+
             }
             catch (Exception e)
             {
