@@ -117,41 +117,36 @@ namespace TechStore.Services.Core
         }
         public async Task<bool> AddProductAsync(string userId, ProductFormInputModel inputModel)
         {
+            bool result = false;
             User? user = await this.userRepository
                 .GetByIdAsync(Guid.Parse(userId));
 
-            if (user != null)
-            {
-                bool categoryExists = await this.categoryRepository
+            bool categoryExists = await this.categoryRepository
                     .ExistsAsync(inputModel.CategoryId);
 
-                if (categoryExists)
-                {
-                    bool brandExists = await this.brandRepository
+            bool brandExists = await this.brandRepository
                         .ExistsAsync(inputModel.BrandId);
 
-                    if (brandExists)
-                    {
-                        Product product = new Product
-                        {
-                            Name = inputModel.Name,
-                            Description = inputModel.Description,
-                            ImageUrl = string.IsNullOrWhiteSpace(inputModel.ImageUrl)
-                                                ? DefaultImageUrl
-                                                : inputModel.ImageUrl,
-                            Price = inputModel.Price,
-                            QuantityInStock = inputModel.QuantityInStock,
-                            CategoryId = inputModel.CategoryId,
-                            BrandId = inputModel.BrandId
-                        };
+            if ((user != null) && categoryExists && brandExists)
+            {
+                Product product = new Product
+                {
+                    Name = inputModel.Name,
+                    Description = inputModel.Description,
+                    ImageUrl = string.IsNullOrWhiteSpace(inputModel.ImageUrl)
+                                        ? DefaultImageUrl
+                                        : inputModel.ImageUrl,
+                    Price = inputModel.Price,
+                    QuantityInStock = inputModel.QuantityInStock,
+                    CategoryId = inputModel.CategoryId,
+                    BrandId = inputModel.BrandId
+                };
 
-                        await this.productRepository.AddAsync(product);
-                        return true;
-                    }
-                }
+                await this.productRepository.AddAsync(product);
+                result = true;
             }
 
-            return false;
+            return result;
         }
     }
 }

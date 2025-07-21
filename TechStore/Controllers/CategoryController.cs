@@ -1,12 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.Blazor;
 using TechStore.Services.Core.Interfaces;
 using TechStore.Web.ViewModels.Category;
 using static TechStore.Web.ViewModels.ValidationMessages.Category;
 
 namespace TechStore.Web.Controllers
 {
-    public class CategoryController : Controller
+    public class CategoryController : BaseController
     {
         private readonly ICategoryService categoryService;
 

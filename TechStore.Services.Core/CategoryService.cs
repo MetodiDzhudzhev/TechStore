@@ -3,6 +3,7 @@ using TechStore.Data.Models;
 using TechStore.Data.Repository.Interfaces;
 using TechStore.Services.Core.Interfaces;
 using TechStore.Web.ViewModels.Category;
+using TechStore.Web.ViewModels.Product;
 using static TechStore.GCommon.ApplicationConstants;
 
 namespace TechStore.Services.Core
@@ -115,6 +116,21 @@ namespace TechStore.Services.Core
             }
 
             return result;
+        }
+
+        public async Task<IEnumerable<AddProductCategoryDropDownModel>> GetCategoriesDropDownDataAsync()
+        {
+            IEnumerable<AddProductCategoryDropDownModel> categoriesAsDropDown = await this.categoryRepository
+                .GetAllAttached()
+                .AsNoTracking()
+                .Select(c => new AddProductCategoryDropDownModel()
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                })
+                .ToListAsync();
+
+            return categoriesAsDropDown;
         }
     }
 }

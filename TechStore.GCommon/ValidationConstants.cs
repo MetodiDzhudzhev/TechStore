@@ -28,6 +28,8 @@
             public const int DescriptionMinLength = 10;
             public const int DescriptionMaxLength = 200;
 
+            public const int QuantityInStockMinValie = 0;
+
             public const string PriceSqlType = "decimal(18, 2)";
         }
 
