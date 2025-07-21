@@ -1,15 +1,15 @@
 ﻿@using TechStore.Web.ViewModels.Product
-@model IEnumerable<ProductInCategoryViewModel>
+@model ProductsByCategoryViewModel
 
 @{
-    ViewData["Title"] = "Products in Category";
+    ViewData["Title"] = $"Products in {Model.CategoryName}";
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3" style="margin-top: 20px;">
     <h2>@ViewData["Title"]</h2>
     @if (User?.Identity?.IsAuthenticated == true)
     {
-        <a asp-controller="Product" asp-action="Add" class="btn btn-primary">
+        <a asp-controller="Product" asp-action="Add" asp-route-categoryId="@Model.CategoryId" class="btn btn-primary">
             <i class="fas fa-plus"></i> Add product
         </a>
     }
@@ -18,13 +18,13 @@
 
 <div class="container mt-5">
 
-    @if (!Model.Any())
+    @if (!Model.Products.Any())
     {
         <div class="alert alert-info">There are no products in this category.</div>
     }
     else
     {
-        @foreach (var product in Model)
+        @foreach (var product in Model.Products)
         {
             <div class="card bg-light text-dark shadow rounded mb-4 p-3" style="max-width: 100%;">
                 <div class="row g-0 align-items-center">

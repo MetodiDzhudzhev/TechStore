@@ -21,9 +21,14 @@ namespace TechStore.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> IndexByCategory(int categoryId)
         {
-            IEnumerable<ProductInCategoryViewModel> allProducts = await this.productService.GetAllProductsByCategoryIdAsync(categoryId);
+            ProductsByCategoryViewModel? model = await productService.GetProductsByCategoryAsync(categoryId);
 
-            return View(allProducts);
+            if (model == null)
+            {
+                return null;
+            }
+
+            return View(model);
         }
 
         [HttpGet]

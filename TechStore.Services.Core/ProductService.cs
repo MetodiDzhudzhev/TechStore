@@ -26,8 +26,15 @@ namespace TechStore.Services.Core
         }
 
 
-        public async Task<IEnumerable<ProductInCategoryViewModel>> GetAllProductsByCategoryIdAsync(int categoryId)
+        public async Task<IEnumerable<ProductInCategoryViewModel?>> GetAllProductsByCategoryIdAsync(int categoryId)
         {
+            Category? Category = await this.categoryRepository.GetByIdAsync(categoryId);
+
+            if (Category == null)
+            {
+                return null;
+            }
+
             IEnumerable<Product> products = await this.productRepository.GetByCategoryAsync(categoryId);
 
             IEnumerable<ProductInCategoryViewModel> result = products
@@ -50,6 +57,26 @@ namespace TechStore.Services.Core
             }
 
             return result;
+        }
+
+        public async Task<ProductsByCategoryViewModel?> GetProductsByCategoryAsync(int categoryId)
+        {
+            var category = await this.categoryRepository.GetByIdAsync(categoryId);
+            if (category == null)
+            {
+                return null;
+            }
+
+            var products = await this.GetAllProductsByCategoryIdAsync(categoryId);
+
+            var viewModel = new ProductsByCategoryViewModel
+            {
+                CategoryId = category.Id,
+                CategoryName = category.Name,
+                Products = products
+            };
+
+            return viewModel;
         }
 
         public async Task<ProductDetailsViewModel?> GetProductDetailsViewModelAsync(string? id)
