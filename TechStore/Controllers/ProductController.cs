@@ -4,19 +4,24 @@ using TechStore.Web.ViewModels.Product;
 
 namespace TechStore.Web.Controllers
 {
-    public class ProductController : Controller
+    public class ProductController : BaseController
     {
         private readonly IProductService productService;
+        private readonly ICategoryService categoryService;
+        private readonly IBrandService brandService;
 
-        public ProductController(IProductService productService)
+        public ProductController(IProductService productService, ICategoryService categoryService,
+            IBrandService brandService)
         {
             this.productService = productService;
+            this.categoryService = categoryService;
+            this.brandService = brandService;
         }
 
         [HttpGet]
         public async Task<IActionResult> IndexByCategory(int categoryId)
         {
-            IEnumerable<AllProductsByCategoryIdViewModel> allProducts = await this.productService.GetAllProductsByCategoryIdAsync(categoryId);
+            IEnumerable<ProductInCategoryViewModel> allProducts = await this.productService.GetAllProductsByCategoryIdAsync(categoryId);
 
             return View(allProducts);
         }
@@ -40,6 +45,55 @@ namespace TechStore.Web.Controllers
             {
                 // TODO: Implement it with the ILogger
                 // TODO: Add JS bars
+                Console.WriteLine(e.Message);
+
+                return this.RedirectToAction(nameof(Index));
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Add()
+        {
+            try
+            {
+                ProductFormInputModel inputModel = new ProductFormInputModel()
+                {
+                    Categories = await this.categoryService.GetCategoriesDropDownDataAsync(),
+                    Brands = await this.brandService.GetBrandsDropDownDataAsync(),
+                };
+
+                return this.View(inputModel);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+
+                return this.RedirectToAction(nameof(Index));
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Add(ProductFormInputModel inputModel)
+        {
+            try
+            {
+                if (!this.ModelState.IsValid)
+                {
+                    return this.View(inputModel);
+                }
+
+                bool result = await this.productService.AddProductAsync(this.GetUserId()!, inputModel);
+
+                if (result == false)
+                {
+                    ModelState.AddModelError(string.Empty, "Error occured while adding a Product");
+                    return this.View(inputModel);
+                }
+
+                return this.RedirectToAction(nameof(Index));
+            }
+            catch (Exception e)
+            {
                 Console.WriteLine(e.Message);
 
                 return this.RedirectToAction(nameof(Index));

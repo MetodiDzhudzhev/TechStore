@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System.Diagnostics;
 using TechStore.Data.Models;
 using TechStore.Data.Repository.Interfaces;
 using TechStore.Services.Core.Interfaces;
@@ -11,18 +10,28 @@ namespace TechStore.Services.Core
     public class ProductService : IProductService
     {
         private readonly IProductRepository productRepository;
+        private readonly ICategoryRepository categoryRepository;
+        private readonly IBrandRepository brandRepository;
+        private readonly IUserRepository userRepository;
 
-        public ProductService(IProductRepository productRepository)
+        public ProductService(IProductRepository productRepository,
+                            ICategoryRepository categoryRepository,
+                             IBrandRepository brandRepository,
+                             IUserRepository userRepository)
         {
             this.productRepository = productRepository;
+            this.categoryRepository = categoryRepository;
+            this.brandRepository = brandRepository;
+            this.userRepository = userRepository;
         }
 
-        public async Task<IEnumerable<AllProductsByCategoryIdViewModel>> GetAllProductsByCategoryIdAsync(int categoryId)
+
+        public async Task<IEnumerable<ProductInCategoryViewModel>> GetAllProductsByCategoryIdAsync(int categoryId)
         {
             IEnumerable<Product> products = await this.productRepository.GetByCategoryAsync(categoryId);
 
-            IEnumerable<AllProductsByCategoryIdViewModel> result = products
-                .Select(p => new AllProductsByCategoryIdViewModel
+            IEnumerable<ProductInCategoryViewModel> result = products
+                .Select(p => new ProductInCategoryViewModel
                 {
                     Id = p.Id,
                     Name = p.Name,
@@ -32,7 +41,7 @@ namespace TechStore.Services.Core
                 })
                 .ToList();
 
-            foreach (AllProductsByCategoryIdViewModel product in result)
+            foreach (ProductInCategoryViewModel product in result)
             {
                 if (String.IsNullOrEmpty(product.ImageUrl))
                 {
@@ -65,7 +74,7 @@ namespace TechStore.Services.Core
                         Name = currentProduct.Name,
                         Brand = currentProduct.Brand.Name,
                         Description = currentProduct.Description,
-                        ImageUrl = string.IsNullOrEmpty(currentProduct.ImageUrl)
+                        ImageUrl = string.IsNullOrWhiteSpace(currentProduct.ImageUrl)
                                                         ? DefaultImageUrl
                                                         : currentProduct.ImageUrl,
                         Price = currentProduct.Price,
@@ -78,6 +87,44 @@ namespace TechStore.Services.Core
             }
 
             return null;
+        }
+        public async Task<bool> AddProductAsync(string userId, ProductFormInputModel inputModel)
+        {
+            User? user = await this.userRepository
+                .GetByIdAsync(Guid.Parse(userId));
+
+            if (user != null)
+            {
+                bool categoryExists = await this.categoryRepository
+                    .ExistsAsync(inputModel.CategoryId);
+
+                if (categoryExists)
+                {
+                    bool brandExists = await this.brandRepository
+                        .ExistsAsync(inputModel.BrandId);
+
+                    if (brandExists)
+                    {
+                        Product product = new Product
+                        {
+                            Name = inputModel.Name,
+                            Description = inputModel.Description,
+                            ImageUrl = string.IsNullOrWhiteSpace(inputModel.ImageUrl)
+                                                ? DefaultImageUrl
+                                                : inputModel.ImageUrl,
+                            Price = inputModel.Price,
+                            QuantityInStock = inputModel.QuantityInStock,
+                            CategoryId = inputModel.CategoryId,
+                            BrandId = inputModel.BrandId
+                        };
+
+                        await this.productRepository.AddAsync(product);
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
     }
 }
