@@ -167,5 +167,62 @@ namespace TechStore.Web.Controllers
                 return this.RedirectToAction(nameof(Index));
             }
         }
+
+        [HttpGet]   //User validation
+        public async Task<IActionResult> Delete(string? id)
+        {
+            try
+            {
+                string userId = this.GetUserId();
+
+                DeleteProductViewModel? modelForDelete = await this.productService
+                    .GetProductForDeleteAsync(id, userId);
+
+                if (modelForDelete == null)
+                {
+                    return this.RedirectToAction(nameof(Index));
+                }
+
+                return this.View(modelForDelete);
+            }
+            catch (Exception e)
+            {
+                // TODO: Implement it with the ILogger
+                // TODO: Add JS bars
+                Console.WriteLine(e.Message);
+                return this.RedirectToAction(nameof(Index));
+            }
+        }
+
+        [HttpPost] // User validation
+        public async Task<IActionResult> Delete(DeleteProductViewModel model)
+        {
+            try
+            {
+                if (!this.ModelState.IsValid)
+                {
+                    ModelState.AddModelError(string.Empty, "Please do not modify the page");
+                    return this.View(model);
+                }
+
+                bool deleteResult = await this.productService
+                    .SoftDeleteProductAsync(this.GetUserId()!, model);
+
+                if (deleteResult == false)
+                {
+                    this.ModelState.AddModelError(string.Empty, "Error occured while deleting the product!");
+                    return this.View(model);
+                }
+
+                return this.RedirectToAction(nameof(IndexByCategory), new { categoryId = model.CategoryId });
+            }
+            catch (Exception e)
+            {
+                // TODO: Implement it with the ILogger
+                // TODO: Add JS bars
+                Console.WriteLine(e.Message);
+                return this.RedirectToAction(nameof(Index));
+            }
+        }
     }
 }

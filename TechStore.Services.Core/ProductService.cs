@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 using TechStore.Data.Models;
 using TechStore.Data.Repository.Interfaces;
 using TechStore.Services.Core.Interfaces;
@@ -197,6 +196,83 @@ namespace TechStore.Services.Core
 
                 await this.productRepository.UpdateAsync(product);
                 return true;
+            }
+
+            return false;
+        }
+
+        public async Task<DeleteProductViewModel?> GetProductForDeleteAsync(string? productId, string userId)
+        {
+            bool isProductIdValid = Guid.TryParse(productId, out Guid productForDeleteId);
+
+            if (!isProductIdValid)
+            {
+                return null;
+            }
+
+            DeleteProductViewModel? modelForDelete = null;
+
+            // TODO: User validation
+
+            var product = await this.productRepository
+                            .GetAllAttached()
+                            .AsNoTracking()
+                            .Include(p => p.OrdersProducts)
+                            .ThenInclude(op => op.Order)
+                            .FirstOrDefaultAsync(p => p.Id == productForDeleteId);
+
+            if (product != null && product.IsDeleted == false)
+            {
+                bool hasPendingOrders = product.OrdersProducts
+                    .Any(op => op.Order.Status == 0);
+
+                if (!hasPendingOrders)
+                {
+                    modelForDelete = new DeleteProductViewModel
+                    {
+                        Id = product.Id.ToString(),
+                        Name = product.Name,
+                        CategoryId = product.CategoryId,
+                        ImageUrl = string.IsNullOrWhiteSpace(product.ImageUrl)
+                                                            ? DefaultImageUrl
+                                                            : product.ImageUrl,
+                    };
+                }
+
+            }
+
+            return modelForDelete;
+        }
+
+        public async Task<bool> SoftDeleteProductAsync(string userId, DeleteProductViewModel inputModel)
+        {
+            bool isProductIdValid = Guid.TryParse(inputModel.Id, out Guid productId);
+
+            if (!isProductIdValid)
+            {
+                return false;
+            }
+
+            //TODO: User validation
+
+            Product? product = await this.productRepository
+                .GetAllAttached()
+                .Include(p => p.OrdersProducts)
+                .ThenInclude(op => op.Order)
+                .FirstOrDefaultAsync(p => p.Id == productId);
+
+
+            if (product != null && product.IsDeleted == false)
+            {
+                bool hasPendingOrders = product.OrdersProducts
+                    .Any(op => op.Order.Status == 0);
+
+                if (!hasPendingOrders)
+                {
+                    await this.productRepository.DeleteAsync(product);
+
+                    return true;
+                } 
             }
 
             return false;

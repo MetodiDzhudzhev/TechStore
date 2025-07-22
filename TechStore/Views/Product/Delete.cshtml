@@ -1,0 +1,45 @@
+﻿@using TechStore.Web.ViewModels.Product
+@model DeleteProductViewModel
+
+@{
+    ViewData["Title"] = "Delete Product";
+}
+
+<div class="container mt-5">
+    <div class="card p-4 shadow-lg bg-white text-dark">
+        <div class="row">
+            <div class="col-md-5">
+                <img src="@Model.ImageUrl"
+                     alt="@Model.Name"
+                     class="img-fluid rounded border" />
+            </div>
+
+            <div class="col-md-7">
+                <h2 class="fw-bold text-dark mb-3">@Model.Name</h2>
+
+                <p class="text-danger fs-5">
+                    Are you sure you want to delete <strong>@Model.Name</strong>?
+                </p>
+
+                <div class="d-flex gap-3 mt-4">
+                    <form asp-action="Delete" method="post">
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="Name" />
+                        <input type="hidden" asp-for="CategoryId" />
+                        <input type="hidden" asp-for="ImageUrl" />
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash-fill"></i> Confirm Delete
+                        </button>
+                    </form>
+
+                    <a asp-controller="Product"
+                       asp-action="Details"
+                       asp-route-id="@Model.Id"
+                       class="btn btn-secondary">
+                        <i class="bi bi-arrow-left-circle"></i> Cancel
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

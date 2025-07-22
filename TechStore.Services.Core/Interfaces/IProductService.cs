@@ -13,5 +13,9 @@ namespace TechStore.Services.Core.Interfaces
         Task<ProductFormInputModel?> GetEditableProductByIdAsync(string? id);
 
         Task<bool> EditProductAsync(string userId, ProductFormInputModel inputModel);
+
+        Task<DeleteProductViewModel?> GetProductForDeleteAsync(string? productId, string userId);
+
+        Task<bool> SoftDeleteProductAsync(string userId, DeleteProductViewModel inputModel);
     }
 }
