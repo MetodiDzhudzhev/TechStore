@@ -179,5 +179,53 @@ namespace TechStore.Services.Core
         {
             return await this.categoryRepository.ExistsByNameAsync(name, categoryIdToSkip);
         }
+
+        public async Task<Category?> GetDeletedCategoryByNameAsync(string name)
+        {
+            return await this.categoryRepository.GetDeletedCategoryByNameAsync(name);
+        }
+
+        public async Task<CategoryFormInputViewModel?> GetCategoryForRestoreByIdAsync(int id)
+        {
+            Category? category = await this.categoryRepository
+                .GetAllAttached()
+                .IgnoreQueryFilters()
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (category == null)
+            {
+                return null;
+            }
+
+            CategoryFormInputViewModel modelToRestore = new CategoryFormInputViewModel()
+            {
+                Id = category.Id,
+                Name = category.Name,
+                ImageUrl = category.ImageUrl ?? DefaultImageUrl,
+            };
+
+            return modelToRestore;
+        }
+
+        public async Task<bool> RestoreByIdAsync(int id)
+        {
+            Category? category = await this.categoryRepository
+                .GetAllAttached()
+                .IgnoreQueryFilters()
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.Id == id && c.IsDeleted);
+
+            if (category == null)
+            {
+                return false;
+            }
+
+            category.IsDeleted = false;
+
+            await this.categoryRepository.UpdateAsync(category);
+            return true;
+        }
+
     }
 }

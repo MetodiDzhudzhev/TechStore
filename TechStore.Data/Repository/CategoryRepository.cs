@@ -27,12 +27,23 @@ using TechStore.Data.Models;
 
         public async Task<bool> ExistsByNameAsync(string name, int categoryIdToSkip)
         {
-            IQueryable<Category> query = this.GetAllAttached().AsNoTracking();
+            IQueryable<Category> query = this
+                .GetAllAttached()
+                .IgnoreQueryFilters()
+                .AsNoTracking();
 
             return await query
                 .Where(c => c.Id != categoryIdToSkip)
                 .AnyAsync(c => c.Name.ToLower() == name.ToLower());
         }
 
+        public async Task<Category?> GetDeletedCategoryByNameAsync(string name)
+        {
+            return await this
+                .GetAllAttached()
+                .IgnoreQueryFilters()
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.Name.ToLower() == name.ToLower() && c.IsDeleted == true);
+        }
     }
 }

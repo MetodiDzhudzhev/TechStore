@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
-using TechStore.Services.Core;
 using TechStore.Services.Core.Interfaces;
 using TechStore.Web.ViewModels.Category;
 using static TechStore.GCommon.ValidationConstants.Shared;
@@ -46,8 +46,19 @@ namespace TechStore.Web.Controllers
 
                 if (await categoryService.ExistsByNameAsync(inputModel.Name, inputModel.Id))
                 {
-                    ModelState.AddModelError(nameof(inputModel.Name), "Category with this name already exists.");
-                    return View(inputModel);
+                    var deletedCategory = await this.categoryService
+                        .GetDeletedCategoryByNameAsync(inputModel.Name);
+
+                    if (deletedCategory != null)
+                    {
+                        return RedirectToAction(nameof(Restore), new { id = deletedCategory.Id });
+                    }
+
+                    else
+                    {
+                        ModelState.AddModelError(nameof(inputModel.Name), "Category with this name already exists.");
+                        return View(inputModel);
+                    }
                 }
                 bool result = await this.categoryService.AddCategoryAsync(this.GetUserId()!, inputModel);
 
@@ -66,6 +77,39 @@ namespace TechStore.Web.Controllers
                 return this.RedirectToAction(nameof(Index));
             }
         }
+
+        [HttpGet]
+        [Authorize(Roles = "Admin,Manager")]
+        public async Task<IActionResult> Restore(int id)
+        {
+            CategoryFormInputViewModel? category = await this.categoryService.GetCategoryForRestoreByIdAsync(id);
+            if (category == null)
+            {
+                return NotFound();
+            }
+
+            return View(category);
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Admin,Manager")]
+        public async Task<IActionResult> RestoreConfirmed(int id)
+        {
+            bool result = await this.categoryService.RestoreByIdAsync(id);
+
+            if (result == false)
+            {
+                // TODO: Implement it with the ILogger
+                // TODO: Add JS bars
+                return RedirectToAction(nameof(Index));
+            }
+
+            // TODO: Implement it with the ILogger
+            // TODO: Add JS bars
+            return RedirectToAction(nameof(Index));
+        }
+
+
 
         [HttpGet]
         [Authorize(Roles = "Admin,Manager")]

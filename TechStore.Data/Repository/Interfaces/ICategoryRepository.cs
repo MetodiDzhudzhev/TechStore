@@ -7,5 +7,6 @@ namespace TechStore.Data.Repository.Interfaces
     {
         Task<bool> ExistsAsync(int id);
         Task<bool> ExistsByNameAsync(string name, int categoryIdToSkip);
+        Task<Category?> GetDeletedCategoryByNameAsync(string name);
     }
 }

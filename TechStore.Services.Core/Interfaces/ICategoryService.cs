@@ -1,4 +1,5 @@
-﻿using TechStore.Web.ViewModels.Category;
+﻿using TechStore.Data.Models;
+using TechStore.Web.ViewModels.Category;
 using TechStore.Web.ViewModels.Product;
 
 namespace TechStore.Services.Core.Interfaces
@@ -19,5 +20,11 @@ namespace TechStore.Services.Core.Interfaces
         Task<IEnumerable<AddProductCategoryDropDownModel>> GetCategoriesDropDownDataAsync();
 
         Task<bool> ExistsByNameAsync(string name, int categoryIdToSkip);
+
+        Task<Category?> GetDeletedCategoryByNameAsync(string name);
+
+        Task<CategoryFormInputViewModel?> GetCategoryForRestoreByIdAsync(int id);
+
+        Task<bool> RestoreByIdAsync(int id);
     }
 }
