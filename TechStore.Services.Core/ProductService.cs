@@ -2,6 +2,7 @@
 using TechStore.Data.Models;
 using TechStore.Data.Repository.Interfaces;
 using TechStore.Services.Core.Interfaces;
+using TechStore.Web.ViewModels.Category;
 using TechStore.Web.ViewModels.Product;
 using static TechStore.GCommon.ApplicationConstants;
 
@@ -288,6 +289,66 @@ namespace TechStore.Services.Core
         public async Task<bool> ExistsByNameAsync(string name, string? productIdToSkip)
         {
             return await this.productRepository.ExistsByNameAsync(name, productIdToSkip);
+        }
+
+        public async Task<Product?> GetDeletedProductByNameAsync(string name)
+        {
+            return await this.productRepository.GetDeletedProductByNameAsync(name);
+        }
+
+        public async Task<ProductFormInputModel?> GetProductForRestoreByIdAsync(string id)
+        {
+            Product? product = await this.productRepository
+                .GetAllAttached()
+                .IgnoreQueryFilters()
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.Id == Guid.Parse(id));
+
+            if (product == null)
+            {
+                return null;
+            }
+
+            ProductFormInputModel modelToRestore = new ProductFormInputModel()
+            {
+                Id = product.Id.ToString(),
+                Name = product.Name,
+                Description = product.Description,
+                ImageUrl = product.ImageUrl ?? DefaultImageUrl,
+                Price = product.Price,
+                QuantityInStock = product.QuantityInStock,
+                CategoryId = product.CategoryId,
+                BrandId = product.BrandId
+            };
+
+            return modelToRestore;
+        }
+
+        public async Task<bool> RestoreByIdAsync(string id)
+        {
+            Product? product = await this.productRepository
+                .GetAllAttached()
+                .IgnoreQueryFilters()
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.Id == Guid.Parse(id) && p.IsDeleted);
+
+            if (product == null)
+            {
+                return false;
+            }
+
+            product.IsDeleted = false;
+
+            await this.productRepository.UpdateAsync(product);
+            return true;
+        }
+
+        public async Task<Product?> GetProductByIdAsync(string id)
+        {
+            return await this.productRepository
+                .GetAllAttached()
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.Id == Guid.Parse(id));
         }
     }
 }

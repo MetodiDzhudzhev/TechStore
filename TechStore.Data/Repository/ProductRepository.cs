@@ -14,7 +14,10 @@ namespace TechStore.Data.Repository
 
         public async Task<bool> ExistsByNameAsync(string name, string? productIdToSkip)
         {
-            IQueryable<Product> query = this.GetAllAttached().AsNoTracking();
+            IQueryable<Product> query = this
+                .GetAllAttached()
+                .IgnoreQueryFilters()
+                .AsNoTracking();
 
             if (!Guid.TryParse(productIdToSkip, out Guid idToExclude))
             {
@@ -25,6 +28,15 @@ namespace TechStore.Data.Repository
             return await query
                 .Where(p => p.Id != idToExclude)
                 .AnyAsync(p => p.Name.ToLower() == name.ToLower());
+        }
+
+        public async Task<Product?> GetDeletedProductByNameAsync(string name)
+        {
+            return await this
+                .GetAllAttached()
+                .IgnoreQueryFilters()
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.Name.ToLower() == name.ToLower() && p.IsDeleted == true);
         }
 
         public async Task<IEnumerable<Product>> GetByBrandAsync(int brandId)
@@ -48,7 +60,6 @@ namespace TechStore.Data.Repository
 
             return products;
         }
-
 
 
         public async Task<IEnumerable<Product>> SearchByKeywordAsync(string keyword)

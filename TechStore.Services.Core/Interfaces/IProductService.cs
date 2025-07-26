@@ -1,4 +1,5 @@
-﻿using TechStore.Web.ViewModels.Product;
+﻿using TechStore.Data.Models;
+using TechStore.Web.ViewModels.Product;
 
 namespace TechStore.Services.Core.Interfaces
 {
@@ -18,6 +19,14 @@ namespace TechStore.Services.Core.Interfaces
 
         Task<bool> SoftDeleteProductAsync(string userId, DeleteProductViewModel inputModel);
         Task<bool> ExistsByNameAsync(string name, string? productIdToSkip);
+
+        Task<Product?> GetDeletedProductByNameAsync(string name);
+
+        Task<ProductFormInputModel?> GetProductForRestoreByIdAsync(string id);
+
+        Task<bool> RestoreByIdAsync(string id);
+        Task<Product?> GetProductByIdAsync(string id);
+
 
     }
 }

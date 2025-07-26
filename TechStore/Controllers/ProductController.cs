@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using TechStore.Services.Core.Interfaces;
+using TechStore.Web.ViewModels.Category;
 using TechStore.Web.ViewModels.Product;
 
 namespace TechStore.Web.Controllers
@@ -106,10 +108,21 @@ namespace TechStore.Web.Controllers
 
                 if (await productService.ExistsByNameAsync(inputModel.Name, inputModel.Id))
                 {
-                    ModelState.AddModelError(nameof(inputModel.Name), "Product with this name already exists.");
-                    inputModel.Categories = await categoryService.GetCategoriesDropDownDataAsync();
-                    inputModel.Brands = await brandService.GetBrandsDropDownDataAsync();
-                    return View(inputModel);
+                    var deletedProduct = await this.productService
+                        .GetDeletedProductByNameAsync(inputModel.Name);
+
+                    if (deletedProduct != null)
+                    {
+                        return RedirectToAction(nameof(Restore), new { id = deletedProduct.Id });
+                    }
+
+                    else
+                    {
+                        ModelState.AddModelError(nameof(inputModel.Name), "Product with this name already exists.");
+                        inputModel.Categories = await categoryService.GetCategoriesDropDownDataAsync();
+                        inputModel.Brands = await brandService.GetBrandsDropDownDataAsync();
+                        return View(inputModel);
+                    }
                 }
 
                 bool result = await this.productService.AddProductAsync(this.GetUserId()!, inputModel);
@@ -136,14 +149,46 @@ namespace TechStore.Web.Controllers
 
         [HttpGet]
         [Authorize(Roles = "Admin,Manager")]
+        public async Task<IActionResult> Restore(string id)
+        {
+            ProductFormInputModel? product = await this.productService.GetProductForRestoreByIdAsync(id);
+            if (product == null)
+            {
+                return NotFound();
+            }
+
+            return View(product);
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Admin,Manager")]
+        public async Task<IActionResult> RestoreConfirmed(string id)
+        {
+            bool result = await this.productService.RestoreByIdAsync(id);
+
+            var product = await this.productService.GetProductByIdAsync(id);
+            if (result == false)
+            {
+                // TODO: Implement it with the ILogger
+                // TODO: Add JS bars
+                return RedirectToAction("IndexByCategory", new { categoryId = product.CategoryId });
+            }
+
+            // TODO: Implement it with the ILogger
+            // TODO: Add JS bars
+            return this.RedirectToAction("IndexByCategory", "Product", new { categoryId = product.CategoryId });
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> Edit(string? id)
         {
             try
             {
-                ProductFormInputModel? model = await this.productService.GetEditableProductByIdAsync(this.GetUserId(),id);
+                ProductFormInputModel? model = await this.productService.GetEditableProductByIdAsync(this.GetUserId(), id);
 
                 if (model == null)
-                {   
+                {
                     return this.RedirectToAction(nameof(Index));
                 }
 
@@ -168,10 +213,8 @@ namespace TechStore.Web.Controllers
             {
                 if (!this.ModelState.IsValid)
                 {
-                    //inputModel.Categories = await this.categoryService.GetCategoriesDropDownDataAsync();
-                    //inputModel.Brands = await this.brandService.GetBrandsDropDownDataAsync();
                     return this.View(inputModel);
-                } 
+                }
 
                 if (await productService.ExistsByNameAsync(inputModel.Name, inputModel.Id))
                 {
@@ -186,8 +229,6 @@ namespace TechStore.Web.Controllers
 
                 if (result == false)
                 {
-                    //inputModel.Categories = await this.categoryService.GetCategoriesDropDownDataAsync();
-                    //inputModel.Brands = await this.brandService.GetBrandsDropDownDataAsync();
                     this.ModelState.AddModelError(String.Empty, "Error occured while editing a product");
                     return this.View(inputModel);
                 }
@@ -265,4 +306,3 @@ namespace TechStore.Web.Controllers
         }
     }
 }
- 
