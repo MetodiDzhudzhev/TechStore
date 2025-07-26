@@ -131,6 +131,29 @@
                                 </button>
                             </form>
                         </li>
+
+                        @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+                        {
+                            <li class="nav-item dropdown ms-3">
+                                <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Control Panel
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="adminDropdown">
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Product" asp-action="IndexByCategory">Manage Products</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Category" asp-action="Index">Manage Categories</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Brand" asp-action="Index">Manage Brands</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="User" asp-action="Index">Manage Users</a>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
                     </ul>
 
                     <partial name="_LoginPartial" />

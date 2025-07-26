@@ -6,5 +6,6 @@ namespace TechStore.Data.Repository.Interfaces
         : IRepository<Category, int>, IAsyncRepository<Category, int>
     {
         Task<bool> ExistsAsync(int id);
+        Task<bool> ExistsByNameAsync(string name, int categoryIdToSkip);
     }
 }

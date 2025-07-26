@@ -1,4 +1,5 @@
-﻿    using TechStore.Data.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using TechStore.Data.Models;
     using TechStore.Data.Repository.Interfaces;
 
     namespace TechStore.Data.Repository
@@ -23,5 +24,15 @@
                 }
                 return result;
             }
+
+        public async Task<bool> ExistsByNameAsync(string name, int categoryIdToSkip)
+        {
+            IQueryable<Category> query = this.GetAllAttached().AsNoTracking();
+
+            return await query
+                .Where(c => c.Id != categoryIdToSkip)
+                .AnyAsync(c => c.Name.ToLower() == name.ToLower());
         }
+
     }
+}

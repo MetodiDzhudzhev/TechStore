@@ -6,7 +6,7 @@ namespace TechStore.Web.ViewModels.Product
     public class ProductFormInputModel
     {
         
-        public string Id { get; set; } = null!;
+        public string? Id { get; set; } 
 
 
         [Required]

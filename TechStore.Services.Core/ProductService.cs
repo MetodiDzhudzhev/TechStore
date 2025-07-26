@@ -42,19 +42,11 @@ namespace TechStore.Services.Core
                 {
                     Id = p.Id,
                     Name = p.Name,
-                    ImageUrl = p.ImageUrl,
+                    ImageUrl = p.ImageUrl ?? DefaultImageUrl,
                     Price = p.Price,
                     QuantityInStock = p.QuantityInStock
                 })
                 .ToList();
-
-            foreach (ProductInCategoryViewModel product in result)
-            {
-                if (String.IsNullOrEmpty(product.ImageUrl))
-                {
-                    product.ImageUrl = DefaultImageUrl;
-                }
-            }
 
             return result;
         }
@@ -101,9 +93,7 @@ namespace TechStore.Services.Core
                         Name = currentProduct.Name,
                         Brand = currentProduct.Brand.Name,
                         Description = currentProduct.Description,
-                        ImageUrl = string.IsNullOrWhiteSpace(currentProduct.ImageUrl)
-                                                        ? DefaultImageUrl
-                                                        : currentProduct.ImageUrl,
+                        ImageUrl = currentProduct.ImageUrl ?? DefaultImageUrl,
                         Price = currentProduct.Price,
                         QuantityInStock = currentProduct.QuantityInStock,
                         CategoryId = currentProduct.CategoryId,
@@ -118,6 +108,7 @@ namespace TechStore.Services.Core
         public async Task<bool> AddProductAsync(string userId, ProductFormInputModel inputModel)
         {
             bool result = false;
+
             User? user = await this.userRepository
                 .GetByIdAsync(Guid.Parse(userId));
 
@@ -131,11 +122,9 @@ namespace TechStore.Services.Core
             {
                 Product product = new Product
                 {
-                    Name = inputModel.Name,
+                    Name = inputModel.Name.Trim(),
                     Description = inputModel.Description,
-                    ImageUrl = string.IsNullOrWhiteSpace(inputModel.ImageUrl)
-                                        ? DefaultImageUrl
-                                        : inputModel.ImageUrl,
+                    ImageUrl = inputModel.ImageUrl ?? DefaultImageUrl,
                     Price = inputModel.Price,
                     QuantityInStock = inputModel.QuantityInStock,
                     CategoryId = inputModel.CategoryId,
@@ -149,13 +138,16 @@ namespace TechStore.Services.Core
             return result;
         }
 
-        public async Task<ProductFormInputModel?> GetEditableProductByIdAsync(string? id)
+        public async Task<ProductFormInputModel?> GetEditableProductByIdAsync(string userId, string? id)
         {
             ProductFormInputModel? model = null;
 
             bool isIdValid = Guid.TryParse(id, out Guid productId);
 
-            if (isIdValid)
+            User? user = await this.userRepository
+                .GetByIdAsync(Guid.Parse(userId));
+
+            if (user != null && isIdValid)
             {
                 Product? product = await this.productRepository.GetByIdAsync(productId);
 
@@ -180,25 +172,37 @@ namespace TechStore.Services.Core
 
         public async Task<bool> EditProductAsync(string userId, ProductFormInputModel inputModel)
         {
-            Product? product = await this.productRepository.GetByIdAsync(Guid.Parse(inputModel.Id));
+            bool result = false;
 
-            if (product != null)
+            User? user = await this.userRepository
+                .GetByIdAsync(Guid.Parse(userId));
+
+            bool categoryExists = await this.categoryRepository
+                    .ExistsAsync(inputModel.CategoryId);
+
+            bool brandExists = await this.brandRepository
+                        .ExistsAsync(inputModel.BrandId);
+
+            if ((user != null) && categoryExists && brandExists)
             {
-                product.Name = inputModel.Name;
-                product.Description = inputModel.Description;
-                product.ImageUrl = string.IsNullOrWhiteSpace(inputModel.ImageUrl)
-                                                            ? DefaultImageUrl
-                                                            : inputModel.ImageUrl;
-                product.Price = inputModel.Price;
-                product.QuantityInStock = inputModel.QuantityInStock;
-                product.CategoryId = inputModel.CategoryId;
-                product.BrandId = inputModel.BrandId;
+                Product? product = await this.productRepository.GetByIdAsync(Guid.Parse(inputModel.Id));
 
-                await this.productRepository.UpdateAsync(product);
-                return true;
+                if (product != null)
+                {
+                    product.Name = inputModel.Name.Trim();
+                    product.Description = inputModel.Description;
+                    product.ImageUrl = inputModel.ImageUrl ?? DefaultImageUrl;
+                    product.Price = inputModel.Price;
+                    product.QuantityInStock = inputModel.QuantityInStock;
+                    product.CategoryId = inputModel.CategoryId;
+                    product.BrandId = inputModel.BrandId;
+
+                    await this.productRepository.UpdateAsync(product);
+                    result = true;
+                }
             }
 
-            return false;
+            return result;
         }
 
         public async Task<DeleteProductViewModel?> GetProductForDeleteAsync(string? productId, string userId)
@@ -210,35 +214,37 @@ namespace TechStore.Services.Core
                 return null;
             }
 
+            User? user = await this.userRepository
+                .GetByIdAsync(Guid.Parse(userId));
+
             DeleteProductViewModel? modelForDelete = null;
 
-            // TODO: User validation
-
-            var product = await this.productRepository
+            if (user != null)
+            {
+                Product? product = await this.productRepository
                             .GetAllAttached()
                             .AsNoTracking()
                             .Include(p => p.OrdersProducts)
                             .ThenInclude(op => op.Order)
-                            .FirstOrDefaultAsync(p => p.Id == productForDeleteId);
+                            .SingleOrDefaultAsync(p => p.Id == productForDeleteId);
 
-            if (product != null && product.IsDeleted == false)
-            {
-                bool hasPendingOrders = product.OrdersProducts
-                    .Any(op => op.Order.Status == 0);
-
-                if (!hasPendingOrders)
+                if (product != null && product.IsDeleted == false)
                 {
-                    modelForDelete = new DeleteProductViewModel
-                    {
-                        Id = product.Id.ToString(),
-                        Name = product.Name,
-                        CategoryId = product.CategoryId,
-                        ImageUrl = string.IsNullOrWhiteSpace(product.ImageUrl)
-                                                            ? DefaultImageUrl
-                                                            : product.ImageUrl,
-                    };
-                }
+                    bool hasPendingOrders = product.OrdersProducts
+                        .Any(op => op.Order.Status == 0);
 
+                    if (!hasPendingOrders)
+                    {
+                        modelForDelete = new DeleteProductViewModel
+                        {
+                            Id = product.Id.ToString(),
+                            Name = product.Name,
+                            CategoryId = product.CategoryId,
+                            ImageUrl = product.ImageUrl ?? DefaultImageUrl,
+                        };
+                    }
+
+                }
             }
 
             return modelForDelete;
@@ -246,36 +252,42 @@ namespace TechStore.Services.Core
 
         public async Task<bool> SoftDeleteProductAsync(string userId, DeleteProductViewModel inputModel)
         {
+            bool result = false;
+
             bool isProductIdValid = Guid.TryParse(inputModel.Id, out Guid productId);
 
             if (!isProductIdValid)
             {
-                return false;
+                return result;
             }
 
-            //TODO: User validation
+            User? user = await this.userRepository
+                .GetByIdAsync(Guid.Parse(userId));
 
-            Product? product = await this.productRepository
-                .GetAllAttached()
-                .Include(p => p.OrdersProducts)
-                .ThenInclude(op => op.Order)
-                .FirstOrDefaultAsync(p => p.Id == productId);
-
-
-            if (product != null && product.IsDeleted == false)
+            if (user != null)
             {
-                bool hasPendingOrders = product.OrdersProducts
-                    .Any(op => op.Order.Status == 0);
+                Product? product = await this.productRepository.GetByIdAsync(productId);
 
-                if (!hasPendingOrders)
+                if (product != null && product.IsDeleted == false)
                 {
-                    await this.productRepository.DeleteAsync(product);
+                    bool hasPendingOrders = product.OrdersProducts
+                        .Any(op => op.Order.Status == 0);
 
-                    return true;
-                } 
+                    if (!hasPendingOrders)
+                    {
+                        await this.productRepository.DeleteAsync(product);
+
+                        result = true;
+                    }
+                }
             }
 
-            return false;
+            return result;
+        }
+
+        public async Task<bool> ExistsByNameAsync(string name, string? productIdToSkip)
+        {
+            return await this.productRepository.ExistsByNameAsync(name, productIdToSkip);
         }
     }
 }

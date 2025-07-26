@@ -4,16 +4,14 @@ using static TechStore.GCommon.ValidationConstants.Shared;
 
 namespace TechStore.Web.ViewModels.Category
 {
-    public class CategoryFormEditViewModel
+    public class CategoryFormAddViewModel
     {
-        [Required]
-        [Range(IntIdMinValue, IntIdMaxValue)]
-        public int Id { get; set; }
-
         [Required]
         [MinLength(NameMinLength)]
         [MaxLength(NameMaxLength)]
         public string Name { get; set; } = null!;
+
+        [Url]
         public string? ImageUrl { get; set; }
     }
 }

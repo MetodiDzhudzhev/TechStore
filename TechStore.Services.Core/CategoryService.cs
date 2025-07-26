@@ -11,106 +11,148 @@ namespace TechStore.Services.Core
     public class CategoryService : ICategoryService
     {
         private readonly ICategoryRepository categoryRepository;
+        private readonly IUserRepository userRepository;
 
-        public CategoryService(ICategoryRepository categoryRepository)
+        public CategoryService(ICategoryRepository categoryRepository, IUserRepository userRepository)
         {
             this.categoryRepository = categoryRepository;
+            this.userRepository = userRepository;
         }
 
         public async Task<IEnumerable<AllCategoriesIndexViewModel>> GetAllCategoriesAsync()
         {
             IEnumerable<AllCategoriesIndexViewModel> allCategories = await this.categoryRepository
                 .GetAllAttached()
+                .AsNoTracking()
                 .Select(c => new AllCategoriesIndexViewModel()
                 {
                     Id = c.Id,
                     Name = c.Name,
-                    ImageUrl = c.ImageUrl,
+                    ImageUrl = c.ImageUrl ?? DefaultImageUrl,
                 })
                 .ToListAsync();
 
-            foreach (AllCategoriesIndexViewModel category in allCategories)
-            {
-                if (String.IsNullOrEmpty(category.ImageUrl))
-                {
-                    category.ImageUrl = DefaultImageUrl;
-                }
-            }
-
             return allCategories;
         }
-        public async Task AddCategoryAsync(CategoryFormInputViewModel inputModel)
-        {
-            Category category = new Category()
-            {
-                Name = inputModel.Name,
-                ImageUrl = inputModel.ImageUrl,
-            };
-
-            await this.categoryRepository.AddAsync(category);
-        }
-
-        public async Task<CategoryFormEditViewModel?> GetEditableCategoryByIdAsync(int? id)
-        {
-            CategoryFormEditViewModel? editableCategory = await this.categoryRepository
-                .GetAllAttached()
-                .AsNoTracking()
-                .Where(c => c.Id == id)
-                .Select(c => new CategoryFormEditViewModel()
-                {
-                    Name = c.Name,
-                    ImageUrl = c.ImageUrl,
-                })
-                .SingleOrDefaultAsync();
-
-            return editableCategory;
-        }
-
-        public async Task<bool> EditCategoryAsync(CategoryFormEditViewModel inputModel)
+        public async Task<bool> AddCategoryAsync(string userId, CategoryFormInputViewModel inputModel)
         {
             bool result = false;
 
-            Category? editableCategory = await this.categoryRepository.GetByIdAsync(inputModel.Id);
-            if (editableCategory == null)
+            User? user = await this.userRepository
+                .GetByIdAsync(Guid.Parse(userId));
+
+            if (user != null)
             {
-                return false;
+                Category category = new Category()
+                {
+                    Name = inputModel.Name.Trim(),
+                    ImageUrl = inputModel.ImageUrl ?? DefaultImageUrl,
+                };
+
+                await this.categoryRepository.AddAsync(category);
+                result = true;
             }
-
-            editableCategory.Name = inputModel.Name;
-            editableCategory.ImageUrl = inputModel.ImageUrl;
-
-            result = await this.categoryRepository.UpdateAsync(editableCategory);
 
             return result;
         }
 
-        public async Task<DeleteCategoryViewModel?> GetCategoryForDeleteByIdAsync(int id)
+        public async Task<CategoryFormInputViewModel?> GetEditableCategoryByIdAsync(string userId, int? categoryId)
+        {
+
+            if (categoryId == null || categoryId <= 0)
+            {
+                return null;
+            }
+
+            CategoryFormInputViewModel? editableCategory = null;
+
+            User? user = await this.userRepository
+                .GetByIdAsync(Guid.Parse(userId));
+
+            if (user != null)
+            {
+                Category? category = await this.categoryRepository
+                    .GetAllAttached()
+                    .AsNoTracking()
+                    .SingleOrDefaultAsync(c => c.Id == categoryId);
+
+                editableCategory = new CategoryFormInputViewModel()
+                {
+                    Id = category.Id,
+                    Name = category!.Name,
+                    ImageUrl = category.ImageUrl ?? DefaultImageUrl,
+                };
+            }
+            return editableCategory;
+        }
+
+        public async Task<bool> EditCategoryAsync(string userId, CategoryFormInputViewModel inputModel)
+        {
+            bool result = false;
+
+            User? user = await this.userRepository
+                .GetByIdAsync(Guid.Parse(userId));
+
+            if (user != null)
+            {
+                Category? editableCategory = await this.categoryRepository
+                .GetByIdAsync(inputModel.Id);
+
+                if (editableCategory == null)
+                {
+                    return result;
+                }
+                editableCategory.Id = inputModel.Id;
+                editableCategory.Name = inputModel.Name.Trim();
+                editableCategory.ImageUrl = inputModel.ImageUrl ?? DefaultImageUrl;
+
+                await this.categoryRepository.UpdateAsync(editableCategory);
+                result = true;
+            }
+
+            return result;
+        }
+
+        public async Task<DeleteCategoryViewModel?> GetCategoryForDeleteByIdAsync(string userId, int? categoryId)
         {
             DeleteCategoryViewModel? categoryForDeleteViewModel = null;
 
-            Category? categoryForDelete = await this.categoryRepository.GetByIdAsync(id);
+            User? user = await this.userRepository
+                .GetByIdAsync(Guid.Parse(userId));
 
-            if (categoryForDelete != null)
+            if (user != null && categoryId != null)
             {
-                categoryForDeleteViewModel = new DeleteCategoryViewModel()
+
+                Category? category = await this.categoryRepository
+                    .GetAllAttached()
+                    .AsNoTracking()
+                    .SingleOrDefaultAsync(c => c.Id == categoryId);
+
+                if (category != null && category.IsDeleted == false)
                 {
-                    Id = categoryForDelete.Id,
-                    Name = categoryForDelete.Name,
-                    ImageUrl = categoryForDelete.ImageUrl,
-                };
+                    categoryForDeleteViewModel = new DeleteCategoryViewModel()
+                    {
+                        Id = category.Id,
+                        Name = category.Name,
+                        ImageUrl = category.ImageUrl,
+                    };
+                }
             }
 
             return categoryForDeleteViewModel;
         }
 
-        public async Task<bool> SoftDeleteCategoryAsync(int id)
+        public async Task<bool> SoftDeleteCategoryAsync(string userId, DeleteCategoryViewModel deleteModel)
         {
             bool result = false;
 
-            Category? categoryToDelete = await this.categoryRepository
-                .GetByIdAsync(id);
+            User? user = await this.userRepository
+                .GetByIdAsync(Guid.Parse(userId));
 
-            if (categoryToDelete != null)
+            Category? categoryToDelete = await this.categoryRepository
+                .GetByIdAsync(deleteModel.Id);
+
+            if (user != null && categoryToDelete != null)
             {
                 result = await this.categoryRepository.DeleteAsync(categoryToDelete);
             }
@@ -126,11 +168,16 @@ namespace TechStore.Services.Core
                 .Select(c => new AddProductCategoryDropDownModel()
                 {
                     Id = c.Id,
-                    Name = c.Name,
+                    Name = c.Name.Trim(),
                 })
                 .ToListAsync();
 
             return categoriesAsDropDown;
+        }
+
+        public async Task<bool> ExistsByNameAsync(string name, int categoryIdToSkip)
+        {
+            return await this.categoryRepository.ExistsByNameAsync(name, categoryIdToSkip);
         }
     }
 }

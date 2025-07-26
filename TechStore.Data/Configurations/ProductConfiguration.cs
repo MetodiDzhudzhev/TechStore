@@ -18,6 +18,10 @@ namespace TechStore.Data.Configurations
                  .HasMaxLength(NameMaxLength);
 
             entity
+                 .HasIndex(p => p.Name)
+                 .IsUnique();
+
+            entity
                  .Property(p => p.Description)
                  .IsRequired()
                  .HasMaxLength(DescriptionMaxLength);

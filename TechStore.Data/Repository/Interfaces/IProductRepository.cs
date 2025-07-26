@@ -8,6 +8,8 @@ namespace TechStore.Data.Repository.Interfaces
         Task<IEnumerable<Product>> GetByCategoryAsync(int categoryId);
         Task<IEnumerable<Product>> GetByBrandAsync(int brandId);
         Task<IEnumerable<Product>> SearchByKeywordAsync(string keyword);
+        Task<bool> ExistsByNameAsync(string name, string? productIdToSkip);
+
 
     }
 }

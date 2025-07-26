@@ -6,16 +6,18 @@ namespace TechStore.Services.Core.Interfaces
     public interface ICategoryService
     {
         Task<IEnumerable<AllCategoriesIndexViewModel>> GetAllCategoriesAsync();
-        Task AddCategoryAsync(CategoryFormInputViewModel inputModel);
+        Task<bool> AddCategoryAsync(string userId, CategoryFormInputViewModel inputModel);
 
-        Task<CategoryFormEditViewModel?> GetEditableCategoryByIdAsync(int? id);
+        Task<CategoryFormInputViewModel?> GetEditableCategoryByIdAsync(string userId, int? categoryId);
 
-        Task<bool> EditCategoryAsync(CategoryFormEditViewModel inputModel);
+        Task<bool> EditCategoryAsync(string userId, CategoryFormInputViewModel inputModel);
 
-        Task<DeleteCategoryViewModel?> GetCategoryForDeleteByIdAsync(int id);
+        Task<DeleteCategoryViewModel?> GetCategoryForDeleteByIdAsync(string userId, int? categoryId);
 
-        Task<bool> SoftDeleteCategoryAsync(int id);
+        Task<bool> SoftDeleteCategoryAsync(string userId, DeleteCategoryViewModel deleteModel);
 
         Task<IEnumerable<AddProductCategoryDropDownModel>> GetCategoriesDropDownDataAsync();
+
+        Task<bool> ExistsByNameAsync(string name, int categoryIdToSkip);
     }
 }

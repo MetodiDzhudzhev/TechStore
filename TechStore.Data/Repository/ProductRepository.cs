@@ -6,10 +6,25 @@ namespace TechStore.Data.Repository
 {
     public class ProductRepository : BaseRepository<Product, Guid>, IProductRepository
     {
-        public ProductRepository(ApplicationDbContext dbContext) 
+        public ProductRepository(ApplicationDbContext dbContext)
             : base(dbContext)
         {
 
+        }
+
+        public async Task<bool> ExistsByNameAsync(string name, string? productIdToSkip)
+        {
+            IQueryable<Product> query = this.GetAllAttached().AsNoTracking();
+
+            if (!Guid.TryParse(productIdToSkip, out Guid idToExclude))
+            {
+                return await query
+                    .AnyAsync(p => p.Name.ToLower() == name.ToLower());
+            }
+
+            return await query
+                .Where(p => p.Id != idToExclude)
+                .AnyAsync(p => p.Name.ToLower() == name.ToLower());
         }
 
         public async Task<IEnumerable<Product>> GetByBrandAsync(int brandId)
@@ -34,12 +49,14 @@ namespace TechStore.Data.Repository
             return products;
         }
 
+
+
         public async Task<IEnumerable<Product>> SearchByKeywordAsync(string keyword)
         {
             ICollection<Product> products = await this
                 .GetAllAttached()
                 .AsNoTracking()
-                .Where(p => p.Name.ToLower().Contains(keyword.ToLower()))
+                .Where(p => EF.Functions.Like(p.Name, $"%{keyword}%"))
                 .ToListAsync();
 
             return products;
