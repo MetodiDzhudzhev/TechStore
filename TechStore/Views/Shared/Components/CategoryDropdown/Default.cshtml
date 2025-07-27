@@ -1,0 +1,22 @@
+﻿@using TechStore.Web.ViewModels.Product
+@model IEnumerable<AddProductCategoryDropDownModel>
+
+<li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#">
+        Categories
+    </a>
+    <ul class="dropdown-menu">
+        @foreach (var category in Model)
+        {
+            <li>
+                <a class="dropdown-item"
+                   asp-controller="Product"
+                   asp-action="IndexByCategory"
+                   asp-route-categoryId="@category.Id">
+                    @category.Name
+                </a>
+
+            </li>
+        }
+    </ul>
+</li>

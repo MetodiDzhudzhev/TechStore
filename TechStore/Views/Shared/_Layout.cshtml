@@ -95,33 +95,8 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav me-auto align-items-center">
 
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="categoryDropdown" role="button" data-bs-toggle="dropdown">
-                                Categories
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a class="dropdown-item d-flex align-items-center" href="/Products?category=Laptops">
-                                        <i class="bi bi-laptop me-2"></i> Laptops
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item d-flex align-items-center" href="/Products?category=Smartphones">
-                                        <i class="bi bi-phone me-2"></i> Smartphones
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item d-flex align-items-center" href="/Products?category=Headphones">
-                                        <i class="bi bi-tv me-2"></i> TV
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item d-flex align-items-center" href="/Products?category=Accessories">
-                                        <i class="bi bi-keyboard me-2"></i> PC periphery
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
+                        @await Component.InvokeAsync("CategoryDropdown")
+
 
                         <li class="nav-item ms-3">
                             <form class="d-flex" asp-controller="Products" asp-action="Search" method="get">
