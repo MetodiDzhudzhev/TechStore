@@ -19,9 +19,20 @@ namespace TechStore.Web.Controllers
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
+        public IActionResult Error(int? statusCode)
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            switch (statusCode)
+            {
+                case 401:
+                case 403:
+                    return this.View("UnauthorizedError");
+                case 404:
+                    return this.View("NotFoundError");
+                case 500:
+                    return this.View("InternalServerError");
+                default:
+                    return this.View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            }
         }
     }
 }
