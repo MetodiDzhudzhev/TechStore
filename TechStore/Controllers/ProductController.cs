@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using TechStore.Services.Core.Interfaces;
-using TechStore.Web.ViewModels.Category;
 using TechStore.Web.ViewModels.Product;
 
 namespace TechStore.Web.Controllers
@@ -54,8 +52,7 @@ namespace TechStore.Web.Controllers
 
                 if (productDetails == null)
                 {
-                    // TODO: Custom 404 page
-                    return this.RedirectToAction(nameof(Index));
+                    return NotFound();
                 }
 
                 return this.View(productDetails);
@@ -189,7 +186,7 @@ namespace TechStore.Web.Controllers
 
                 if (model == null)
                 {
-                    return this.RedirectToAction(nameof(Index));
+                    return NotFound();
                 }
 
                 model.Categories = await this.categoryService.GetCategoriesDropDownDataAsync();
@@ -259,7 +256,7 @@ namespace TechStore.Web.Controllers
 
                 if (modelForDelete == null)
                 {
-                    return this.RedirectToAction(nameof(Index));
+                    return NotFound();
                 }
 
                 return this.View(modelForDelete);

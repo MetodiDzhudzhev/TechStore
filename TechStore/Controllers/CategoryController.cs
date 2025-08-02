@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using TechStore.Services.Core.Interfaces;
 using TechStore.Web.ViewModels.Category;
@@ -83,6 +82,7 @@ namespace TechStore.Web.Controllers
         public async Task<IActionResult> Restore(int id)
         {
             CategoryFormInputViewModel? category = await this.categoryService.GetCategoryForRestoreByIdAsync(id);
+
             if (category == null)
             {
                 return NotFound();
@@ -122,8 +122,7 @@ namespace TechStore.Web.Controllers
 
                 if (editableCategory == null)
                 {
-                    // TODO: Custom 404 page
-                    return this.RedirectToAction(nameof(Index));
+                    return NotFound();
                 }
 
                 return this.View(editableCategory);
@@ -164,8 +163,7 @@ namespace TechStore.Web.Controllers
 
                 if (result == false)
                 {
-                    // TODO: Custom 404 page
-                    return this.RedirectToAction(nameof(Index));
+                    return NotFound();
                 }
 
                 return this.RedirectToAction(nameof(Index), new { id = inputModel.Id });
@@ -191,8 +189,7 @@ namespace TechStore.Web.Controllers
 
                 if (categoryToDelete == null)
                 {
-                    //TODO: Custom 404 page
-                    return this.RedirectToAction(nameof(Index));
+                    return NotFound();
                 }
 
                 return this.View(categoryToDelete);
@@ -225,9 +222,7 @@ namespace TechStore.Web.Controllers
                 if (result == false)
                 {
                     this.ModelState.AddModelError(string.Empty, "Fatal error occured while deleting the category!");
-                    // TODO: Implement JS or redirect to Not Found page
-
-                    return this.View(model);
+                    return NotFound();
                 }
 
                 // TODO: Implement Js for success notification

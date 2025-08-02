@@ -24,11 +24,13 @@ namespace TechStore.Web.Controllers
             switch (statusCode)
             {
                 case 401:
-                case 403:
                     return this.View("UnauthorizedError");
+                case 403:
+                    return this.View("ForbiddenError");
                 case 404:
                     return this.View("NotFoundError");
                 case 500:
+                case null:
                     return this.View("InternalServerError");
                 default:
                     return this.View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });

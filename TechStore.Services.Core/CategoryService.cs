@@ -76,6 +76,11 @@ namespace TechStore.Services.Core
                     .AsNoTracking()
                     .SingleOrDefaultAsync(c => c.Id == categoryId);
 
+                if (category == null)
+                {
+                    return null;
+                }
+
                 editableCategory = new CategoryFormInputViewModel()
                 {
                     Id = category.Id,
@@ -98,16 +103,15 @@ namespace TechStore.Services.Core
                 Category? editableCategory = await this.categoryRepository
                 .GetByIdAsync(inputModel.Id);
 
-                if (editableCategory == null)
+                if (editableCategory != null)
                 {
-                    return result;
-                }
-                editableCategory.Id = inputModel.Id;
-                editableCategory.Name = inputModel.Name.Trim();
-                editableCategory.ImageUrl = inputModel.ImageUrl ?? DefaultImageUrl;
+                    editableCategory.Id = inputModel.Id;
+                    editableCategory.Name = inputModel.Name.Trim();
+                    editableCategory.ImageUrl = inputModel.ImageUrl ?? DefaultImageUrl;
+                    await this.categoryRepository.UpdateAsync(editableCategory);
 
-                await this.categoryRepository.UpdateAsync(editableCategory);
-                result = true;
+                    result = true;
+                }
             }
 
             return result;
