@@ -11,12 +11,15 @@ namespace TechStore.Web.Controllers
         private readonly ICategoryService categoryService;
         private readonly IBrandService brandService;
 
+        private readonly ILogger<ProductController> logger;
+
         public ProductController(IProductService productService, ICategoryService categoryService,
-            IBrandService brandService)
+            IBrandService brandService, ILogger<ProductController> logger)
         {
             this.productService = productService;
             this.categoryService = categoryService;
             this.brandService = brandService;
+            this.logger = logger;
         }
 
         [HttpGet]
@@ -36,7 +39,8 @@ namespace TechStore.Web.Controllers
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                logger.LogError(e, "Error in IndexByCategory with categoryId {CategoryId}", categoryId);
+                TempData["ErrorMessage"] = "An unexpected error occurred while loading products from this category.";
                 return this.RedirectToAction(nameof(Index), "Home");
             }
 
@@ -52,6 +56,7 @@ namespace TechStore.Web.Controllers
 
                 if (productDetails == null)
                 {
+                    logger.LogWarning("Product with ID {ProductId} was not found", id);
                     return NotFound();
                 }
 
@@ -59,11 +64,9 @@ namespace TechStore.Web.Controllers
             }
             catch (Exception e)
             {
-                // TODO: Implement it with the ILogger
-                // TODO: Add JS bars
-                Console.WriteLine(e.Message);
-
-                return this.RedirectToAction(nameof(Index));
+                logger.LogError(e, "An error occurred while loading details for product with Id {ProductId}", id);
+                TempData["ErrorMessage"] = "An error occurred while loading the product details. Please try again later.";
+                return this.RedirectToAction(nameof(Index), "Home");
             }
         }
 
@@ -73,6 +76,13 @@ namespace TechStore.Web.Controllers
         {
             try
             {
+                bool categoryExists = await this.categoryService.ExistsAsync(categoryId);
+                if (!categoryExists)
+                {
+                    logger.LogWarning("Attempt to access Add product form with non-existing categoryId: {CategoryId}", categoryId);
+                    return NotFound();
+                }
+
                 ProductFormInputModel inputModel = new ProductFormInputModel()
                 {
                     Categories = await this.categoryService.GetCategoriesDropDownDataAsync(),
@@ -84,11 +94,9 @@ namespace TechStore.Web.Controllers
             }
             catch (Exception e)
             {
-                // TODO: Implement it with the ILogger
-                // TODO: Add JS bars
-                Console.WriteLine(e.Message);
-
-                return this.RedirectToAction(nameof(IndexByCategory));
+                logger.LogError(e, "Error while preparing Add product form for category {CategoryId}!", categoryId);
+                TempData["ErrorMessage"] = "Unable to prepare the Add product form. Please try again later.";
+                return this.RedirectToAction("IndexByCategory", "Product", new { categoryId = categoryId });
             }
         }
 
@@ -100,11 +108,14 @@ namespace TechStore.Web.Controllers
             {
                 if (!this.ModelState.IsValid)
                 {
+                    logger.LogWarning("Attempt by user {UserId} to add product with invalid model state", this.GetUserId());
                     return this.View(inputModel);
                 }
 
                 if (await productService.ExistsByNameAsync(inputModel.Name, inputModel.Id))
                 {
+                    logger.LogWarning("Attempt to add product name that already exists: {ProductName}", inputModel.Name);
+
                     var deletedProduct = await this.productService
                         .GetDeletedProductByNameAsync(inputModel.Name);
 
@@ -126,21 +137,22 @@ namespace TechStore.Web.Controllers
 
                 if (result == false)
                 {
+                    logger.LogWarning("Failed to add product with name: {ProductName} by user {UserId}", inputModel.Name, this.GetUserId());
                     ModelState.AddModelError(string.Empty, "Error occured while adding a product");
                     inputModel.Categories = await categoryService.GetCategoriesDropDownDataAsync();
                     inputModel.Brands = await brandService.GetBrandsDropDownDataAsync();
                     return this.View(inputModel);
                 }
 
+                logger.LogInformation("Product '{ProductName}' successfully added by user {UserId}!", inputModel.Name, this.GetUserId());
+
                 return this.RedirectToAction("IndexByCategory", "Product", new { categoryId = inputModel.CategoryId });
             }
             catch (Exception e)
             {
-                // TODO: Implement it with the ILogger
-                // TODO: Add JS bars
-                Console.WriteLine(e.Message);
-
-                return this.RedirectToAction(nameof(Index));
+                logger.LogError(e, "Exception occurred while adding product '{ProductName}'.", inputModel.Name);
+                TempData["ErrorMessage"] = "An error occurred while adding the product. Please try again.";
+                return this.RedirectToAction("IndexByCategory", "Product", new { categoryId = inputModel.CategoryId });
             }
         }
 
@@ -149,8 +161,10 @@ namespace TechStore.Web.Controllers
         public async Task<IActionResult> Restore(string id)
         {
             ProductFormInputModel? product = await this.productService.GetProductForRestoreByIdAsync(id);
+
             if (product == null)
             {
+                logger.LogWarning("Restore attempt for non-existing product with Id {ProductId} by user {UserId}", id, this.GetUserId());
                 return NotFound();
             }
 
@@ -161,19 +175,26 @@ namespace TechStore.Web.Controllers
         [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> RestoreConfirmed(string id)
         {
-            bool result = await this.productService.RestoreByIdAsync(id);
-
-            var product = await this.productService.GetProductByIdAsync(id);
-            if (result == false)
+            try
             {
-                // TODO: Implement it with the ILogger
-                // TODO: Add JS bars
-                return RedirectToAction("IndexByCategory", new { categoryId = product.CategoryId });
-            }
+                bool result = await this.productService.RestoreByIdAsync(id);
 
-            // TODO: Implement it with the ILogger
-            // TODO: Add JS bars
-            return this.RedirectToAction("IndexByCategory", "Product", new { categoryId = product.CategoryId });
+                var product = await this.productService.GetProductByIdAsync(id);
+                if (result == false)
+                {
+                    logger.LogError("Failed to restore product with Id '{ProductId}'.", id);
+                    return this.RedirectToAction(nameof(Index), "Home");
+                }
+
+                logger.LogInformation("Product with Id {ProductId} was successfully restored by user {UserId}", id, this.GetUserId());
+                return this.RedirectToAction("IndexByCategory", "Product", new { categoryId = product!.CategoryId });
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, "Exception occurred while restoring product with Id {ProductId}!", id);
+                TempData["ErrorMessage"] = "We couldn't restore the product. Please try again later.";
+                return this.RedirectToAction(nameof(Index), "Home");
+            }
         }
 
         [HttpGet]
@@ -186,6 +207,7 @@ namespace TechStore.Web.Controllers
 
                 if (model == null)
                 {
+                    logger.LogWarning("Product with Id {ProductId} was not found", id);
                     return NotFound();
                 }
 
@@ -196,9 +218,9 @@ namespace TechStore.Web.Controllers
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
-
-                return this.RedirectToAction(nameof(Index));
+                logger.LogError(e, "Error while preparing Edit product form for product with Id {ProductId}!", id);
+                TempData["ErrorMessage"] = "An error occurred while preparing the Edit product form.";
+                return this.RedirectToAction(nameof(Index), "Home");
             }
         }
 
@@ -210,6 +232,8 @@ namespace TechStore.Web.Controllers
             {
                 if (!this.ModelState.IsValid)
                 {
+                    logger.LogWarning("Attempt to edit product with Id {ProductId} with invalid model state by user {UserId}", inputModel.Id, this.GetUserId());
+                    ModelState.AddModelError(string.Empty, "Error occured while editing the product.Please review the details and try again.");
                     return this.View(inputModel);
                 }
 
@@ -226,20 +250,19 @@ namespace TechStore.Web.Controllers
 
                 if (result == false)
                 {
+                    logger.LogWarning("Failed to edit product '{ProductName}'!", inputModel.Name);
                     this.ModelState.AddModelError(String.Empty, "Error occured while editing a product");
                     return this.View(inputModel);
                 }
 
+                logger.LogInformation("Product '{ProductName}' successfully edited by user {UserId}", inputModel.Name, this.GetUserId());
                 return this.RedirectToAction(nameof(Details), new { id = inputModel.Id });
-
             }
             catch (Exception e)
             {
-                // TODO: Implement it with the ILogger
-                // TODO: Add JS bars
-                Console.WriteLine(e.Message);
-
-                return this.RedirectToAction(nameof(Index));
+                logger.LogError(e, "Exception occurred while editing product '{ProductName}'!", inputModel.Name);
+                TempData["ErrorMessage"] = "An unexpected error occurred while editing the product. Please try again.";
+                return this.RedirectToAction(nameof(Index), "Home");
             }
         }
 
@@ -256,6 +279,7 @@ namespace TechStore.Web.Controllers
 
                 if (modelForDelete == null)
                 {
+                    logger.LogWarning("Product with Id {ProductId} was not found", id);
                     return NotFound();
                 }
 
@@ -263,10 +287,9 @@ namespace TechStore.Web.Controllers
             }
             catch (Exception e)
             {
-                // TODO: Implement it with the ILogger
-                // TODO: Add JS bars
-                Console.WriteLine(e.Message);
-                return this.RedirectToAction(nameof(Index));
+                logger.LogError(e, "Exception while preparing Delete product form for product with Id {ProductId}!", id);
+                TempData["ErrorMessage"] = "An error occurred while preparing the Delete product page.";
+                return this.RedirectToAction(nameof(Index), "Home");
             }
         }
 
@@ -278,6 +301,7 @@ namespace TechStore.Web.Controllers
             {
                 if (!this.ModelState.IsValid)
                 {
+                    logger.LogWarning("Attempt to delete product {ProductId} with invalid model state by user {UserId}", model.Id, this.GetUserId());
                     ModelState.AddModelError(string.Empty, "Please do not modify the page");
                     return this.View(model);
                 }
@@ -287,18 +311,19 @@ namespace TechStore.Web.Controllers
 
                 if (deleteResult == false)
                 {
+                    logger.LogWarning("Failed to delete product with Id {ProductId} by user {UserId}!", model.Id, this.GetUserId());
                     this.ModelState.AddModelError(string.Empty, "Error occured while deleting the product!");
                     return this.View(model);
                 }
 
+                logger.LogInformation("Product {ProductId} successfully deleted by user {UserId}", model.Id, this.GetUserId());
                 return this.RedirectToAction(nameof(IndexByCategory), new { categoryId = model.CategoryId });
             }
             catch (Exception e)
             {
-                // TODO: Implement it with the ILogger
-                // TODO: Add JS bars
-                Console.WriteLine(e.Message);
-                return this.RedirectToAction(nameof(Index));
+                logger.LogError(e, "Exception occurred while deleting product {ProductId}", model.Id);
+                TempData["ErrorMessage"] = "An error occurred while deleting the product. Please try again.";
+                return this.RedirectToAction(nameof(Index), "Home");
             }
         }
     }

@@ -6,10 +6,10 @@ namespace TechStore.Web.Controllers
 {
     public class HomeController : BaseController
     {
-        private readonly ILogger<HomeController> _logger;
+        private readonly ILogger<HomeController> logger;
         public HomeController(ILogger<HomeController> logger)
         {
-            _logger = logger;
+            this.logger = logger;
         }
 
         [HttpGet]
@@ -21,6 +21,8 @@ namespace TechStore.Web.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error(int? statusCode)
         {
+            logger.LogWarning("Error occurred with status code: {statusCode}", statusCode);
+
             switch (statusCode)
             {
                 case 401:
