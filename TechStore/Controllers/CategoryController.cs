@@ -11,9 +11,14 @@ namespace TechStore.Web.Controllers
     {
         private readonly ICategoryService categoryService;
 
-        public CategoryController(ICategoryService categoryService)
+        private readonly ILogger<CategoryController> logger;
+
+
+        public CategoryController(ICategoryService categoryService,
+            ILogger<CategoryController> logger)
         {
             this.categoryService = categoryService;
+            this.logger = logger;
         }
 
         [HttpGet]
@@ -40,11 +45,13 @@ namespace TechStore.Web.Controllers
             {
                 if (!this.ModelState.IsValid)
                 {
+                    logger.LogWarning("Attempt by user {UserId} to add category with invalid model state.", this.GetUserId());
                     return this.View(inputModel);
                 }
 
                 if (await categoryService.ExistsByNameAsync(inputModel.Name, inputModel.Id))
                 {
+                    logger.LogWarning("Attempt to add category name that already exists - {CategoryName}.", inputModel.Name);
                     var deletedCategory = await this.categoryService
                         .GetDeletedCategoryByNameAsync(inputModel.Name);
 
@@ -63,16 +70,18 @@ namespace TechStore.Web.Controllers
 
                 if (result == false)
                 {
-                    ModelState.AddModelError(string.Empty, "Error occured while adding a category");
+                    logger.LogWarning("Failed to add category with name '{CategoryName}' by user {UserId}.", inputModel.Name, this.GetUserId());
+                    ModelState.AddModelError(string.Empty, "Error occured while adding the category.");
                     return this.View(inputModel);
                 }
 
+                logger.LogInformation("Category '{CategoryName}' successfully added by user {UserId}!", inputModel.Name, this.GetUserId());
                 return this.RedirectToAction(nameof(Index));
             }
             catch (Exception e)
             {
-                //TODO: Implement it with the ILogger
-                Console.WriteLine(e.Message);
+                logger.LogError(e, "Exception occurred while adding category '{CategoryName}'.", inputModel.Name);
+                TempData["ErrorMessage"] = "An error occurred while adding the category. Please try again.";
                 return this.RedirectToAction(nameof(Index));
             }
         }
@@ -85,6 +94,7 @@ namespace TechStore.Web.Controllers
 
             if (category == null)
             {
+                logger.LogWarning("Restore attempt for non-existing category with Id {CategoryId} by user {UserId}", id, this.GetUserId());
                 return NotFound();
             }
 
@@ -95,21 +105,26 @@ namespace TechStore.Web.Controllers
         [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> RestoreConfirmed(int id)
         {
-            bool result = await this.categoryService.RestoreByIdAsync(id);
-
-            if (result == false)
+            try
             {
-                // TODO: Implement it with the ILogger
-                // TODO: Add JS bars
+                bool result = await this.categoryService.RestoreByIdAsync(id);
+
+                if (result == false)
+                {
+                    logger.LogError("Failed to restore category with Id {CategoryId}.", id);
+                    return RedirectToAction(nameof(Index));
+                }
+
+                logger.LogInformation("Category with Id {CategoryId} was successfully restored by user {UserId}.", id, this.GetUserId());
                 return RedirectToAction(nameof(Index));
             }
-
-            // TODO: Implement it with the ILogger
-            // TODO: Add JS bars
-            return RedirectToAction(nameof(Index));
+            catch (Exception e)
+            {
+                logger.LogError(e, "Exception occurred while restoring category with Id {CategoryId}!", id);
+                TempData["ErrorMessage"] = "We couldn't restore the category. Please try again later.";
+                return RedirectToAction(nameof(Index));
+            }
         }
-
-
 
         [HttpGet]
         [Authorize(Roles = "Admin,Manager")]
@@ -122,6 +137,7 @@ namespace TechStore.Web.Controllers
 
                 if (editableCategory == null)
                 {
+                    logger.LogWarning("Category with Id {CategoryId} was not found", categoryId);
                     return NotFound();
                 }
 
@@ -129,10 +145,8 @@ namespace TechStore.Web.Controllers
             }
             catch (Exception e)
             {
-                // TODO: Implement it with the ILogger
-                // TODO: Add JS bars
-                Console.WriteLine(e.Message);
-
+                logger.LogError(e, "Error while preparing Edit category form for category with Id {CategoryId}!", categoryId);
+                TempData["ErrorMessage"] = "An error occurred while preparing the Edit category form.";
                 return this.RedirectToAction(nameof(Index));
             }
         }
@@ -150,6 +164,8 @@ namespace TechStore.Web.Controllers
 
                 if (!this.ModelState.IsValid)
                 {
+                    logger.LogWarning("Attempt to edit category with Id {CategoryId} with invalid model state by user {UserId}.", inputModel.Id, this.GetUserId());
+                    ModelState.AddModelError(string.Empty, "Error occured while editing the category. Please review the details and try again.");
                     return this.View(inputModel);
                 }
 
@@ -163,17 +179,18 @@ namespace TechStore.Web.Controllers
 
                 if (result == false)
                 {
-                    return NotFound();
+                    logger.LogWarning("Failed to edit category '{CategoryName}'!", inputModel.Name);
+                    this.ModelState.AddModelError(String.Empty, "Error occured while editing the category!");
+                    return View(inputModel);
                 }
 
+                logger.LogInformation("Category '{CategoryName}' successfully edited by user {UserId}.", inputModel.Name, this.GetUserId());
                 return this.RedirectToAction(nameof(Index), new { id = inputModel.Id });
             }
             catch (Exception e)
             {
-                // TODO: Implement it with the ILogger
-                // TODO: Add JS bars
-                Console.WriteLine(e.Message);
-
+                logger.LogError(e, "Exception occurred while editing category '{CategoryName}'!", inputModel.Name);
+                TempData["ErrorMessage"] = "An unexpected error occurred while editing the category. Please try again.";
                 return this.RedirectToAction(nameof(Index));
             }
         }
@@ -189,6 +206,7 @@ namespace TechStore.Web.Controllers
 
                 if (categoryToDelete == null)
                 {
+                    logger.LogWarning("Category with Id {CategoryId} was not found!", id);
                     return NotFound();
                 }
 
@@ -196,10 +214,8 @@ namespace TechStore.Web.Controllers
             }
             catch (Exception e)
             {
-                // TODO: Implement it with the ILogger
-                // TODO: Add JS bars 
-                Console.WriteLine(e.Message);
-
+                logger.LogError(e, "Exception while preparing Delete category form for category with Id {CategoryId}!", id);
+                TempData["ErrorMessage"] = "An error occurred while preparing the Delete category form.";
                 return this.RedirectToAction(nameof(Index));
             }
         }
@@ -212,8 +228,9 @@ namespace TechStore.Web.Controllers
             {
                 if (!this.ModelState.IsValid)
                 {
+                    logger.LogWarning("Attempt to delete category with Id {CategoryId} with invalid model state by user {UserId}", model.Id, this.GetUserId());
                     ModelState.AddModelError(string.Empty, "Please do not modify the page");
-                    return this.RedirectToAction(nameof(Index));
+                    return this.View(model);
                 }
 
                 bool result = await this.categoryService
@@ -221,19 +238,18 @@ namespace TechStore.Web.Controllers
 
                 if (result == false)
                 {
-                    this.ModelState.AddModelError(string.Empty, "Fatal error occured while deleting the category!");
-                    return NotFound();
+                    logger.LogWarning("Failed to delete category with Id {CategoryId} by user {UserId}!", model.Id, this.GetUserId());
+                    this.ModelState.AddModelError(string.Empty, "Error occured while deleting the category!");
+                    return this.View(model);
                 }
 
-                // TODO: Implement Js for success notification
+                logger.LogInformation("Category with Id {CategoryId} successfully deleted by user {UserId}.", model.Id, this.GetUserId());
                 return this.RedirectToAction(nameof(Index));
             }
             catch (Exception e)
             {
-                // TODO: Implement it with the ILogger
-                // TODO: Add JS bars
-                Console.WriteLine(e.Message);
-
+                logger.LogError(e, "Exception occurred while deleting category with Id {CategoryId}.", model.Id);
+                TempData["ErrorMessage"] = "An error occurred while deleting the category. Please try again.";
                 return this.RedirectToAction(nameof(Index));
             }
         }
