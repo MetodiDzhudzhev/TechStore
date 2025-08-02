@@ -27,6 +27,12 @@ namespace TechStore.Web.Controllers
         {
             try
             {
+                bool categoryExists = await this.categoryService.ExistsAsync(categoryId);
+                if (!categoryExists)
+                {
+                    logger.LogWarning("Attempt to access IndexByCategory with non-existing categoryId - {CategoryId}", categoryId);
+                    return NotFound();
+                }
                 ProductsByCategoryViewModel? products = await productService
                 .GetProductsByCategoryAsync(categoryId);
 
@@ -79,7 +85,7 @@ namespace TechStore.Web.Controllers
                 bool categoryExists = await this.categoryService.ExistsAsync(categoryId);
                 if (!categoryExists)
                 {
-                    logger.LogWarning("Attempt to access Add product form with non-existing categoryId: {CategoryId}", categoryId);
+                    logger.LogWarning("Attempt to access Add product form with non-existing categoryId - {CategoryId}", categoryId);
                     return NotFound();
                 }
 
@@ -114,7 +120,7 @@ namespace TechStore.Web.Controllers
 
                 if (await productService.ExistsByNameAsync(inputModel.Name, inputModel.Id))
                 {
-                    logger.LogWarning("Attempt to add product name that already exists: {ProductName}", inputModel.Name);
+                    logger.LogWarning("Attempt to add product name that already exists - {ProductName}", inputModel.Name);
 
                     var deletedProduct = await this.productService
                         .GetDeletedProductByNameAsync(inputModel.Name);
@@ -137,7 +143,7 @@ namespace TechStore.Web.Controllers
 
                 if (result == false)
                 {
-                    logger.LogWarning("Failed to add product with name: {ProductName} by user {UserId}", inputModel.Name, this.GetUserId());
+                    logger.LogWarning("Failed to add product with name '{ProductName}' by user {UserId}", inputModel.Name, this.GetUserId());
                     ModelState.AddModelError(string.Empty, "Error occured while adding a product");
                     inputModel.Categories = await categoryService.GetCategoriesDropDownDataAsync();
                     inputModel.Brands = await brandService.GetBrandsDropDownDataAsync();
@@ -182,7 +188,7 @@ namespace TechStore.Web.Controllers
                 var product = await this.productService.GetProductByIdAsync(id);
                 if (result == false)
                 {
-                    logger.LogError("Failed to restore product with Id '{ProductId}'.", id);
+                    logger.LogError("Failed to restore product with Id {ProductId}.", id);
                     return this.RedirectToAction(nameof(Index), "Home");
                 }
 
@@ -233,7 +239,7 @@ namespace TechStore.Web.Controllers
                 if (!this.ModelState.IsValid)
                 {
                     logger.LogWarning("Attempt to edit product with Id {ProductId} with invalid model state by user {UserId}", inputModel.Id, this.GetUserId());
-                    ModelState.AddModelError(string.Empty, "Error occured while editing the product.Please review the details and try again.");
+                    ModelState.AddModelError(string.Empty, "Error occured while editing the product. Please review the details and try again.");
                     return this.View(inputModel);
                 }
 
@@ -251,7 +257,7 @@ namespace TechStore.Web.Controllers
                 if (result == false)
                 {
                     logger.LogWarning("Failed to edit product '{ProductName}'!", inputModel.Name);
-                    this.ModelState.AddModelError(String.Empty, "Error occured while editing a product");
+                    this.ModelState.AddModelError(String.Empty, "Error occured while editing the product!");
                     return this.View(inputModel);
                 }
 
@@ -301,7 +307,7 @@ namespace TechStore.Web.Controllers
             {
                 if (!this.ModelState.IsValid)
                 {
-                    logger.LogWarning("Attempt to delete product {ProductId} with invalid model state by user {UserId}", model.Id, this.GetUserId());
+                    logger.LogWarning("Attempt to delete product with Id {ProductId} with invalid model state by user {UserId}", model.Id, this.GetUserId());
                     ModelState.AddModelError(string.Empty, "Please do not modify the page");
                     return this.View(model);
                 }
@@ -321,7 +327,7 @@ namespace TechStore.Web.Controllers
             }
             catch (Exception e)
             {
-                logger.LogError(e, "Exception occurred while deleting product {ProductId}", model.Id);
+                logger.LogError(e, "Exception occurred while deleting product with Id {ProductId}", model.Id);
                 TempData["ErrorMessage"] = "An error occurred while deleting the product. Please try again.";
                 return this.RedirectToAction(nameof(Index), "Home");
             }
