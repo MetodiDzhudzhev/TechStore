@@ -184,6 +184,11 @@ namespace TechStore.Services.Core
             return await this.categoryRepository.ExistsByNameAsync(name, categoryIdToSkip);
         }
 
+        public async Task<bool> ExistsAsync(int id)
+        {
+            return await this.categoryRepository.ExistsAsync(id);
+        }
+
         public async Task<Category?> GetDeletedCategoryByNameAsync(string name)
         {
             return await this.categoryRepository.GetDeletedCategoryByNameAsync(name);

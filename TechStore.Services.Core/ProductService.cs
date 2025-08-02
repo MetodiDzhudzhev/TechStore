@@ -2,7 +2,6 @@
 using TechStore.Data.Models;
 using TechStore.Data.Repository.Interfaces;
 using TechStore.Services.Core.Interfaces;
-using TechStore.Web.ViewModels.Category;
 using TechStore.Web.ViewModels.Product;
 using static TechStore.GCommon.ApplicationConstants;
 
@@ -298,11 +297,18 @@ namespace TechStore.Services.Core
 
         public async Task<ProductFormInputModel?> GetProductForRestoreByIdAsync(string id)
         {
+            var isIdValid = Guid.TryParse(id, out Guid productId);
+
+            if (!isIdValid)
+            {
+                return null;
+            }
+
             Product? product = await this.productRepository
                 .GetAllAttached()
                 .IgnoreQueryFilters()
                 .AsNoTracking()
-                .FirstOrDefaultAsync(p => p.Id == Guid.Parse(id));
+                .FirstOrDefaultAsync(p => p.Id == productId);
 
             if (product == null)
             {
@@ -326,11 +332,18 @@ namespace TechStore.Services.Core
 
         public async Task<bool> RestoreByIdAsync(string id)
         {
+            var isIdValid = Guid.TryParse(id, out Guid productId);
+
+            if (!isIdValid)
+            {
+                return false;
+            }
+
             Product? product = await this.productRepository
                 .GetAllAttached()
                 .IgnoreQueryFilters()
                 .AsNoTracking()
-                .FirstOrDefaultAsync(p => p.Id == Guid.Parse(id) && p.IsDeleted);
+                .FirstOrDefaultAsync(p => p.Id == productId && p.IsDeleted);
 
             if (product == null)
             {

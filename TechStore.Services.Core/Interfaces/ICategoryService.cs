@@ -21,6 +21,8 @@ namespace TechStore.Services.Core.Interfaces
 
         Task<bool> ExistsByNameAsync(string name, int categoryIdToSkip);
 
+        Task<bool> ExistsAsync(int id);
+
         Task<Category?> GetDeletedCategoryByNameAsync(string name);
 
         Task<CategoryFormInputViewModel?> GetCategoryForRestoreByIdAsync(int id);
