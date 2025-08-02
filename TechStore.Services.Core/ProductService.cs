@@ -38,6 +38,7 @@ namespace TechStore.Services.Core
             IEnumerable<Product> products = await this.productRepository.GetByCategoryAsync(categoryId);
 
             IEnumerable<ProductInCategoryViewModel> result = products
+                .OrderBy(p => p.Name)
                 .Select(p => new ProductInCategoryViewModel
                 {
                     Id = p.Id,
