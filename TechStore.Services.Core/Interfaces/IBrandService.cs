@@ -1,10 +1,13 @@
-﻿using TechStore.Web.ViewModels.Product;
+﻿using TechStore.Web.ViewModels.Brand;
+using TechStore.Web.ViewModels.Product;
 
 namespace TechStore.Services.Core.Interfaces
 {
     public interface IBrandService
     {
         Task<IEnumerable<AddProductBrandDropDownModel>> GetBrandsDropDownDataAsync();
+
+        Task<BrandDetailsViewModel?> GetBrandDetailsViewModelAsync(int? id);
 
     }
 }

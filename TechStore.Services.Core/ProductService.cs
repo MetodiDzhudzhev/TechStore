@@ -92,6 +92,7 @@ namespace TechStore.Services.Core
 
                         Id = currentProduct.Id,
                         Name = currentProduct.Name,
+                        BrandId = currentProduct.BrandId,
                         Brand = currentProduct.Brand.Name,
                         Description = currentProduct.Description,
                         ImageUrl = currentProduct.ImageUrl ?? DefaultImageUrl,

@@ -14,7 +14,15 @@
 
 			<div class="col-md-7">
 				<h2 class="fw-bold text-dark">@Model.Name</h2>
-				<p class="text-secondary fs-5 mb-2"><strong>Brand:</strong> @Model.Brand</p>
+				<p class="text-secondary fs-5 mb-2">
+					<strong>Brand:</strong>
+					<a asp-controller="Brand"
+					   asp-action="Details"
+					   asp-route-id="@Model.BrandId"
+					   class="text-decoration-underline fw-semibold text-primary">
+						@Model.Brand
+					</a>
+				</p>
 
 				<p class="text-body">@Model.Description</p>
 

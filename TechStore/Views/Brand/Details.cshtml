@@ -1,0 +1,38 @@
+﻿@using TechStore.Web.ViewModels.Brand
+@model BrandDetailsViewModel
+
+@{
+	ViewData["Title"] = "Brand Details";
+}
+
+<div class="container mt-5">
+	<div class="card p-4 shadow-lg bg-white text-dark">
+		<div class="row">
+			<div class="col-md-4">
+				@if (!string.IsNullOrWhiteSpace(Model.logoUrl))
+				{
+					<img src="@Model.logoUrl" alt="@Model.Name Logo" class="img-fluid rounded border" />
+				}
+				else
+				{
+					<img src="~/images/default-brand.png" alt="No Logo" class="img-fluid rounded border" />
+				}
+			</div>
+
+			<div class="col-md-8">
+				<h2 class="fw-bold text-dark">@Model.Name</h2>
+
+				@if (!string.IsNullOrWhiteSpace(Model.Description))
+				{
+					<p class="text-body mt-3">@Model.Description</p>
+				}
+				else
+				{
+					<p class="text-muted mt-3 fst-italic">No description available.</p>
+				}
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+	
