@@ -2,53 +2,53 @@
 @model ProductDetailsViewModel
 
 @{
-    ViewData["Title"] = "Product Details";
+	ViewData["Title"] = "Product Details";
 }
 
 <div class="container mt-5">
-    <div class="card p-4 shadow-lg bg-white text-dark">
-        <div class="row">
-            <div class="col-md-5">
-                <img src="@Model.ImageUrl" alt="@Model.Name" class="img-fluid rounded border" />
-            </div>
+	<div class="card p-4 shadow-lg bg-white text-dark">
+		<div class="row">
+			<div class="col-md-5">
+				<img src="@Model.ImageUrl" alt="@Model.Name" class="img-fluid rounded border" />
+			</div>
 
-            <div class="col-md-7">
-                <h2 class="fw-bold text-dark">@Model.Name</h2>
-                <p class="text-secondary fs-5 mb-2"><strong>Brand:</strong> @Model.Brand</p>
+			<div class="col-md-7">
+				<h2 class="fw-bold text-dark">@Model.Name</h2>
+				<p class="text-secondary fs-5 mb-2"><strong>Brand:</strong> @Model.Brand</p>
 
-                <p class="text-body">@Model.Description</p>
+				<p class="text-body">@Model.Description</p>
 
-                <h4 class="text-success mt-3">Price: €@Model.Price</h4>
-                <p class="text-muted">In Stock: @Model.QuantityInStock pcs</p>
+				<h4 class="text-success mt-3">Price: @Model.Price BGN</h4>
+				<p class="text-muted">In Stock: @Model.QuantityInStock pcs</p>
 
-                <div class="d-flex gap-2 mt-4">
-                    <a asp-controller="Product"
-                    asp-action="IndexByCategory"
-                    asp-route-categoryId="@Model.CategoryId"
-                    class="btn btn-secondary">
-                        <i class="bi bi-arrow-left-circle"></i> Back to Products
-                    </a>
+				<div class="d-flex gap-2 mt-4">
+					<a asp-controller="Product"
+					   asp-action="IndexByCategory"
+					   asp-route-categoryId="@Model.CategoryId"
+					   class="btn btn-secondary">
+						<i class="bi bi-arrow-left-circle"></i> Back to Products
+					</a>
 
-                    @if (User?.Identity?.IsAuthenticated == true && (User.IsInRole("Manager") || User.IsInRole("Admin")))
-                    {
-                        <a asp-controller="Product"
-                        asp-action="Edit"
-                        asp-route-id="@Model.Id"
-                        class="btn btn-primary">
-                            <i class="bi bi-pencil-square"></i> Edit
-                        </a>
+					@if (User?.Identity?.IsAuthenticated == true && (User.IsInRole("Manager") || User.IsInRole("Admin")))
+					{
+						<a asp-area="ControlPanel"
+						   asp-controller="ControlPanelProduct"
+						   asp-action="Edit"
+						   asp-route-id="@Model.Id"
+						   class="btn btn-primary">
+							<i class="bi bi-pencil-square"></i> Edit
+						</a>
 
-                        <a asp-controller="Product"
-                        asp-action="Delete"
-                        asp-route-id="@Model.Id"
-                        class="btn btn-danger">
-                            <i class="bi bi-trash-fill"></i> Delete
-                        </a>
-                    }
-                </div>
-
-
-            </div>
-        </div>
-    </div>
+						<a asp-area="ControlPanel"
+						   asp-controller="ControlPanelProduct"
+						   asp-action="Delete"
+						   asp-route-id="@Model.Id"
+						   class="btn btn-danger">
+							<i class="bi bi-trash-fill"></i> Delete
+						</a>
+					}
+				</div>
+			</div>
+		</div>
+	</div>
 </div>

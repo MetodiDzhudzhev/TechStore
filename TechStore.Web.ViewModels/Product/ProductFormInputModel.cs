@@ -24,6 +24,7 @@ namespace TechStore.Web.ViewModels.Product
 
 
         [Required]
+        [Range((double)PriceMinValue, (double)PriceMaxValue)]
         public decimal Price { get; set; }
 
 

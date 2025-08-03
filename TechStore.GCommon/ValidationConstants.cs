@@ -30,6 +30,8 @@
 
             public const int QuantityInStockMinValie = 0;
 
+            public const decimal PriceMinValue = 0.01m;
+            public const decimal PriceMaxValue = 100000.00m;
             public const string PriceSqlType = "decimal(18, 2)";
         }
 
