@@ -9,7 +9,7 @@
 	<h2>@ViewData["Title"]</h2>
 	@if (User?.Identity?.IsAuthenticated == true && (User.IsInRole("Manager") || User.IsInRole("Admin")))
 	{
-		<a asp-controller="Category" asp-action="Add" class="btn btn-primary">
+		<a asp-area="ControlPanel" asp-controller="ControlPanelCategory" asp-action="Add" class="btn btn-primary">
 			<i class="fas fa-plus"></i> Add category
 		</a>
 	}
@@ -42,12 +42,12 @@
 
 						@if (User?.Identity?.IsAuthenticated == true && (User.IsInRole("Manager") || User.IsInRole("Admin")))
 						{
-							<a asp-controller="Category" asp-action="Edit" asp-route-categoryId="@category.Id" class="btn btn-warning w-100">
+							<a asp-area="ControlPanel" asp-controller="ControlPanelCategory" asp-action="Edit" asp-route-categoryId="@category.Id" class="btn btn-warning w-100">
 								<i class="fas fa-edit"></i> Edit
 							</a>
 
 
-							<a asp-controller="Category" asp-action="Delete" asp-route-id="@category.Id" class="btn btn-danger w-100">
+							<a asp-area="ControlPanel" asp-controller="ControlPanelCategory" asp-action="Delete" asp-route-id="@category.Id" class="btn btn-danger w-100">
 								<i class="fas fa-trash-alt"></i> Delete
 							</a>
 						}
