@@ -116,7 +116,8 @@
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="adminDropdown">
                                     <li>
-                                        <a class="dropdown-item" asp-controller="Product" asp-action="IndexByCategory">Manage Products</a>
+                                        <a class="dropdown-item" asp-area="ControlPanel"
+                                           asp-controller="ControlPanelProduct" asp-action="Manage">Manage Products</a>
                                     </li>
                                     <li>
                                         <a class="dropdown-item" asp-controller="Category" asp-action="Index">Manage Categories</a>

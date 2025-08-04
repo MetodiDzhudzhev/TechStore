@@ -13,6 +13,8 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
         private readonly IBrandService brandService;
 
         private readonly ILogger<ControlPanelProductController> logger;
+
+        private const int PageSize = 10;
         public ControlPanelProductController(IProductService productService, ICategoryService categoryService,
             IBrandService brandService, ILogger<ControlPanelProductController> logger)
         {
@@ -24,22 +26,43 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
 
         [HttpGet]
         [Authorize(Roles = "Admin,Manager")]
-        public async Task<IActionResult> Add(int categoryId)
+        public async Task<IActionResult> Add(int? categoryId)
         {
             try
             {
-                bool categoryExists = await this.categoryService.ExistsAsync(categoryId);
-                if (!categoryExists)
+                var categories = await this.categoryService.GetCategoriesDropDownDataAsync();
+
+                int selectedCategoryId;
+
+                if (categoryId.HasValue)
                 {
-                    logger.LogWarning("Attempt to access Add product form with non-existing categoryId - {CategoryId}", categoryId);
-                    return NotFound();
+                    if (categoryId <= 0)
+                    {
+                        logger.LogWarning("Negative categoryId supplied: {CategoryId}", categoryId);
+                        return NotFound();
+                    }
+
+                    bool exists = await this.categoryService.ExistsAsync(categoryId.Value);
+
+                    if (exists)
+                    {
+                        selectedCategoryId = categoryId.Value;
+                    }
+                    else
+                    {
+                        selectedCategoryId = categories.First().Id;
+                    }
+                }
+                else
+                {
+                    selectedCategoryId = categories.First().Id;
                 }
 
                 ProductFormInputModel inputModel = new ProductFormInputModel()
                 {
-                    Categories = await this.categoryService.GetCategoriesDropDownDataAsync(),
+                    Categories = categories,
                     Brands = await this.brandService.GetBrandsDropDownDataAsync(),
-                    CategoryId = categoryId,
+                    CategoryId = selectedCategoryId,
                 };
 
                 return this.View(inputModel);
@@ -62,6 +85,16 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
                 {
                     logger.LogWarning("Attempt by user {UserId} to add product with invalid model state", this.GetUserId());
                     return this.View(inputModel);
+                }
+
+                bool exist = await categoryService.ExistsAsync(inputModel.CategoryId);
+
+                if (inputModel.CategoryId == 0 || exist == false)
+                {
+                    ModelState.AddModelError(nameof(inputModel.CategoryId), "Please select a valid category.");
+                    inputModel.Categories = await categoryService.GetCategoriesDropDownDataAsync();
+                    inputModel.Brands = await brandService.GetBrandsDropDownDataAsync();
+                    return View(inputModel);
                 }
 
                 if (await productService.ExistsByNameAsync(inputModel.Name, inputModel.Id))
@@ -277,6 +310,28 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
                 TempData["ErrorMessage"] = "An error occurred while deleting the product. Please try again.";
                 return this.RedirectToAction(nameof(Index), "Home");
             }
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "Admin,Manager")]
+        public async Task<IActionResult> Manage(int page = 1)
+        {
+            var totalCount = await productService.GetTotalCountAsync();
+            var totalPages = (int)Math.Ceiling((double)totalCount / PageSize);
+
+            if (page < 1) page = 1;
+            if (page > totalPages && totalPages > 0) page = totalPages;
+
+            var products = await productService.GetPagedAsync(page, PageSize);
+
+            var viewModel = new ProductManageListViewModel
+            {
+                Products = products,
+                CurrentPage = page,
+                TotalPages = totalPages
+            };
+
+            return View(viewModel);
         }
     }
 }

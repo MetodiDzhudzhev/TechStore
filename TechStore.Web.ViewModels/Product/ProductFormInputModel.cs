@@ -5,8 +5,8 @@ namespace TechStore.Web.ViewModels.Product
 {
     public class ProductFormInputModel
     {
-        
-        public string? Id { get; set; } 
+
+        public string? Id { get; set; }
 
 
         [Required]
@@ -33,7 +33,7 @@ namespace TechStore.Web.ViewModels.Product
         public int QuantityInStock { get; set; }
 
 
-        [Required]
+        //If selected CategoryId does not exist or it is null -> first CategoryId from the list of categories will be taken.
         public int CategoryId { get; set; }
         public IEnumerable<AddProductCategoryDropDownModel>? Categories { get; set; }
 

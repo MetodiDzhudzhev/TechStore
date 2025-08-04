@@ -1,10 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TechStore.Data.Models;
-using TechStore.Data.Repository;
 using TechStore.Data.Repository.Interfaces;
 using TechStore.Services.Core.Interfaces;
 using TechStore.Web.ViewModels.Product;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using static TechStore.GCommon.ApplicationConstants;
 
 namespace TechStore.Services.Core
@@ -26,7 +24,6 @@ namespace TechStore.Services.Core
             this.brandRepository = brandRepository;
             this.userRepository = userRepository;
         }
-
 
         public async Task<IEnumerable<ProductInCategoryViewModel?>> GetAllProductsByCategoryIdAsync(int categoryId)
         {
@@ -389,6 +386,34 @@ namespace TechStore.Services.Core
                 .GetAllAttached()
                 .AsNoTracking()
                 .FirstOrDefaultAsync(p => p.Id == Guid.Parse(id));
+        }
+
+        public async Task<IEnumerable<ProductManageViewModel>> GetPagedAsync(int page, int pageSize)
+        {
+            IEnumerable<ProductManageViewModel> products = await this.productRepository
+                .GetAllAttached()
+                .OrderByDescending(p => p.Name)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(p => new ProductManageViewModel
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    CategoryName = p.Category.Name,
+                    BrandName = p.Brand.Name,
+                    Price = p.Price,
+                    QuantityInStock = p.QuantityInStock
+                })
+                .ToListAsync();
+
+            return products;
+        }
+        public async Task<int> GetTotalCountAsync()
+        {
+            int countOfProducts = await this.productRepository
+                .CountAsync();
+
+            return countOfProducts;
         }
     }
 }

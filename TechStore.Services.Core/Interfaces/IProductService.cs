@@ -29,6 +29,8 @@ namespace TechStore.Services.Core.Interfaces
         Task<bool> RestoreByIdAsync(string id);
         Task<Product?> GetProductByIdAsync(string id);
 
+        Task<IEnumerable<ProductManageViewModel>> GetPagedAsync(int page, int pageSize);
 
+        Task<int> GetTotalCountAsync();
     }
 }
