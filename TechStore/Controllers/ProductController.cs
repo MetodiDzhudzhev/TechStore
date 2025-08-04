@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TechStore.Services.Core.Interfaces;
 using TechStore.Web.ViewModels.Product;
+using static TechStore.GCommon.ApplicationConstants;
+
 
 namespace TechStore.Web.Controllers
 {
@@ -70,6 +72,21 @@ namespace TechStore.Web.Controllers
                 TempData["ErrorMessage"] = "An error occurred while loading the product details. Please try again later.";
                 return this.RedirectToAction(nameof(Index), "Home");
             }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Search(string query)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                ViewBag.Message = "Please enter a keyword to search.";
+                return View(Enumerable.Empty<ProductInCategoryViewModel>());
+            }
+
+            IEnumerable<ProductInCategoryViewModel?> products = await productService.SearchByKeywordAsync(query);
+
+            ViewBag.Query = query;
+            return View(products);
         }
     }
 }

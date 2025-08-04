@@ -1,8 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TechStore.Data.Models;
+using TechStore.Data.Repository;
 using TechStore.Data.Repository.Interfaces;
 using TechStore.Services.Core.Interfaces;
 using TechStore.Web.ViewModels.Product;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using static TechStore.GCommon.ApplicationConstants;
 
 namespace TechStore.Services.Core
@@ -282,6 +284,29 @@ namespace TechStore.Services.Core
                         result = true;
                     }
                 }
+            }
+
+            return result;
+        }
+
+        public async Task<IEnumerable<ProductInCategoryViewModel?>> SearchByKeywordAsync(string keyword)
+        {
+            IEnumerable<ProductInCategoryViewModel?> result = null;
+
+            IEnumerable<Product?> products = await productRepository.SearchByKeywordAsync(keyword);
+
+            if (products != null)
+            {
+                result = products
+               .OrderBy(p => p.Name)
+               .Select(p => new ProductInCategoryViewModel
+               {
+                   Id = p.Id,
+                   Name = p.Name,
+                   ImageUrl = p.ImageUrl ?? DefaultImageUrl,
+                   Price = p.Price,
+                   QuantityInStock = p.QuantityInStock
+               });
             }
 
             return result;

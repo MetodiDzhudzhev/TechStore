@@ -18,6 +18,8 @@ namespace TechStore.Services.Core.Interfaces
         Task<DeleteProductViewModel?> GetProductForDeleteAsync(string? productId, string userId);
 
         Task<bool> SoftDeleteProductAsync(string userId, DeleteProductViewModel inputModel);
+
+        Task<IEnumerable<ProductInCategoryViewModel?>> SearchByKeywordAsync(string keyword);
         Task<bool> ExistsByNameAsync(string name, string? productIdToSkip);
 
         Task<Product?> GetDeletedProductByNameAsync(string name);

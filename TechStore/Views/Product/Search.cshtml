@@ -1,0 +1,70 @@
+﻿@using TechStore.Web.ViewModels.Product
+@model IEnumerable<ProductInCategoryViewModel>
+
+@{
+	ViewData["Title"] = "Search Results";
+}
+
+<div class="container mt-4">
+	<h2>@ViewData["Title"]</h2>
+
+	@if (!string.IsNullOrWhiteSpace(ViewBag.Query))
+	{
+		<p class="text-muted">Showing results for: <strong>@ViewBag.Query</strong></p>
+	}
+
+	@if (!string.IsNullOrWhiteSpace(ViewBag.Message))
+	{
+		<div class="alert alert-warning mt-3">
+			@ViewBag.Message
+		</div>
+	}
+
+	<hr />
+
+	@if (!Model.Any() && string.IsNullOrWhiteSpace(ViewBag.Message))
+	{
+		<div class="alert alert-info mt-3">
+			No products found matching your search.
+		</div>
+	}
+	else
+	{
+		foreach (var product in Model)
+		{
+			<div class="card bg-light text-dark shadow rounded mb-4 p-3" style="max-width: 100%;">
+				<div class="row g-0 align-items-center">
+					<div class="col-md-4 text-center">
+						<img src="@product.ImageUrl"
+							 alt="@product.Name"
+							 class="img-fluid rounded"
+							 style="max-height: 300px; object-fit: contain;" />
+					</div>
+					<div class="col-md-8">
+						<div class="card-body">
+							<h4 class="card-title fw-bold">@product.Name</h4>
+							<p class="card-text">
+								<strong>Price:</strong> @product.Price.ToString("F2") BGN<br />
+								<strong>Quantity in Stock:</strong> @product.QuantityInStock
+							</p>
+							<a asp-controller="Product"
+							   asp-action="Details"
+							   asp-route-id="@product.Id"
+							   class="btn btn-primary fw-semibold mt-2 px-4 rounded-pill">
+								View Details
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		}
+	}
+
+	<div class="mt-4">
+		<a asp-controller="Home"
+		   asp-action="Index"
+		   class="btn btn-outline-secondary fw-bold px-4 rounded-pill">
+			<i class="fas fa-arrow-left"></i> Back to Home
+		</a>
+	</div>
+</div>

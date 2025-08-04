@@ -62,8 +62,13 @@ namespace TechStore.Data.Repository
         }
 
 
-        public async Task<IEnumerable<Product>> SearchByKeywordAsync(string keyword)
+        public async Task<IEnumerable<Product?>> SearchByKeywordAsync(string keyword)
         {
+            if (string.IsNullOrWhiteSpace(keyword))
+            {
+                return null;
+            }
+
             ICollection<Product> products = await this
                 .GetAllAttached()
                 .AsNoTracking()
