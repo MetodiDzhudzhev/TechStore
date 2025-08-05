@@ -30,6 +30,7 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> Add(CategoryFormInputViewModel inputModel)
         {
@@ -94,6 +95,7 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> RestoreConfirmed(int id)
         {
@@ -144,6 +146,7 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> Edit(CategoryFormInputViewModel inputModel)
         {
@@ -213,6 +216,7 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> Delete(DeleteCategoryViewModel model)
         {

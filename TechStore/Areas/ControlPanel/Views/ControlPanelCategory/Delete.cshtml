@@ -32,6 +32,8 @@
                             <input type="hidden" asp-for="Name" />
                             <input type="hidden" asp-for="ImageUrl" />
 
+                            @Html.AntiForgeryToken()
+
                             <div class="d-flex gap-2 mt-4">
                                 <button type="submit" class="btn btn-danger fw-bold px-4 rounded-pill">
                                     <i class="fas fa-trash-alt"></i> Confirm
