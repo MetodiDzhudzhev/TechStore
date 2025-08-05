@@ -1,0 +1,31 @@
+﻿@using TechStore.Web.ViewModels.Brand
+@model BrandFormInputViewModel
+
+@{
+    ViewData["Title"] = "Restore Brand";
+}
+
+<h2>Restore Brand</h2>
+
+<p>
+    A brand with the name <strong>@Model.Name</strong> already exists, but it is deactivated.<br />
+    Do you want to restore it?
+</p>
+
+@if (!string.IsNullOrWhiteSpace(Model.LogoUrl))
+{
+    <img src="@Model.LogoUrl" alt="@Model.Name" style="max-width: 150px;" class="rounded border border-secondary mb-3" />
+}
+
+<form asp-area="ControlPanel"
+      asp-controller="ControlPanelBrand"
+      asp-action="RestoreConfirmed"
+      asp-route-id="@Model.Id"
+      method="post">
+    <input type="hidden" asp-for="Id" />
+    <button type="submit" class="btn btn-success me-2">Yes, restore</button>
+    <a asp-area="ControlPanel"
+       asp-controller="ControlPanelBrand"
+       asp-action="Add"
+       class="btn btn-secondary">Cancel</a>
+</form>

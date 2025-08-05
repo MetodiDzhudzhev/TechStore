@@ -124,7 +124,8 @@
                                            asp-controller="ControlPanelCategory" asp-action="Manage">Manage Categories</a>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item" asp-controller="Brand" asp-action="Index">Manage Brands</a>
+                                        <a class="dropdown-item" asp-area="ControlPanel"
+                                           asp-controller="ControlPanelBrand" asp-action="Manage">Manage Brands</a>
                                     </li>
                                     @if (User.IsInRole("Manager"))
                                     {
