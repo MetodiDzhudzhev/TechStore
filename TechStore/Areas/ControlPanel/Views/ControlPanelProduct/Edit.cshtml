@@ -13,6 +13,8 @@
 	  method="post" class="mx-auto" style="max-width: 600px;">
 	<input type="hidden" asp-for="Id" />
 
+	@Html.AntiForgeryToken()
+
 	<div class="mb-3">
 		<label asp-for="Name" class="form-label"></label>
 		<input asp-for="Name" class="form-control" />

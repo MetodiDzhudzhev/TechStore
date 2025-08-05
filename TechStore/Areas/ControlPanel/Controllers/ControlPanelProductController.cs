@@ -76,6 +76,7 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> Add(ProductFormInputModel inputModel)
         {
@@ -156,6 +157,7 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> RestoreConfirmed(string id)
         {
@@ -209,6 +211,7 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> Edit(ProductFormInputModel inputModel)
         {
@@ -278,6 +281,7 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> Delete(DeleteProductViewModel model)
         {
