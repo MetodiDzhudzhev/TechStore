@@ -11,12 +11,12 @@ namespace TechStore.Data.Configurations
         {
             entity
              .Property(u => u.FullName)
-                 .IsRequired()
+                 .IsRequired(false)
                  .HasMaxLength(FullNameMaxLength);
 
             entity
                  .Property(u => u.Address)
-                 .IsRequired()
+                 .IsRequired(false)
                  .HasMaxLength(AddressMaxLength);
 
             entity

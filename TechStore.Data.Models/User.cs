@@ -4,8 +4,8 @@ namespace TechStore.Data.Models
 {
     public class User : IdentityUser<Guid>
     {
-        public string FullName { get; set; } = null!;
-        public string Address { get; set; } = null!;
+        public string? FullName { get; set; }
+        public string? Address { get; set; }
 
         public virtual Cart Cart { get; set; } = null!;
 
