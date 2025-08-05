@@ -1,0 +1,54 @@
+﻿@using TechStore.Web.ViewModels.Brand
+@model BrandFormInputViewModel
+
+@{
+    ViewData["Title"] = "Edit Brand";
+}
+
+<h2 class="mt-4 mb-3 text-center">Edit Brand</h2>
+
+<form asp-area="ControlPanel"
+      asp-controller="ControlPanelBrand"
+      asp-action="Edit"
+      method="post"
+      class="col-md-6 offset-md-3">
+
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <input type="hidden" asp-for="Id" />
+
+    <div class="form-group mb-3">
+        <label asp-for="Name" class="form-label"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="LogoUrl" class="form-label">Logo URL (optional)</label>
+        <input asp-for="LogoUrl" class="form-control" />
+        <span asp-validation-for="LogoUrl" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mb-4">
+        <label asp-for="Description" class="form-label"></label>
+        <textarea asp-for="Description" rows="4" class="form-control"></textarea>
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
+
+    <div class="d-flex justify-content-between gap-2">
+        <a asp-area="ControlPanel" 
+        asp-controller="ControlPanelBrand" 
+        asp-action="Manage"
+           class="btn btn-secondary w-50">
+            <i class="bi bi-arrow-left-circle"></i> Back to Brands
+        </a>
+
+        <button type="submit" class="btn btn-primary w-50">
+            <i class="bi bi-save"></i> Save Changes
+        </button>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

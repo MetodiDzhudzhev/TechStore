@@ -12,6 +12,10 @@ namespace TechStore.Services.Core.Interfaces
 
         Task<bool> AddBrandAsync(string userId, BrandFormInputViewModel inputModel);
 
+        Task<BrandFormInputViewModel?> GetEditableBrandByIdAsync(string userId, int? brandId);
+
+        Task<bool> EditBrandAsync(string userId, BrandFormInputViewModel inputModel);
+
         Task<bool> ExistsByNameAsync(string name, int brandIdToSkip);
 
         Task<Brand?> GetDeletedBrandByNameAsync(string name);

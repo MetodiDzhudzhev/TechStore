@@ -38,7 +38,10 @@
                         <td class="align-middle">@brand.Description</td>
                         <td class="align-middle">
                             <div class="d-flex justify-content-center gap-2">
-                                <a asp-action="Edit" asp-route-id="@brand.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+                                <a asp-area="ControlPanel"
+                                   asp-controller="ControlPanelBrand"
+                                   asp-action="Edit"
+                                   asp-route-brandId="@brand.Id" class="btn btn-sm btn-outline-primary">Edit</a>
                                 <a asp-action="Delete" asp-route-id="@brand.Id" class="btn btn-sm btn-outline-danger">Delete</a>
                             </div>
                         </td>

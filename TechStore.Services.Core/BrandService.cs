@@ -83,6 +83,71 @@ namespace TechStore.Services.Core
             return result;
         }
 
+        public async Task<BrandFormInputViewModel?> GetEditableBrandByIdAsync(string userId, int? brandId)
+        {
+
+            if (brandId == null || brandId <= 0)
+            {
+                return null;
+            }
+
+            BrandFormInputViewModel? editableBrand = null;
+
+            User? user = await this.userRepository
+                .GetByIdAsync(Guid.Parse(userId));
+
+            if (user != null)
+            {
+                Brand? brand = await this.brandRepository
+                    .GetAllAttached()
+                    .AsNoTracking()
+                    .SingleOrDefaultAsync(b => b.Id == brandId);
+
+                if (brand == null)
+                {
+                    return null;
+                }
+
+                editableBrand = new BrandFormInputViewModel()
+                {
+                    Id = brand.Id,
+                    Name = brand.Name,
+                    LogoUrl = brand.LogoUrl ?? DefaultImageUrl,
+                    Description = brand.Description,
+                };
+            }
+
+            return editableBrand;
+        }
+
+        public async Task<bool> EditBrandAsync(string userId, BrandFormInputViewModel inputModel)
+        {
+            bool result = false;
+
+            User? user = await this.userRepository
+                .GetByIdAsync(Guid.Parse(userId));
+
+            if (user != null)
+            {
+                Brand? editableBrand = await this.brandRepository
+                .GetByIdAsync(inputModel.Id);
+
+                if (editableBrand != null)
+                {
+                    editableBrand.Id = inputModel.Id;
+                    editableBrand.Name = inputModel.Name.Trim();
+                    editableBrand.LogoUrl = inputModel.LogoUrl ?? DefaultImageUrl;
+                    editableBrand.Description = inputModel.Description;
+
+                    await this.brandRepository.UpdateAsync(editableBrand);
+
+                    result = true;
+                }
+            }
+
+            return result;
+        }
+
         public async Task<BrandFormInputViewModel?> GetBrandForRestoreByIdAsync(int id)
         {
             Brand? brand = await this.brandRepository
