@@ -191,6 +191,65 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
 
         [HttpGet]
         [Authorize(Roles = "Admin,Manager")]
+        public async Task<IActionResult> Delete(int? id)
+        {
+            try
+            {
+                DeleteBrandViewModel? brandToDelete = await this.brandService
+                    .GetBrandForDeleteByIdAsync(this.GetUserId(), id);
+
+                if (brandToDelete == null)
+                {
+                    logger.LogWarning("Brand with Id {BrandId} was not found!", id);
+                    return NotFound();
+                }
+
+                return this.View(brandToDelete);
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, "Exception while preparing Delete brand form for brand with Id {BrandId}!", id);
+                TempData["ErrorMessage"] = "An error occurred while preparing the Delete brand form.";
+                return this.RedirectToAction(nameof(Manage), "ControlPanelBrand");
+            }
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Admin,Manager")]
+        public async Task<IActionResult> Delete(DeleteBrandViewModel model)
+        {
+            try
+            {
+                if (!this.ModelState.IsValid)
+                {
+                    logger.LogWarning("Attempt to delete brand with Id {BrandId} with invalid model state by user {UserId}", model.Id, this.GetUserId());
+                    ModelState.AddModelError(string.Empty, "Please do not modify the page");
+                    return this.View(model);
+                }
+
+                bool result = await this.brandService
+                    .SoftDeleteBrandAsync(this.GetUserId()!, model);
+
+                if (result == false)
+                {
+                    logger.LogWarning("Failed to delete brand with Id {BrandId} by user {UserId}!", model.Id, this.GetUserId());
+                    this.ModelState.AddModelError(string.Empty, "Error occured while deleting the brand!");
+                    return this.View(model);
+                }
+
+                logger.LogInformation("Brand with Id {BrandId} successfully deleted by user {UserId}.", model.Id, this.GetUserId());
+                return this.RedirectToAction(nameof(Manage), "ControlPanelBrand");
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, "Exception occurred while deleting brand with Id {BrandId}.", model.Id);
+                TempData["ErrorMessage"] = "An error occurred while deleting the brand. Please try again.";
+                return this.RedirectToAction(nameof(Manage), "ControlPanelBrand");
+            }
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> Manage(int page = 1)
         {
             int totalCount = await brandService.GetTotalCountAsync();

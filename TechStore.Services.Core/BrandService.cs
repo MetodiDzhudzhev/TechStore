@@ -148,6 +148,54 @@ namespace TechStore.Services.Core
             return result;
         }
 
+        public async Task<DeleteBrandViewModel?> GetBrandForDeleteByIdAsync(string userId, int? brandId)
+        {
+            DeleteBrandViewModel? brandForDeleteViewModel = null;
+
+            User? user = await this.userRepository
+                .GetByIdAsync(Guid.Parse(userId));
+
+            if (user != null && brandId != null)
+            {
+
+                Brand? brand = await this.brandRepository
+                    .GetAllAttached()
+                    .AsNoTracking()
+                    .SingleOrDefaultAsync(b => b.Id == brandId);
+
+                if (brand != null && brand.IsDeleted == false)
+                {
+                    brandForDeleteViewModel = new DeleteBrandViewModel()
+                    {
+                        Id = brand.Id,
+                        Name = brand.Name,
+                        LogoUrl = brand.LogoUrl,
+                        Description = brand.Description,
+                    };
+                }
+            }
+
+            return brandForDeleteViewModel;
+        }
+
+        public async Task<bool> SoftDeleteBrandAsync(string userId, DeleteBrandViewModel deleteModel)
+        {
+            bool result = false;
+
+            User? user = await this.userRepository
+                .GetByIdAsync(Guid.Parse(userId));
+
+            Brand? brandToDelete = await this.brandRepository
+                .GetByIdAsync(deleteModel.Id);
+
+            if (user != null && brandToDelete != null)
+            {
+                result = await this.brandRepository.DeleteAsync(brandToDelete);
+            }
+
+            return result;
+        }
+
         public async Task<BrandFormInputViewModel?> GetBrandForRestoreByIdAsync(int id)
         {
             Brand? brand = await this.brandRepository
