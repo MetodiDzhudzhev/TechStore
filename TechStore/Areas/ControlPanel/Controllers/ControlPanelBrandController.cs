@@ -31,6 +31,7 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> Add(BrandFormInputViewModel inputModel)
         {
@@ -96,6 +97,7 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> RestoreConfirmed(int id)
         {
@@ -146,6 +148,7 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> Edit(BrandFormInputViewModel inputModel)
         {
@@ -215,6 +218,7 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> Delete(DeleteBrandViewModel model)
         {
