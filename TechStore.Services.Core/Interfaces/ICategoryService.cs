@@ -28,5 +28,9 @@ namespace TechStore.Services.Core.Interfaces
         Task<CategoryFormInputViewModel?> GetCategoryForRestoreByIdAsync(int id);
 
         Task<bool> RestoreByIdAsync(int id);
+
+        Task<IEnumerable<CategoryManageViewModel>> GetPagedAsync(int page, int pageSize);
+
+        Task<int> GetTotalCountAsync();
     }
 }

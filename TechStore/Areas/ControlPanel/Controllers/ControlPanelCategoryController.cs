@@ -13,6 +13,8 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
 
         private readonly ILogger<ControlPanelCategoryController> logger;
 
+        private const int PageSize = 4;
+
         public ControlPanelCategoryController(ICategoryService categoryService,
             ILogger<ControlPanelCategoryController> logger)
         {
@@ -242,6 +244,35 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
                 TempData["ErrorMessage"] = "An error occurred while deleting the category. Please try again.";
                 return this.RedirectToAction(nameof(Index), "Category", new { area = "" });
             }
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "Admin,Manager")]
+        public async Task<IActionResult> Manage(int page = 1)
+        {
+            int totalCount = await categoryService.GetTotalCountAsync();
+            int totalPages = (int)Math.Ceiling((double)totalCount / PageSize);
+
+            if (page < 1)
+            {
+                page = 1;
+            }
+
+            if (page > totalPages && totalPages > 0)
+            {
+                page = totalPages;
+            }
+
+            IEnumerable<CategoryManageViewModel> categories = await categoryService.GetPagedAsync(page, PageSize);
+
+            CategoryManageListViewModel viewModel = new CategoryManageListViewModel
+            {
+                Categories = categories,
+                CurrentPage = page,
+                TotalPages = totalPages
+            };
+
+            return View(viewModel);
         }
     }
 }

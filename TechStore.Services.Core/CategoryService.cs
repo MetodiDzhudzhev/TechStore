@@ -236,5 +236,29 @@ namespace TechStore.Services.Core
             return true;
         }
 
+        public async Task<IEnumerable<CategoryManageViewModel>> GetPagedAsync(int page, int pageSize)
+        {
+            IEnumerable<CategoryManageViewModel> categories = await this.categoryRepository
+                .GetAllAttached()
+                .OrderBy(c => c.Name)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(c => new CategoryManageViewModel
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    ImageUrl = c.ImageUrl ?? DefaultImageUrl,
+                })
+                .ToListAsync();
+
+            return categories;
+        }
+        public async Task<int> GetTotalCountAsync()
+        {
+            int countOfCategories = await this.categoryRepository
+                .CountAsync();
+
+            return countOfCategories;
+        }
     }
 }
