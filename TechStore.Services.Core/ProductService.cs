@@ -392,7 +392,7 @@ namespace TechStore.Services.Core
         {
             IEnumerable<ProductManageViewModel> products = await this.productRepository
                 .GetAllAttached()
-                .OrderByDescending(p => p.Name)
+                .OrderBy(p => p.Name)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .Select(p => new ProductManageViewModel

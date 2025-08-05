@@ -316,15 +316,22 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
         [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> Manage(int page = 1)
         {
-            var totalCount = await productService.GetTotalCountAsync();
-            var totalPages = (int)Math.Ceiling((double)totalCount / PageSize);
+            int totalCount = await productService.GetTotalCountAsync();
+            int totalPages = (int)Math.Ceiling((double)totalCount / PageSize);
 
-            if (page < 1) page = 1;
-            if (page > totalPages && totalPages > 0) page = totalPages;
+            if (page < 1)
+            {
+                page = 1;
+            }
 
-            var products = await productService.GetPagedAsync(page, PageSize);
+            if (page > totalPages && totalPages > 0)
+            {
+                page = totalPages;
+            }
 
-            var viewModel = new ProductManageListViewModel
+            IEnumerable<ProductManageViewModel> products = await productService.GetPagedAsync(page, PageSize);
+
+            ProductManageListViewModel viewModel = new ProductManageListViewModel
             {
                 Products = products,
                 CurrentPage = page,
