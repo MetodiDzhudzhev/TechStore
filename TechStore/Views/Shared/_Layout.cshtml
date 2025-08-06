@@ -130,7 +130,8 @@
                                     @if (User.IsInRole("Manager"))
                                     {
                                         <li>
-                                            <a class="dropdown-item" asp-controller="User" asp-action="Index">Manage Users</a>
+                                            <a class="dropdown-item" asp-area="ControlPanel"
+                                               asp-controller="ControlPanelUser" asp-action="Manage">Manage Users</a>
                                         </li>
                                     }
                                 </ul>
