@@ -7,6 +7,7 @@ using static TechStore.GCommon.ValidationConstants.Shared;
 
 namespace TechStore.Web.Areas.ControlPanel.Controllers
 {
+    [Area("ControlPanel")]
     public class ControlPanelBrandController : BaseControlPanelController
     {
         private readonly IBrandService brandService;
