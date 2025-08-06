@@ -1,16 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using MockQueryable.Moq;
 using Moq;
-using MockQueryable.Moq;
 using NUnit.Framework;
-using TechStore.Services;
 using TechStore.Data.Models;
 using TechStore.Data.Repository.Interfaces;
-using TechStore.Web.ViewModels;
-using Microsoft.EntityFrameworkCore;
-using TechStore.Services.Core.Tests;
 using TechStore.Web.ViewModels.Brand;
 
 namespace TechStore.Services.Core.Tests
