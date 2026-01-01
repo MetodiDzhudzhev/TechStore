@@ -84,7 +84,10 @@
         <nav class="navbar navbar-expand-sm navbar-dark-theme border-bottom box-shadow mb-3">
             <div class="container-fluid">
 
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                <a class="navbar-brand" 
+                    asp-area="" 
+                    asp-controller="Home" 
+                    asp-action="Index">
                     <i class="bi bi-cpu"></i> TechStore
                 </a>
 
@@ -100,7 +103,11 @@
 
 
                         <li class="nav-item ms-3">
-                            <form class="d-flex" asp-controller="Product" asp-action="Search" method="get">
+                            <form class="d-flex" 
+                                asp-area="" 
+                                asp-controller="Product" 
+                                asp-action="Search" 
+                                method="get">
                                 <input class="form-control me-2" type="search" placeholder="Search..." name="query" />
                                 <button class="btn btn-outline-secondary" type="submit">
                                     <i class="bi bi-search"></i>
