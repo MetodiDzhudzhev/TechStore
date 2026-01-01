@@ -110,31 +110,13 @@
 
                         @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
                         {
-                            <li class="nav-item dropdown ms-3">
-                                <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <li class="nav-item ms-3">
+                                <a class="nav-link"
+                                   asp-area="ControlPanel"
+                                   asp-controller="Home"
+                                   asp-action="Index">
                                     Control Panel
                                 </a>
-                                <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="adminDropdown">
-                                    <li>
-                                        <a class="dropdown-item" asp-area="ControlPanel"
-                                           asp-controller="ControlPanelProduct" asp-action="Manage">Manage Products</a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" asp-area="ControlPanel"
-                                           asp-controller="ControlPanelCategory" asp-action="Manage">Manage Categories</a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" asp-area="ControlPanel"
-                                           asp-controller="ControlPanelBrand" asp-action="Manage">Manage Brands</a>
-                                    </li>
-                                    @if (User.IsInRole("Manager"))
-                                    {
-                                        <li>
-                                            <a class="dropdown-item" asp-area="ControlPanel"
-                                               asp-controller="ControlPanelUser" asp-action="Manage">Manage Users</a>
-                                        </li>
-                                    }
-                                </ul>
                             </li>
                         }
                     </ul>

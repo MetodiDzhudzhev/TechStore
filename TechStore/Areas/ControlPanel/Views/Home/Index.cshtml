@@ -14,8 +14,10 @@
             <div class="card-body d-flex flex-column text-center">
                 <i class="bi bi-tags-fill text-warning display-4 mb-3"></i>
                 <h5 class="card-title fw-bold">Manage Categories</h5>
-                <p class="card-text text-muted">Add, edit, or delete categories.</p>
-                <a href="@Url.Action("Index", "Category", new { area = "ControlPanel" })"
+                <p class="card-text text-muted">Add, edit or delete categories.</p>
+                <a asp-area="ControlPanel"
+                   asp-controller="ControlPanelCategory"
+                   asp-action="Manage"
                    class="btn btn-warning mt-auto fw-bold">
                     <i class="bi bi-arrow-right-circle"></i> Go to Categories
                 </a>
@@ -27,36 +29,42 @@
             <div class="card-body d-flex flex-column text-center">
                 <i class="bi bi-box-seam text-success display-4 mb-3"></i>
                 <h5 class="card-title fw-bold">Manage Products</h5>
-                <p class="card-text text-muted">Add, edit, or delete products.</p>
-                <a href="@Url.Action("Index", "Product", new { area = "ControlPanel" })"
+                <p class="card-text text-muted">Add, edit or delete products.</p>
+                <a asp-area="ControlPanel"
+                   asp-controller="ControlPanelProduct"
+                   asp-action="Manage"
                    class="btn btn-success mt-auto fw-bold">
                     <i class="bi bi-arrow-right-circle"></i> Go to Products
                 </a>
             </div>
         </div>
 
+        <!-- Manage Brands -->
+        <div class="card bg-dark text-white shadow rounded" style="width: 18rem;">
+            <div class="card-body d-flex flex-column text-center">
+                <i class="bi bi-star-fill text-primary display-4 mb-3"></i>
+                <h5 class="card-title fw-bold">Manage Brands</h5>
+                <p class="card-text text-muted">Add, edit or delete brands.</p>
+                <a asp-area="ControlPanel"
+                   asp-controller="ControlPanelBrand"
+                   asp-action="Manage"
+                   class="btn btn-primary mt-auto fw-bold">
+                    <i class="bi bi-arrow-right-circle"></i> Go to Brands
+                   </a>
+            </div>
+        </div>
+
         @if (User.IsInRole("Manager"))
         {
-            <!-- Manage Brands -->
-            <div class="card bg-dark text-white shadow rounded" style="width: 18rem;">
-                <div class="card-body d-flex flex-column text-center">
-                    <i class="bi bi-star-fill text-primary display-4 mb-3"></i>
-                    <h5 class="card-title fw-bold">Manage Brands</h5>
-                    <p class="card-text text-muted">Add, edit, or delete brands.</p>
-                    <a href="@Url.Action("Index", "Brand", new { area = "ControlPanel" })"
-                       class="btn btn-primary mt-auto fw-bold">
-                        <i class="bi bi-arrow-right-circle"></i> Go to Brands
-                    </a>
-                </div>
-            </div>
-
             <!-- Manage Users -->
             <div class="card bg-dark text-white shadow rounded" style="width: 18rem;">
                 <div class="card-body d-flex flex-column text-center">
                     <i class="bi bi-people-fill text-info display-4 mb-3"></i>
                     <h5 class="card-title fw-bold">Manage Users</h5>
                     <p class="card-text text-muted">Add, edit or remove users and assign roles.</p>
-                    <a href="@Url.Action("Index", "User", new { area = "ControlPanel" })"
+                    <a asp-area="ControlPanel"
+                       asp-controller="ControlPanelUser"
+                       asp-action="Manage"
                        class="btn btn-info mt-auto fw-bold">
                         <i class="bi bi-arrow-right-circle"></i> Go to Users
                     </a>
