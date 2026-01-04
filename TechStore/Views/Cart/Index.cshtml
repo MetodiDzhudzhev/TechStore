@@ -1,0 +1,158 @@
+﻿@model TechStore.Web.ViewModels.Cart.CartViewModel
+
+@{
+    ViewData["Title"] = "My Cart";
+}
+
+<div class="cart-wrapper">
+
+    <h2 class="mb-4">🛒 My Cart</h2>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger cart-alert">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    @if (!Model.Products.Any())
+    {
+        <div class="alert cart-empty-alert mt-3">
+            Your cart is empty.
+        </div>
+    }
+    else
+    {
+        <table class="table cart-table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th style="width: 160px;">Quantity</th>
+                    <th>Total</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var product in Model.Products)
+                {
+                    <tr>
+                        <td>
+                            <a asp-controller="Product"
+                               asp-action="Details"
+                               asp-route-id="@product.ProductId"
+                               title="View product details">
+                                <img src="@product.ImageUrl"
+                                     alt="@product.Name"
+                                     class="cart-product-img" />
+                            </a>
+                        </td>
+
+                        <td>@product.Name</td>
+                        <td>@product.Price.ToString("F2") BGN</td>
+
+                        <td>
+                            <div class="d-flex gap-1 cart-quantity-controls">
+
+                                <form asp-action="Decrease" method="post">
+                                    <input type="hidden" name="productId" value="@product.ProductId" />
+                                    <button class="btn cart-btn-outline-light btn-sm">−</button>
+                                </form>
+
+                                <span class="px-2">@product.Quantity</span>
+
+                                <form asp-action="Add" method="post">
+                                    <input type="hidden" name="productId" value="@product.ProductId" />
+                                    <input type="hidden" name="quantity" value="1" />
+                                    <button class="btn cart-btn-outline-light btn-sm">+</button>
+                                </form>
+                            </div>
+                        </td>
+
+                        <td>@(product.Price* product.Quantity) BGN</td>
+
+                        <td>
+                            <form asp-action="Remove" method="post">
+                                <input type="hidden" name="productId" value="@product.ProductId" />
+                                <button class="btn btn-danger btn-sm">Remove</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <div class="d-flex justify-content-between align-items-center mt-4">
+            <form asp-action="Clear" method="post"
+                  onsubmit="return confirm('Are you sure you want to clear your cart?');">
+                <button type="submit" class="btn btn-danger btn-sm">Clear cart</button>
+            </form>
+
+            <div class="text-end">
+                <h4>Total: <strong>@Model.TotalPrice.ToString("F2") BGN</strong></h4>
+
+                <a asp-controller="Order"
+                   asp-action="Checkout"
+                   class="btn btn-success btn-lg mt-2">
+                    Proceed to checkout
+                </a>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+
+    .cart-wrapper {
+        color: white;
+    }
+
+    .cart-table th,
+    .cart-table td {
+        color: white;
+        vertical-align: middle;
+    }
+
+    .cart-table tbody tr {
+        height: 90px;
+    }
+
+    .cart-product-img {
+        width: 60px;
+        height: auto;
+        cursor: pointer;
+        transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+
+    .cart-product-img:hover {
+        transform: scale(1.1);
+        opacity: 0.85;
+    }
+
+    .cart-btn-outline-light {
+        color: white;
+        border-color: white;
+    }
+
+    .cart-btn-outline-light:hover {
+        background-color: white;
+        color: black;
+    }
+
+    .cart-alert,
+    .cart-empty-alert {
+        color: white;
+    }
+
+    .cart-empty-alert {
+        background-color: #1f2933;
+        border: 1px solid #374151;
+        font-size: 1.05rem;
+    }
+
+    .cart-quantity-controls {
+        gap: 0.5rem;
+    }
+</style>
+

@@ -27,6 +27,20 @@
 				<p class="text-body">@Model.Description</p>
 
 				<h4 class="text-success mt-3">Price: @Model.Price BGN</h4>
+
+				@if (User?.Identity?.IsAuthenticated == true)
+				{
+					<form 
+						asp-controller="Cart" 
+						asp-action="Add" method="post" class="d-inline">
+						<input type="hidden" name="productId" value="@Model.Id" />
+						<input type="number" name="quantity" value="1" min="1" class="form-control d-inline-block w-auto" />
+						<button type="submit" class="btn btn-sm btn-success">
+							<i class="bi bi-cart-plus"></i> Add to Cart
+						</button>
+					</form>
+				}
+
 				<p class="text-muted">In Stock: @Model.QuantityInStock pcs</p>
 
 				<div class="d-flex gap-2 mt-4">
