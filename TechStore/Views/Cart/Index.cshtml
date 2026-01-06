@@ -57,12 +57,15 @@
 
                                 <form asp-action="Decrease" method="post">
                                     <input type="hidden" name="productId" value="@product.ProductId" />
-                                    <button class="btn cart-btn-outline-light btn-sm">−</button>
+                                    <button class="btn cart-btn-outline-light btn-sm"
+                                            @(product.Quantity == 1 ? "disabled" : "")>
+                                        −
+                                    </button>
                                 </form>
 
                                 <span class="px-2">@product.Quantity</span>
 
-                                <form asp-action="Add" method="post">
+                                <form asp-action="Increase" method="post">
                                     <input type="hidden" name="productId" value="@product.ProductId" />
                                     <input type="hidden" name="quantity" value="1" />
                                     <button class="btn cart-btn-outline-light btn-sm">+</button>

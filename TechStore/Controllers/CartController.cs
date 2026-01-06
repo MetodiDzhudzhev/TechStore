@@ -30,29 +30,53 @@ namespace TechStore.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Add(string? productId, int quantity = 1)
+        public async Task<IActionResult> Add(string? productId)
         {
             try
             {
                 string userId = this.GetUserId()!;
-                bool result = await cartService.AddProductAsync(userId, productId, quantity);
+                bool result = await cartService.AddProductAsync(userId, productId);
 
                 if (result == false)
                 {
-                    logger.LogWarning("Failed to add product {ProductId} to cart for user {UserId}!", productId, userId);
+                    logger.LogWarning("Failed to add product with id {ProductId} to cart of user with id {UserId}!", productId, userId);
                     return RedirectToAction(nameof(Index));
                 }
 
-                logger.LogInformation("Product with id'{ProductId}' successfully added to the cart for user {UserId}!", productId, userId);
+                logger.LogInformation("Product with id {ProductId} successfully added to the cart of user with id {UserId}!", productId, userId);
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception e)
             {
-                logger.LogError(e, "Exception occurred while adding product '{ProductId}'.", productId);
+                logger.LogError(e, "Exception occurred while adding product {ProductId}.", productId);
                 TempData["ErrorMessage"] = "An error occurred while adding the product. Please try again.";
                 return RedirectToAction(nameof(Index));
             }
         }
 
+        [HttpPost]
+        public async Task<IActionResult> Increase(string? productId)
+        {
+            try
+            {
+                string userId = this.GetUserId()!;
+                bool result = await cartService.IncreaseProductQuantityAsync(userId, productId);
+
+                if (result == false)
+                {
+                    logger.LogWarning("Failed to increase the quantity of product with id {ProductId} in the cart of user with id {UserId}!", productId, userId);
+                    return RedirectToAction(nameof(Index));
+                }
+
+                logger.LogInformation("Quantity of Product with id {ProductId} in the cart of user with id {UserId} successfully increased by one!", productId, userId);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, "Exception occurred while increasing the quantity of product with id {ProductId}.", productId);
+                TempData["ErrorMessage"] = "An error occurred while increasing the quantity of the product. Please try again.";
+                return RedirectToAction(nameof(Index));
+            }
+        }
     }
 }

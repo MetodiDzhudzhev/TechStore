@@ -5,6 +5,7 @@ namespace TechStore.Services.Core.Interfaces
     public interface ICartService
     {
         Task<CartViewModel?> GetCartAsync(string? id);
-        Task<bool> AddProductAsync(string cartId, string? productId, int quantity);
+        Task<bool> AddProductAsync(string cartId, string? productId);
+        Task<bool> IncreaseProductQuantityAsync(string cartId, string? productId);
     }
 }

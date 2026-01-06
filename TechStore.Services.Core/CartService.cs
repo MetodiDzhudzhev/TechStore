@@ -46,54 +46,116 @@ namespace TechStore.Services.Core
             };
         }
 
-        public async Task<bool> AddProductAsync(string cartId, string? productId, int quantity)
+        public async Task<bool> AddProductAsync(string cartId, string? productId)
         {
-            bool isCartIdValid = Guid.TryParse(cartId, out Guid currentCartId);
+            Cart? cart = await GetValidCartAsync(cartId);
 
-            if (!isCartIdValid)
+            if (cart == null)
             {
                 return false;
             }
 
-            Cart? cart = await this.cartRepository.GetCartWithProductsAsync(currentCartId);
-
-            if (cart == null || quantity <= 0)
-            {
-                return false;
-            }
-
-            bool isProductIdValid = Guid.TryParse(productId, out Guid currentProductId);
-
-            if (!isProductIdValid)
-            {
-                return false;
-            }
-
-            Product? product = await productRepository.GetByIdAsync(currentProductId);
+            Product? product = await GetValidProductAsync(productId);
 
             if (product == null)
             {
                 return false;
             }
 
-            CartProduct? cartProduct = cart.Products.SingleOrDefault(cp => cp.ProductId == currentProductId);
+            CartProduct? cartProduct = cart.Products.SingleOrDefault(cp => cp.ProductId == product.Id);
+
+            int currentQuantityInCart = cartProduct?.Quantity ?? 0;
+
+            if (currentQuantityInCart + 1 > product.QuantityInStock)
+            {
+                return false;
+            }
 
             if (cartProduct == null)
             {
                 cart.Products.Add(new CartProduct
                 {
                     CartId = cart.Id,
-                    ProductId = currentProductId,
-                    Quantity = quantity
+                    ProductId = product.Id,
+                    Quantity = 1
                 });
+
+                await cartRepository.SaveChangesAsync();
+                return true;
             }
             else
             {
-                cartProduct.Quantity += quantity;
+                return await IncreaseProductQuantityAsync(cartId, productId);
+            }
+        }
+
+        public async Task<bool> IncreaseProductQuantityAsync(string cartId, string? productId)
+        {
+            Cart? cart = await GetValidCartAsync(cartId);
+
+            if (cart == null)
+            {
+                return false;
             }
 
+            Product? product = await GetValidProductAsync(productId);
+
+            if (product == null)
+            {
+                return false;
+            }
+
+            CartProduct? cartProduct = cart.Products.SingleOrDefault(cp => cp.ProductId == product.Id);
+
+            if (cartProduct == null)
+            {
+                return await AddProductAsync(cartId, productId);
+            }
+
+            if (cartProduct.Quantity + 1 > product.QuantityInStock)
+            {
+                return false;
+            }
+
+            cartProduct.Quantity += 1;
             await cartRepository.SaveChangesAsync();
             return true;
         }
+
+
+
+        private static Guid? ParseGuidOrNull(string? id)
+        {
+            return Guid.TryParse(id, out Guid result) ? result : null;
+        }
+
+        private async Task<Cart?> GetValidCartAsync(string? cartId)
+        {
+            Guid? validCartId = ParseGuidOrNull(cartId);
+
+            if (validCartId == null)
+            {
+                return null;
+            }
+
+            Cart? cart = await cartRepository.GetCartWithProductsAsync(validCartId.Value);
+
+            return cart;
+        }
+
+        private async Task<Product?> GetValidProductAsync(string? productId)
+        {
+            Guid? validProductId = ParseGuidOrNull(productId);
+
+            if (validProductId == null)
+            {
+                return null;
+            }
+
+            Product? product = await productRepository.GetByIdAsync(validProductId.Value);
+
+            return product;
+        }
+
     }
 }
