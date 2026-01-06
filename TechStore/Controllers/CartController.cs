@@ -103,5 +103,30 @@ namespace TechStore.Web.Controllers
                 return RedirectToAction(nameof(Index));
             }
         }
+
+        [HttpPost]
+        public async Task<IActionResult> Decrease(string? productId)
+        {
+            try
+            {
+                string userId = this.GetUserId()!;
+                bool result = await cartService.DecreaseProductAsync(userId, productId);
+
+                if (result == false)
+                {
+                    logger.LogWarning("Failed to decrease product with id {ProductId} from cart of user with id {UserId}!", productId, userId);
+                    return RedirectToAction(nameof(Index));
+                }
+
+                logger.LogInformation("Product with id {ProductId} was successfully decreased by one from the cart of user with id {UserId}!", productId, userId);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, "Exception occurred while decreasing product with id{ProductId}.", productId);
+                TempData["ErrorMessage"] = "An error occurred while decreasing the product. Please try again.";
+                return RedirectToAction(nameof(Index));
+            }
+        }
     }
 }

@@ -153,6 +153,44 @@ namespace TechStore.Services.Core
             }
         }
 
+        public async Task<bool> DecreaseProductAsync(string cartId, string? productId)
+        {
+            Cart? cart = await GetValidCartAsync(cartId);
+
+            if (cart == null)
+            {
+                return false;
+            }
+
+            Product? product = await GetValidProductAsync(productId);
+
+            if (product == null)
+            {
+                return false;
+            }
+
+            CartProduct? cartProduct = cart.Products.SingleOrDefault(cp => cp.ProductId == product.Id);
+
+            if (cartProduct == null)
+            {
+                return false;
+            }
+            else
+            {
+                if (cartProduct.Quantity > 1)
+                {
+                    cartProduct.Quantity -= 1;
+                }
+                else
+                {
+                    cartProduct.Quantity = 1;
+                }
+
+                await cartRepository.SaveChangesAsync();
+                return true;
+            }
+        }
+
 
 
         private static Guid? ParseGuidOrNull(string? id)
