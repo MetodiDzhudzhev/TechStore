@@ -128,5 +128,31 @@ namespace TechStore.Web.Controllers
                 return RedirectToAction(nameof(Index));
             }
         }
+
+        [HttpPost]
+        public async Task<IActionResult> Clear()
+        {
+            string userId = this.GetUserId()!;
+
+            try
+            {
+                bool result = await cartService.ClearCartAsync(userId);
+
+                if (result == false)
+                {
+                    logger.LogWarning("Failed to clear the cart of user with id {UserId}!", userId);
+                    return RedirectToAction(nameof(Index));
+                }
+
+                logger.LogInformation("The cart of user with id {UserId} has ben cleared succesfully!", userId);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, "Exception occurred while cleaning the cart of user with id {UserId}.", userId);
+                TempData["ErrorMessage"] = "An error occurred while cleaning the cart. Please try again.";
+                return RedirectToAction(nameof(Index));
+            }
+        }
     }
 }

@@ -191,6 +191,21 @@ namespace TechStore.Services.Core
             }
         }
 
+        public async Task<bool> ClearCartAsync(string? cartId)
+        {
+            Cart? cart = await GetValidCartAsync(cartId);
+
+            if (cart == null)
+            {
+                return false;
+            }
+
+            cart.Products.Clear();
+
+            await cartRepository.SaveChangesAsync();
+            return true;
+        }
+
 
 
         private static Guid? ParseGuidOrNull(string? id)
@@ -225,6 +240,5 @@ namespace TechStore.Services.Core
 
             return product;
         }
-
     }
 }
