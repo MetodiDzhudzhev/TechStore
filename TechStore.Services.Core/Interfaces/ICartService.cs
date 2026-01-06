@@ -7,5 +7,6 @@ namespace TechStore.Services.Core.Interfaces
         Task<CartViewModel?> GetCartAsync(string? id);
         Task<bool> AddProductAsync(string cartId, string? productId);
         Task<bool> IncreaseProductQuantityAsync(string cartId, string? productId);
+        Task<bool> RemoveProductAsync(string cartId, string? productId);
     }
 }

@@ -78,5 +78,30 @@ namespace TechStore.Web.Controllers
                 return RedirectToAction(nameof(Index));
             }
         }
+
+        [HttpPost]
+        public async Task<IActionResult> Remove(string? productId)
+        {
+            try
+            {
+                string userId = this.GetUserId()!;
+                bool result = await cartService.RemoveProductAsync(userId, productId);
+
+                if (result == false)
+                {
+                    logger.LogWarning("Failed to remove product with id {ProductId} from cart of user with id {UserId}!", productId, userId);
+                    return RedirectToAction(nameof(Index));
+                }
+
+                logger.LogInformation("Product with id {ProductId} successfully removed from the cart of user with id {UserId}!", productId, userId);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, "Exception occurred while removing product with id {ProductId}.", productId);
+                TempData["ErrorMessage"] = "An error occurred while removing the product. Please try again.";
+                return RedirectToAction(nameof(Index));
+            }
+        }
     }
 }

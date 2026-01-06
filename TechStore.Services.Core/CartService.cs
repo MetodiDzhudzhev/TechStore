@@ -122,6 +122,37 @@ namespace TechStore.Services.Core
             return true;
         }
 
+        public async Task<bool> RemoveProductAsync(string cartId, string? productId)
+        {
+            Cart? cart = await GetValidCartAsync(cartId);
+
+            if (cart == null)
+            {
+                return false;
+            }
+
+            Product? product = await GetValidProductAsync(productId);
+
+            if (product == null)
+            {
+                return false;
+            }
+
+            CartProduct? cartProduct = cart.Products.SingleOrDefault(cp => cp.ProductId == product.Id);
+
+            if (cartProduct == null)
+            {
+                return false;
+            }
+            else
+            {
+                cart.Products.Remove(cartProduct);
+                await cartRepository.SaveChangesAsync();
+
+                return true;
+            }
+        }
+
 
 
         private static Guid? ParseGuidOrNull(string? id)
