@@ -21,6 +21,9 @@ namespace TechStore.Data.Models
         [Comment("Current status of the order")]
         public Status Status { get; set; }    // Pending, Shipped, Delivered, Cancelled 
 
+        [Comment("Payment method for the order")]
+        public PaymentMethod PaymentMethod { get; set; } 
+
 
         [Comment("Foreign key to the User who placed the order")]
         public Guid UserId { get; set; }

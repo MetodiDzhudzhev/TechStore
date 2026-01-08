@@ -27,6 +27,11 @@ namespace TechStore.Data.Configurations
                  .IsRequired();
 
             entity
+                .Property(o => o.PaymentMethod)
+                .HasConversion<string>()
+                .IsRequired();
+
+            entity
                  .HasOne(o => o.User)
                  .WithMany(u => u.Orders)
                  .HasForeignKey(o => o.UserId)
