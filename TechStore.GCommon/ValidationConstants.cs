@@ -42,6 +42,9 @@
 
             public const int ShippingAddressMinLength = 20;
             public const int ShippingAddressMaxLength = 200;
+
+            public const int PhoneNumberMaxLength = 13; // for example +359 XXX XXX XXX
+            public const int EmailMaxLength = 254;
         }
 
         public static class Category
