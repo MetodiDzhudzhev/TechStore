@@ -30,6 +30,9 @@ namespace TechStore.Data.Models
 
         public virtual User User { get; set; } = null!;
 
+        [Comment("The name of the person who will receive the delivery")]
+        public string RecipientName { get; set; } = null!;
+
         public virtual ICollection<OrderProduct> OrdersProducts { get; set; } = new HashSet<OrderProduct>();
 
 

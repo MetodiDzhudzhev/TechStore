@@ -37,6 +37,8 @@
 
         public static class Order
         {
+            public const int RecipientNameMaxLength = 100;
+
             public const int OrderDateLength = 10;
             public const string OrderDateFormat = "dd-MM-yyyy";
 

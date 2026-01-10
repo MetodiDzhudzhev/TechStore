@@ -38,6 +38,11 @@ namespace TechStore.Data.Configurations
                  .OnDelete(DeleteBehavior.NoAction);
 
             entity
+                 .Property(o => o.RecipientName)
+                 .IsRequired()
+                 .HasMaxLength(RecipientNameMaxLength);
+
+            entity
                  .Ignore(o => o.TotalAmount);
 
             entity
