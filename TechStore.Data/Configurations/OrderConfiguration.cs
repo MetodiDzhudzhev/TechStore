@@ -43,6 +43,16 @@ namespace TechStore.Data.Configurations
                  .HasMaxLength(RecipientNameMaxLength);
 
             entity
+                .Property(o => o.PhoneNumber)
+                .IsRequired()
+                .HasMaxLength(PhoneNumberMaxLength);
+
+            entity
+                .Property(o => o.Email)
+                .IsRequired()
+                .HasMaxLength(EmailMaxLength);
+
+            entity
                  .Ignore(o => o.TotalAmount);
 
             entity

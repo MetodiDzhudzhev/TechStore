@@ -33,6 +33,12 @@ namespace TechStore.Data.Models
         [Comment("The name of the person who will receive the delivery")]
         public string RecipientName { get; set; } = null!;
 
+        [Comment("Contact phone number for the delivery")]
+        public string PhoneNumber { get; set; } = null!;
+
+        [Comment("Contact email for the delivery")]
+        public string Email { get; set; } = null!;
+
         public virtual ICollection<OrderProduct> OrdersProducts { get; set; } = new HashSet<OrderProduct>();
 
 
