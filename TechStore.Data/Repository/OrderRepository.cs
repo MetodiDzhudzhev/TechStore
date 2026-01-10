@@ -36,5 +36,14 @@ namespace TechStore.Data.Repository
 
             return orders;
         }
+
+        public async Task<Order?> GetOrderDetailsAsync(Guid userId, long orderId)
+        {
+            return await this
+                .GetAllAttached()
+                .Include(o => o.OrdersProducts)
+                .ThenInclude(op => op.Product)
+                .FirstOrDefaultAsync(o => o.Id == orderId && o.UserId == userId);
+        }
     }
 }

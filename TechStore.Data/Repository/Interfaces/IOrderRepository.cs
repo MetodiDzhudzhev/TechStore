@@ -7,8 +7,7 @@ namespace TechStore.Data.Repository.Interfaces
         : IRepository<Order, long>, IAsyncRepository<Order, long>
     {
         Task<IEnumerable<Order>> GetByUserAsync(Guid userId);
-
         Task<IEnumerable<Order>> GetByStatusAsync(Status status);
-
+        Task<Order?> GetOrderDetailsAsync(Guid userId, long id);
     }
 }
