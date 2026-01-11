@@ -50,6 +50,7 @@ namespace TechStore.Services.Core
                 };
 
                 await this.categoryRepository.AddAsync(category);
+                await this.categoryRepository.SaveChangesAsync();
                 result = true;
             }
 
@@ -108,7 +109,8 @@ namespace TechStore.Services.Core
                     editableCategory.Id = inputModel.Id;
                     editableCategory.Name = inputModel.Name.Trim();
                     editableCategory.ImageUrl = inputModel.ImageUrl ?? DefaultImageUrl;
-                    await this.categoryRepository.UpdateAsync(editableCategory);
+                    this.categoryRepository.Update(editableCategory);
+                    await this.categoryRepository.SaveChangesAsync();
 
                     result = true;
                 }
@@ -158,7 +160,9 @@ namespace TechStore.Services.Core
 
             if (user != null && categoryToDelete != null)
             {
-                result = await this.categoryRepository.DeleteAsync(categoryToDelete);
+                this.categoryRepository.Delete(categoryToDelete);
+                await this.categoryRepository.SaveChangesAsync();
+                result = true;
             }
 
             return result;
@@ -232,7 +236,8 @@ namespace TechStore.Services.Core
 
             category.IsDeleted = false;
 
-            await this.categoryRepository.UpdateAsync(category);
+            this.categoryRepository.Update(category);
+            await this.categoryRepository.SaveChangesAsync();
             return true;
         }
 
