@@ -23,25 +23,21 @@ namespace TechStore.Data.Repository
         public void Add(TEntity item)
         {
             this.DbSet.Add(item);
-            this.DbContext.SaveChanges();
         }
 
         public async Task AddAsync(TEntity item)
         {
             await this.DbSet.AddAsync(item);
-            await this.DbContext.SaveChangesAsync();
         }
 
         public void AddRange(IEnumerable<TEntity> items)
         {
             this.DbSet.AddRange(items);
-            this.DbContext.SaveChanges();
         }
 
         public async Task AddRangeAsync(IEnumerable<TEntity> items)
         {
             await this.DbSet.AddRangeAsync(items);
-            await this.DbContext.SaveChangesAsync();
         }
 
         public int Count()
@@ -56,18 +52,10 @@ namespace TechStore.Data.Repository
                 .CountAsync();
         }
 
-        public bool Delete(TEntity entity)
+        public void Delete(TEntity entity)
         {
             this.PerformSoftDeleteOfEntity(entity);
-
-            return this.Update(entity);
-        }
-
-        public Task<bool> DeleteAsync(TEntity entity)
-        {
-            this.PerformSoftDeleteOfEntity(entity);
-
-            return this.UpdateAsync(entity);
+            this.Update(entity);
         }
 
         public TEntity? FirstOrDefault(Func<TEntity, bool> predicate)
@@ -112,22 +100,10 @@ namespace TechStore.Data.Repository
             return this.DbSet.FindAsync(id);
         }
 
-        public bool HardDelete(TEntity entity)
+        public void HardDelete(TEntity entity)
         {
             this.DbSet.Remove(entity);
-            int changeCounter = this.DbContext.SaveChanges();
-
-            return changeCounter > 0;
         }
-
-        public async Task<bool> HardDeleteAsync(TEntity entity)
-        {
-            this.DbSet.Remove(entity);
-            int changeCounter = await this.DbContext.SaveChangesAsync();
-
-            return changeCounter > 0;
-        }
-
         public void SaveChanges()
         {
             this.DbContext.SaveChanges();
@@ -150,36 +126,16 @@ namespace TechStore.Data.Repository
                 .SingleOrDefaultAsync(predicate);
         }
 
-        public bool Update(TEntity item)
+        public void Update(TEntity item)
         {
-            try
-            {
-                this.DbSet.Attach(item);
-                this.DbSet.Entry(item).State = EntityState.Modified;
-                this.DbContext.SaveChanges();
+            var entry = DbContext.Entry(item);
 
-                return true;
-            }
-            catch (Exception)
+            if (entry.State == EntityState.Detached)
             {
-                return false;
+                DbSet.Attach(item);
             }
-        }
 
-        public async Task<bool> UpdateAsync(TEntity item)
-        {
-            try
-            {
-                this.DbSet.Attach(item);
-                this.DbSet.Entry(item).State = EntityState.Modified;
-                await this.DbContext.SaveChangesAsync();
-
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
+            entry.State = EntityState.Modified;
         }
 
         private void PerformSoftDeleteOfEntity(TEntity entity)

@@ -18,11 +18,11 @@
 
         void AddRange(IEnumerable<TEntity> items);
 
-        bool Delete(TEntity entity);
+        void Delete(TEntity entity);
 
-        bool HardDelete(TEntity entity);
+        void HardDelete(TEntity entity);
 
-        bool Update(TEntity item);
+        void Update(TEntity item);
 
         void SaveChanges();
     }

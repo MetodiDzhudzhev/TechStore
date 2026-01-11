@@ -18,12 +18,6 @@ namespace TechStore.Data.Repository.Interfaces
 
         Task AddRangeAsync(IEnumerable<TEntity> items);
 
-        Task<bool> DeleteAsync(TEntity entity);
-
-        Task<bool> HardDeleteAsync(TEntity entity);
-
-        Task<bool> UpdateAsync(TEntity item);
-
         Task SaveChangesAsync();
     }
 }
