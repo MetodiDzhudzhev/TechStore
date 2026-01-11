@@ -77,6 +77,7 @@ namespace TechStore.Services.Core
                 };
 
                 await this.brandRepository.AddAsync(brand);
+                await this.brandRepository.SaveChangesAsync();
                 result = true;
             }
 
@@ -139,7 +140,8 @@ namespace TechStore.Services.Core
                     editableBrand.LogoUrl = inputModel.LogoUrl ?? DefaultImageUrl;
                     editableBrand.Description = inputModel.Description;
 
-                    await this.brandRepository.UpdateAsync(editableBrand);
+                    this.brandRepository.Update(editableBrand);
+                    await this.brandRepository.SaveChangesAsync();
 
                     result = true;
                 }
@@ -190,7 +192,9 @@ namespace TechStore.Services.Core
 
             if (user != null && brandToDelete != null)
             {
-                result = await this.brandRepository.DeleteAsync(brandToDelete);
+                this.brandRepository.Delete(brandToDelete);
+                await this.brandRepository.SaveChangesAsync();
+                result = true;
             }
 
             return result;
@@ -235,7 +239,8 @@ namespace TechStore.Services.Core
 
             brand.IsDeleted = false;
 
-            await this.brandRepository.UpdateAsync(brand);
+            this.brandRepository.Update(brand);
+            await this.brandRepository.SaveChangesAsync();
             return true;
         }
 
