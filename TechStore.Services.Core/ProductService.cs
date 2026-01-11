@@ -133,6 +133,7 @@ namespace TechStore.Services.Core
                 };
 
                 await this.productRepository.AddAsync(product);
+                await this.productRepository.SaveChangesAsync();
                 result = true;
             }
 
@@ -198,7 +199,8 @@ namespace TechStore.Services.Core
                     product.CategoryId = inputModel.CategoryId;
                     product.BrandId = inputModel.BrandId;
 
-                    await this.productRepository.UpdateAsync(product);
+                    this.productRepository.Update(product);
+                    await this.productRepository.SaveChangesAsync();
                     result = true;
                 }
             }
@@ -276,7 +278,8 @@ namespace TechStore.Services.Core
 
                     if (!hasPendingOrders)
                     {
-                        await this.productRepository.DeleteAsync(product);
+                        this.productRepository.Delete(product);
+                        await this.productRepository.SaveChangesAsync();
 
                         result = true;
                     }
@@ -376,7 +379,8 @@ namespace TechStore.Services.Core
 
             product.IsDeleted = false;
 
-            await this.productRepository.UpdateAsync(product);
+            this.productRepository.Update(product);
+            await this.productRepository.SaveChangesAsync();
             return true;
         }
 
