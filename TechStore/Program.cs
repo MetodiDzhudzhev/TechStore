@@ -5,6 +5,7 @@ using TechStore.Data.Configurations;
 using TechStore.Data.Models;
 using TechStore.Data.Repository;
 using TechStore.Data.Repository.Interfaces;
+using TechStore.Data.UnitOfWork;
 using TechStore.Services.Core;
 using TechStore.Services.Core.Interfaces;
 
@@ -56,6 +57,9 @@ builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ICartRepository, CartRepository>();
+
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IProductService, ProductService>();
