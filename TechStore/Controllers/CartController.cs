@@ -30,12 +30,13 @@ namespace TechStore.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Add(string? productId)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Add(string? productId, int quantity)
         {
             try
             {
                 string userId = this.GetUserId()!;
-                bool result = await cartService.AddProductAsync(userId, productId);
+                bool result = await cartService.AddProductAsync(userId, productId, quantity);
 
                 if (result == false)
                 {
