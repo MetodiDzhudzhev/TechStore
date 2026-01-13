@@ -46,80 +46,15 @@ namespace TechStore.Services.Core
             };
         }
 
-        public async Task<bool> AddProductAsync(string cartId, string? productId)
+        public async Task<bool> AddProductAsync(string cartId, string? productId, int quantity)
         {
-            Cart? cart = await GetValidCartAsync(cartId);
-
-            if (cart == null)
-            {
-                return false;
-            }
-
-            Product? product = await GetValidProductAsync(productId);
-
-            if (product == null)
-            {
-                return false;
-            }
-
-            CartProduct? cartProduct = cart.Products.SingleOrDefault(cp => cp.ProductId == product.Id);
-
-            int currentQuantityInCart = cartProduct?.Quantity ?? 0;
-
-            if (currentQuantityInCart + 1 > product.QuantityInStock)
-            {
-                return false;
-            }
-
-            if (cartProduct == null)
-            {
-                cart.Products.Add(new CartProduct
-                {
-                    CartId = cart.Id,
-                    ProductId = product.Id,
-                    Quantity = 1
-                });
-
-                await cartRepository.SaveChangesAsync();
-                return true;
-            }
-            else
-            {
-                return await IncreaseProductQuantityAsync(cartId, productId);
-            }
+            return await AddQuantityInternalAsync(cartId, productId, quantity);
         }
 
         public async Task<bool> IncreaseProductQuantityAsync(string cartId, string? productId)
         {
-            Cart? cart = await GetValidCartAsync(cartId);
+            return await AddQuantityInternalAsync(cartId, productId, 1);
 
-            if (cart == null)
-            {
-                return false;
-            }
-
-            Product? product = await GetValidProductAsync(productId);
-
-            if (product == null)
-            {
-                return false;
-            }
-
-            CartProduct? cartProduct = cart.Products.SingleOrDefault(cp => cp.ProductId == product.Id);
-
-            if (cartProduct == null)
-            {
-                return await AddProductAsync(cartId, productId);
-            }
-
-            if (cartProduct.Quantity + 1 > product.QuantityInStock)
-            {
-                return false;
-            }
-
-            cartProduct.Quantity += 1;
-            await cartRepository.SaveChangesAsync();
-            return true;
         }
 
         public async Task<bool> RemoveProductAsync(string cartId, string? productId)
@@ -201,6 +136,53 @@ namespace TechStore.Services.Core
             }
 
             cart.Products.Clear();
+
+            await cartRepository.SaveChangesAsync();
+            return true;
+        }
+
+        private async Task<bool> AddQuantityInternalAsync(string cartId, string? productId, int quantityToAdd)
+        {
+            if (quantityToAdd < 1)
+            {
+                return false;
+            }
+
+            Cart? cart = await GetValidCartAsync(cartId);
+            if (cart == null)
+            {
+                return false;
+            }
+
+            Product? product = await GetValidProductAsync(productId);
+            if (product == null)
+            {
+                return false;
+            }
+
+            CartProduct? cartProduct = cart.Products
+                .SingleOrDefault(cp => cp.ProductId == product.Id);
+
+            int currentQuantity = cartProduct?.Quantity ?? 0;
+
+            if (currentQuantity + quantityToAdd > product.QuantityInStock)
+            {
+                return false;
+            }
+
+            if (cartProduct == null)
+            {
+                cart.Products.Add(new CartProduct
+                {
+                    CartId = cart.Id,
+                    ProductId = product.Id,
+                    Quantity = quantityToAdd
+                });
+            }
+            else
+            {
+                cartProduct.Quantity += quantityToAdd;
+            }
 
             await cartRepository.SaveChangesAsync();
             return true;
