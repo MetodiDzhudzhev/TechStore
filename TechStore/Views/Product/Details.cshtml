@@ -34,7 +34,7 @@
 						asp-controller="Cart" 
 						asp-action="Add" method="post" class="d-inline">
 						<input type="hidden" name="productId" value="@Model.Id" />
-						<input type="number" name="quantity" value="1" min="1" class="form-control d-inline-block w-auto" />
+						<input type="number" name="quantity" value="1" min="1" max="@Model.QuantityInStock" class="form-control d-inline-block w-auto" />
 						<button type="submit" class="btn btn-sm btn-success">
 							<i class="bi bi-cart-plus"></i> Add to Cart
 						</button>
