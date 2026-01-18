@@ -53,6 +53,14 @@ namespace TechStore.Data.Configurations
                 .HasMaxLength(EmailMaxLength);
 
             entity
+                .Property(o => o.StripeSessionId)
+                .IsRequired(false)
+                .HasMaxLength(StripeSessionIdMaxLength);
+
+            entity
+                .HasIndex(o => o.StripeSessionId);
+
+            entity
                  .Ignore(o => o.TotalAmount);
 
             entity

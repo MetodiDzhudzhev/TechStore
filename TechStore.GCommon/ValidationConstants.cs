@@ -47,6 +47,8 @@
 
             public const int PhoneNumberMaxLength = 13; // for example +359 XXX XXX XXX
             public const int EmailMaxLength = 254;
+
+            public const int StripeSessionIdMaxLength = 255;
         }
 
         public static class Category
