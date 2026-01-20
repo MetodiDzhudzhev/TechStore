@@ -1,0 +1,33 @@
+﻿@model long
+
+@{
+    ViewData["Title"] = "Order Confirmed";
+}
+
+<div class="container mt-5">
+    <div class="card p-4 shadow-lg bg-white text-dark">
+        <h2 class="fw-bold text-success mb-3">
+            Order <strong>#@Model</strong> has been successfully placed.
+        </h2> 
+
+        <p class="fst-italic fs-5 text-secondary mt-4 mb-4">
+            Thank you for shopping with us!
+        </p>
+
+        <div class="d-flex gap-2">
+            <a 
+                asp-controller="Category" 
+                asp-action="Index" 
+                class="btn btn-primary">
+                Continue Shopping
+            </a>
+
+            <a 
+                asp-controller="Order" 
+                asp-action="MyOrders" 
+                class="btn btn-outline-dark">
+                View My Orders
+            </a>
+        </div>
+    </div>
+</div>

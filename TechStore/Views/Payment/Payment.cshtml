@@ -1,0 +1,48 @@
+﻿@model TechStore.Web.ViewModels.Payment.PaymentSummaryViewModel
+
+<div class="container mt-5">
+    <div class="card p-4 shadow-lg bg-white text-dark">
+        <h2 class="fw-bold text-dark mb-3">Payment</h2>
+
+        <p class="text-secondary fs-5 mb-2">
+            <strong>Order #</strong> @Model.OrderId
+        </p>
+
+        <p class="text-body mb-2">
+            <strong>Recipient:</strong><br />
+            @Model.RecipientName
+        </p>
+
+        <p class="text-body mb-2">
+            <strong>Email:</strong><br />
+            @Model.Email
+        </p>
+
+        <p class="text-body mb-2">
+            <strong>Shipping Address:</strong><br />
+            @Model.ShippingAddress
+        </p>
+
+        <h4 class="text-success mt-3 mb-4">
+            Total: @Model.TotalAmount.ToString("F2") €
+        </h4>
+
+        <div class="d-flex gap-2 flex-wrap">
+            <form asp-controller="Payment" asp-action="CreateCheckoutSession" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="orderId" value="@Model.OrderId" />
+                <button type="submit" class="btn btn-primary btn-lg">
+                    Pay with card
+                </button>
+            </form>
+
+            <form asp-controller="Payment" asp-action="ConfirmCashOnDelivery" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="orderId" value="@Model.OrderId" />
+                <button type="submit" class="btn btn-outline-dark btn-lg">
+                    Cash on delivery
+                </button>
+            </form>
+        </div>
+    </div>
+</div>

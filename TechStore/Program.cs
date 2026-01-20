@@ -9,6 +9,8 @@ using TechStore.Data.UnitOfWork;
 using TechStore.Services.Core;
 using TechStore.Services.Core.Interfaces;
 
+using Stripe;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -61,10 +63,33 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
-builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IProductService, TechStore.Services.Core.ProductService>();
 builder.Services.AddScoped<IBrandService, BrandService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICartService, CartService>();
+
+var stripeSecretKey = builder.Configuration["Stripe:SecretKey"];
+
+if (string.IsNullOrWhiteSpace(stripeSecretKey))
+{
+    if (builder.Environment.IsDevelopment())
+    {
+        builder.Logging.AddConsole();
+        Console.WriteLine("Stripe SecretKey is missing. Payments are disabled.");
+    }
+    else
+    {
+        throw new InvalidOperationException(
+            "Stripe integration is present but not configured. " +
+            "Please set Stripe:SecretKey in environment variables."
+        );
+    }
+}
+else
+{
+    StripeConfiguration.ApiKey = stripeSecretKey;
+}
+
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
