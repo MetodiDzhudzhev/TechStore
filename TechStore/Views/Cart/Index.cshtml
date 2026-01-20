@@ -50,7 +50,7 @@
                         </td>
 
                         <td>@product.Name</td>
-                        <td>@product.Price.ToString("F2") BGN</td>
+                        <td>@product.Price.ToString("F2") €</td>
 
                         <td>
                             <div class="d-flex gap-1 cart-quantity-controls">
@@ -73,7 +73,7 @@
                             </div>
                         </td>
 
-                        <td>@(product.Price* product.Quantity) BGN</td>
+                        <td>@(product.Price* product.Quantity) €</td>
 
                         <td>
                             <form asp-action="Remove" method="post">
@@ -93,7 +93,7 @@
             </form>
 
             <div class="text-end">
-                <h4>Total: <strong>@Model.TotalPrice.ToString("F2") BGN</strong></h4>
+                <h4>Total: <strong>@Model.TotalPrice.ToString("F2") €</strong></h4>
 
                 <a asp-controller="Order"
                    asp-action="Checkout"
