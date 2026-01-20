@@ -19,7 +19,7 @@ namespace TechStore.Data.Models
 
 
         [Comment("Current status of the order")]
-        public Status Status { get; set; }    // Pending, Shipped, Delivered, Cancelled 
+        public Status Status { get; set; }
 
         [Comment("Payment method for the order")]
         public PaymentMethod PaymentMethod { get; set; } 
@@ -44,5 +44,8 @@ namespace TechStore.Data.Models
 
         [Comment("Total amount for the order")]
         public decimal TotalAmount => OrdersProducts.Sum(op => op.UnitPrice * op.Quantity);
+
+        [Comment("Stripe session identifier")]
+        public string? StripeSessionId { get; set; }
     }
 }
