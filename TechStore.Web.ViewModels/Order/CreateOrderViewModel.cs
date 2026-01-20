@@ -1,31 +1,27 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using static TechStore.GCommon.ValidationConstants.User;
 using static TechStore.GCommon.ValidationConstants.Order;
 
 namespace TechStore.Web.ViewModels.Order
 {
-    public class OrderDeliveryDetailsViewModel
+    public class CreateOrderViewModel
     {
         [Required]
-        [MaxLength(FullNameMaxLength)]
-        [Display(Name = "Recipient name")]
+        [MaxLength(RecipientNameMaxLength)]
         public string RecipientName { get; set; } = null!;
 
         [Required]
         [MaxLength(ShippingAddressMaxLength)]
-        [Display(Name = "Shipping address")]
         public string ShippingAddress { get; set; } = null!;
 
         [Required]
         [MaxLength(PhoneNumberMaxLength)]
         [Phone]
-        [Display(Name = "Phone number")]
         public string PhoneNumber { get; set; } = null!;
 
         [Required]
         [MaxLength(EmailMaxLength)]
         [EmailAddress]
-        [Display(Name = "Email address")]
         public string Email { get; set; } = null!;
     }
+
 }

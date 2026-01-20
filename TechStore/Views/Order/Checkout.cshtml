@@ -1,0 +1,50 @@
+﻿@model TechStore.Web.ViewModels.Order.OrderDeliveryDetailsViewModel
+
+@{
+    ViewData["Title"] = "Delivery Details";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <h2 class="text-center mb-4">Delivery details</h2>
+
+            <form asp-action="Checkout" method="post">
+                <div class="form-group mb-3">
+                    <label asp-for="RecipientName" class="form-label"></label>
+                    <input asp-for="RecipientName" class="form-control" />
+                    <span asp-validation-for="RecipientName" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="PhoneNumber" class="form-label"></label>
+                    <input asp-for="PhoneNumber" class="form-control" />
+                    <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Email" class="form-label"></label>
+                    <input asp-for="Email" class="form-control" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-4">
+                    <label asp-for="ShippingAddress" class="form-label"></label>
+                    <input asp-for="ShippingAddress" class="form-control" />
+                    <span asp-validation-for="ShippingAddress" class="text-danger"></span>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a asp-controller="Cart" asp-action="Index" class="btn btn-secondary">
+                        Back to Cart
+                    </a>
+                    <button type="submit" class="btn btn-primary">Proceed to Payment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
