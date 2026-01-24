@@ -5,7 +5,9 @@ using TechStore.Data.Repository.Interfaces;
 using TechStore.Data.UnitOfWork;
 using TechStore.Services.Core.Interfaces;
 using TechStore.Web.ViewModels.Order;
+using TechStore.Web.ViewModels.OrderProduct;
 using TechStore.Web.ViewModels.Payment;
+using static TechStore.GCommon.ValidationConstants.Order;
 
 namespace TechStore.Services.Core
 {
@@ -274,6 +276,66 @@ namespace TechStore.Services.Core
 
             await orderRepository.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<MyOrdersViewModel> GetMyOrdersPagedAsync(Guid userId, int page, int pageSize)
+        {
+            if (page < 1)
+            {
+                page = 1;
+            }
+
+            if (pageSize < 1)
+            {
+                pageSize = 5;
+            }
+
+            int totalCount = await orderRepository.GetCountByUserAsync(userId);
+            int totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+            if (totalPages == 0)
+            {
+                return new MyOrdersViewModel
+                {
+                    Orders = new List<OrderDetailsViewModel>(),
+                    CurrentPage = 1,
+                    TotalPages = 0
+                };
+            }
+
+            if (page > totalPages)
+            {
+                page = totalPages;
+            }
+
+            IReadOnlyList<Order> orders = await orderRepository.GetPagedByUserAsync(userId, page, pageSize);
+
+            List<OrderDetailsViewModel> mappedOrders = orders.Select(o => new OrderDetailsViewModel
+            {
+                Id = o.Id,
+                RecipientName = o.RecipientName,
+                Date = o.OrderDate.ToString(OrderDateFormat),
+                Status = o.Status.ToString(),
+                ShippingAddress = o.ShippingAddress,
+                PaymentMethod = o.PaymentMethod.ToString(),
+                PhoneNumber = o.PhoneNumber,
+                Email = o.Email,
+                Products = o.OrdersProducts.Select(op => new OrderProductDetailsViewModel
+                {
+                    ProductName = op.Product.Name,
+                    Description = op.Product.Description,
+                    ImageUrl = op.Product.ImageUrl,
+                    Price = op.UnitPrice,
+                    Quantity = op.Quantity,
+                }).ToList()
+            }).ToList();
+
+            return new MyOrdersViewModel
+            {
+                Orders = mappedOrders,
+                CurrentPage = page,
+                TotalPages = totalPages
+            };
         }
     }
 }

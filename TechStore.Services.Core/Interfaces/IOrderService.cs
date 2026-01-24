@@ -14,5 +14,6 @@ namespace TechStore.Services.Core.Interfaces
         Task<List<OrderProduct>?> GetOrderProductsAsync(string userId, long orderId);
         Task MarkOrderAsPaidByOrderIdAsync(long orderId);
         Task<bool> MarkOrderAsCashOnDeliveryAsync(string userId, long orderId);
+        Task<MyOrdersViewModel> GetMyOrdersPagedAsync(Guid userId, int page, int pageSize);
     }
 }

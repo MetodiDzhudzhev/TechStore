@@ -45,5 +45,40 @@ namespace TechStore.Data.Repository
                 .ThenInclude(op => op.Product)
                 .FirstOrDefaultAsync(o => o.Id == orderId && o.UserId == userId);
         }
+
+        public async Task<IReadOnlyList<Order>> GetPagedByUserAsync(Guid userId, int page, int pageSize)
+        {
+            if (page < 1)
+            {
+                page = 1;
+            }
+
+            if (pageSize < 1)
+            {
+                pageSize = 5;
+            }
+
+            int skip = (page - 1) * pageSize;
+
+            return await this
+                .GetAllAttached()
+                .AsNoTracking()
+                .Where(o => o.UserId == userId)
+                .OrderByDescending(o => o.OrderDate)
+                .Skip(skip)
+                .Take(pageSize)
+                .Include(o => o.OrdersProducts)
+                .ThenInclude(op => op.Product)
+                .ToListAsync();
+        }
+
+        public async Task<int> GetCountByUserAsync(Guid userId)
+        {
+            return await this
+                .GetAllAttached()
+                .AsNoTracking()
+                .Where(o => o.UserId == userId)
+                .CountAsync();
+        }
     }
 }
