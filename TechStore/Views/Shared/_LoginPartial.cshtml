@@ -14,10 +14,57 @@
             </a>
         </li>
 
-        <li class="nav-item">
-            <span class="nav-link text-dark" 
-            title="Manage">Hello @User.Identity?.Name!
-            </span>
+        <li class="nav-item dropdown me-2">
+            <a class="nav-link text-light d-flex align-items-center"
+               href="#"
+               id="profileDropdown"
+               role="button"
+               data-bs-toggle="dropdown"
+               aria-expanded="false"
+               title="My profile">
+                <i class="bi bi-person-circle fs-5"></i>
+            </a>
+
+            <ul class="dropdown-menu dropdown-menu-end"
+                aria-labelledby="profileDropdown">
+
+                <li class="dropdown-header text-muted small">
+                    Signed in as<br />
+                    <strong>@User.Identity?.Name</strong>
+                </li>
+
+                <li><hr class="dropdown-divider" /></li>
+
+                <li>
+                    <a class="dropdown-item"
+                       asp-area="Account"
+                       asp-controller="Account"
+                       asp-action="MyOrders">
+                        <i class="bi bi-receipt me-2"></i>
+                        My orders
+                    </a>
+                </li>
+
+                <li>
+                    <a class="dropdown-item"
+                       asp-area="Account"
+                       asp-controller="Account"
+                       asp-action="MyReviews">
+                        <i class="bi bi-star me-2"></i>
+                        My reviews
+                    </a>
+                </li>
+
+                <li>
+                    <a class="dropdown-item"
+                       asp-area="Account"
+                       asp-controller="Account"
+                       asp-action="DeliveryAddresses">
+                        <i class="bi bi-geo-alt me-2"></i>
+                        Delivery addresses
+                    </a>
+                </li>
+            </ul>
         </li>
 
         <li class="nav-item">
