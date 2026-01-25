@@ -9,5 +9,8 @@ namespace TechStore.Services.Core.Interfaces
 
         Task<IEnumerable<UserManageViewModel>> GetPagedAsync(int page, int pageSize, Guid currentUserId);
         Task<int> GetTotalCountAsync();
+
+        Task<DeliveryDetailsViewModel> GetDeliveryDetailsAsync(Guid userId);
+        Task<bool> UpdateDeliveryDetailsAsync(Guid userId, DeliveryDetailsViewModel model);
     }
 }

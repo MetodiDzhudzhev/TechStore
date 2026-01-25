@@ -79,5 +79,38 @@ namespace TechStore.Services.Core
 
             return countOfUsers;
         }
+
+        public async Task<DeliveryDetailsViewModel> GetDeliveryDetailsAsync(Guid userId)
+        {
+            User? user = await userManager.FindByIdAsync(userId.ToString());
+            if (user == null)
+            {
+                throw new InvalidOperationException($"User not found: {userId}");
+            }
+
+            return new DeliveryDetailsViewModel
+            {
+                FullName = user.FullName ?? string.Empty,
+                Address = user.Address ?? string.Empty,
+                PhoneNumber = user.PhoneNumber ?? string.Empty
+            };
+        }
+
+        public async Task<bool> UpdateDeliveryDetailsAsync(Guid userId, DeliveryDetailsViewModel model)
+        {
+            User? user = await userManager.FindByIdAsync(userId.ToString());
+
+            if (user == null)
+            {
+                return false;
+            }
+
+            user.FullName = model.FullName.Trim();
+            user.Address = model.Address.Trim();
+            user.PhoneNumber = model.PhoneNumber.Trim();
+
+            IdentityResult result = await userManager.UpdateAsync(user);
+            return result.Succeeded;
+        }
     }
 }

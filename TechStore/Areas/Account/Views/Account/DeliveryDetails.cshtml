@@ -1,0 +1,89 @@
+﻿@using TechStore.Web.ViewModels.User
+@model DeliveryDetailsViewModel
+
+<div class="container mt-5">
+    <div class="card p-4 shadow-lg bg-white text-dark mx-auto"
+         style="max-width: 720px;">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="fw-bold text-dark mb-0">Delivery details</h2>
+
+            <button type="button" class="btn btn-outline-dark btn-lg" id="editBtn">
+                Edit
+            </button>
+        </div>
+
+        <p class="text-secondary fs-6 mb-4">
+            Update your default delivery details. You can also enter details manually during checkout.
+        </p>
+
+        <form 
+            asp-area="Account" 
+            asp-controller="Account" 
+            asp-action="DeliveryDetails" method="post" id="deliveryForm">
+            @Html.AntiForgeryToken()
+
+            <div class="mb-3">
+                <label asp-for="FullName" class="form-label fw-semibold"></label>
+                <input asp-for="FullName"
+                       class="form-control form-control-lg editable"
+                       readonly
+                       placeholder="Not specified" />
+                <span asp-validation-for="FullName" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Address" class="form-label fw-semibold"></label>
+                <input asp-for="Address"
+                       class="form-control form-control-lg editable"
+                       readonly
+                       placeholder="Not specified" />
+                <span asp-validation-for="Address" class="text-danger"></span>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="PhoneNumber" class="form-label fw-semibold"></label>
+                <input asp-for="PhoneNumber"
+                       class="form-control form-control-lg editable"
+                       readonly
+                       placeholder="Not specified" />
+                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+            </div>
+
+            <div class="d-flex gap-2 flex-wrap">
+                <button type="submit" class="btn btn-primary btn-lg" id="saveBtn" disabled>
+                    Save
+                </button>
+
+                <a 
+                    asp-area="Account" 
+                    asp-controller="Account" 
+                    asp-action="DeliveryDetails"
+                   class="btn btn-outline-dark btn-lg"
+                   id="cancelBtn"
+                   style="display:none;">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        const editBtn = document.getElementById("editBtn");
+        const saveBtn = document.getElementById("saveBtn");
+        const cancelBtn = document.getElementById("cancelBtn");
+        const inputs = document.querySelectorAll(".editable");
+
+        function enableEditMode() {
+            inputs.forEach(i => i.removeAttribute("readonly"));
+            saveBtn.removeAttribute("disabled");
+            cancelBtn.style.display = "inline-block";
+            editBtn.setAttribute("disabled", "disabled");
+        }
+
+        editBtn.addEventListener("click", enableEditMode);
+    </script>
+}
