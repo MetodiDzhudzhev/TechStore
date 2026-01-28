@@ -61,7 +61,7 @@ namespace TechStore.Services.Core
             }
 
             int totalCount = await reviewRepository.GetCountByProductAsync(productId);
-            int totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+            int totalPages = Math.Max(1, (int)Math.Ceiling(totalCount / (double)pageSize));
 
             if (page > totalPages)
             {
