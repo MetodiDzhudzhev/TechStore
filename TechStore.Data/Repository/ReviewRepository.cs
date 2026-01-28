@@ -6,7 +6,7 @@ namespace TechStore.Data.Repository
 {
     public class ReviewRepository : BaseRepository<Review, long>, IReviewRepository
     {
-        public ReviewRepository(ApplicationDbContext dbContext) 
+        public ReviewRepository(ApplicationDbContext dbContext)
             : base(dbContext)
         {
         }
@@ -39,6 +39,37 @@ namespace TechStore.Data.Repository
                 .AnyAsync(r => r.UserId == userId && r.ProductId == productId);
 
             return result;
+        }
+
+        public async Task<IReadOnlyList<Review>> GetPagedByProductAsync(Guid productId, int page, int pageSize)
+        {
+            int skip = (page - 1) * pageSize;
+
+            return await this.GetAllAttached()
+                .AsNoTracking()
+                .Include(r => r.User)
+                .Where(r => r.ProductId == productId)
+                .OrderByDescending(r => r.CreatedAt)
+                .Skip(skip)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+
+        public async Task<int> GetCountByProductAsync(Guid productId)
+        {
+            return await this.GetAllAttached()
+                .AsNoTracking()
+                .Where(r => r.ProductId == productId)
+                .CountAsync();
+        }
+
+        public async Task<double> GetAverageRatingByProductAsync(Guid productId)
+        {
+            return await this.GetAllAttached()
+                .AsNoTracking()
+                .Where(r => r.ProductId == productId)
+                .Select(r => (double?)r.Rating)
+                .AverageAsync() ?? 0;
         }
     }
 }

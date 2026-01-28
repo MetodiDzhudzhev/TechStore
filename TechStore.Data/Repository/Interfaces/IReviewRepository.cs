@@ -8,6 +8,8 @@ namespace TechStore.Data.Repository.Interfaces
         Task<IEnumerable<Review>> GetByUserAsync(Guid userId);
         Task<IEnumerable<Review>> GetByProductAsync(Guid productId);
         Task<bool> ReviewExistsAsync(Guid userId, Guid productId);
-
+        Task<IReadOnlyList<Review>> GetPagedByProductAsync(Guid productId, int page, int pageSize);
+        Task<int> GetCountByProductAsync(Guid productId);
+        Task<double> GetAverageRatingByProductAsync(Guid productId);
     }
 }

@@ -1,0 +1,59 @@
+﻿@model TechStore.Web.ViewModels.Review.ReviewFormInputModel
+
+<style>
+    .rating-stars {
+        display: inline-flex;
+        flex-direction: row-reverse;
+        gap: .25rem;
+        font-size: 2rem;
+        line-height: 1;
+        user-select: none
+    }
+
+        .rating-stars input {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0
+        }
+
+        .rating-stars label.star {
+            display: inline-block;
+            cursor: pointer;
+            color: #cfcfcf;
+            transition: color .15s;
+            margin: 0
+        }
+
+            .rating-stars label.star:hover, .rating-stars label.star:hover ~ label.star {
+                color: #ffc107
+            }
+
+        .rating-stars input:checked ~ label.star {
+            color: #ffc107
+        }
+</style>
+
+<form asp-controller="Review" asp-action="Add" method="post" class="mt-2">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="ProductId" />
+
+    <div class="mb-2">
+        <label class="form-label d-block mb-1">Rating</label>
+        <div class="rating-stars">
+            @for (int i = 5; i >= 1; i--)
+            {
+                <input asp-for="Rating" type="radio" id="star-inline-@i" value="@i" />
+                <label for="star-inline-@i" class="star" title="@i stars">★</label>
+            }
+        </div>
+        <span asp-validation-for="Rating" class="text-danger"></span>
+    </div>
+
+    <div class="mb-2">
+        <textarea asp-for="Comment" class="form-control" rows="3" placeholder="Write a comment..."></textarea>
+        <span asp-validation-for="Comment" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-sm btn-primary">Submit</button>
+</form>

@@ -67,6 +67,7 @@ builder.Services.AddScoped<IProductService, TechStore.Services.Core.ProductServi
 builder.Services.AddScoped<IBrandService, BrandService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICartService, CartService>();
+builder.Services.AddScoped<IReviewService, TechStore.Services.Core.ReviewService>();
 
 var stripeSecretKey = builder.Configuration["Stripe:SecretKey"];
 

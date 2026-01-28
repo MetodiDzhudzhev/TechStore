@@ -2,75 +2,243 @@
 @model ProductDetailsViewModel
 
 @{
-	ViewData["Title"] = "Product Details";
+    ViewData["Title"] = "Product Details";
 }
 
 <div class="container mt-5">
-	<div class="card p-4 shadow-lg bg-white text-dark">
-		<div class="row">
-			<div class="col-md-5">
-				<img src="@Model.ImageUrl" alt="@Model.Name" class="img-fluid rounded border" />
-			</div>
+    <div class="card p-4 shadow-lg bg-white text-dark">
+        <div class="row">
+            <div class="col-md-5">
+                <img src="@Model.ImageUrl" alt="@Model.Name" class="img-fluid rounded border" />
+            </div>
 
-			<div class="col-md-7">
-				<h2 class="fw-bold text-dark">@Model.Name</h2>
-				<p class="text-secondary fs-5 mb-2">
-					<strong>Brand:</strong>
-					<a asp-controller="Brand"
-					   asp-action="Details"
-					   asp-route-id="@Model.BrandId"
-					   class="text-decoration-underline fw-semibold text-primary">
-						@Model.Brand
-					</a>
-				</p>
+            <div class="col-md-7">
+                <h2 class="fw-bold text-dark">@Model.Name</h2>
+                <p class="text-secondary fs-5 mb-2">
+                    <strong>Brand:</strong>
+                    <a asp-controller="Brand"
+                       asp-action="Details"
+                       asp-route-id="@Model.BrandId"
+                       class="text-decoration-underline fw-semibold text-primary">
+                        @Model.Brand
+                    </a>
+                </p>
 
-				<p class="text-body">@Model.Description</p>
+                <p class="text-body">@Model.Description</p>
 
-				<h4 class="text-success mt-3">Price: @Model.Price €</h4>
+                <h4 class="text-success mt-3">Price: @Model.Price €</h4>
 
-				@if (User?.Identity?.IsAuthenticated == true)
-				{
-					<form 
-						asp-controller="Cart" 
-						asp-action="Add" method="post" class="d-inline">
-						<input type="hidden" name="productId" value="@Model.Id" />
-						<input type="number" name="quantity" value="1" min="1" max="@Model.QuantityInStock" class="form-control d-inline-block w-auto" />
-						<button type="submit" class="btn btn-sm btn-success">
-							<i class="bi bi-cart-plus"></i> Add to Cart
-						</button>
-					</form>
-				}
+                @if (User?.Identity?.IsAuthenticated == true)
+                {
+                    <form asp-controller="Cart"
+                          asp-action="Add"
+                          method="post"
+                          class="d-inline">
+                        <input type="hidden" name="productId" value="@Model.Id" />
+                        <input type="number"
+                               name="quantity"
+                               value="1"
+                               min="1"
+                               max="@Model.QuantityInStock"
+                               class="form-control d-inline-block w-auto" />
+                        <button type="submit" class="btn btn-sm btn-success">
+                            <i class="bi bi-cart-plus"></i> Add to Cart
+                        </button>
+                    </form>
+                }
 
-				<p class="text-muted">In Stock: @Model.QuantityInStock pcs</p>
+                <p class="text-muted">In Stock: @Model.QuantityInStock pcs</p>
 
-				<div class="d-flex gap-2 mt-4">
-					<a asp-controller="Product"
-					   asp-action="IndexByCategory"
-					   asp-route-categoryId="@Model.CategoryId"
-					   class="btn btn-secondary">
-						<i class="bi bi-arrow-left-circle"></i> Back to Products
-					</a>
+                <div class="d-flex gap-2 mt-4">
+                    <a asp-controller="Product"
+                       asp-action="IndexByCategory"
+                       asp-route-categoryId="@Model.CategoryId"
+                       class="btn btn-secondary">
+                        <i class="bi bi-arrow-left-circle"></i> Back to Products
+                    </a>
 
-					@if (User?.Identity?.IsAuthenticated == true && (User.IsInRole("Manager") || User.IsInRole("Admin")))
-					{
-						<a asp-area="ControlPanel"
-						   asp-controller="ControlPanelProduct"
-						   asp-action="Edit"
-						   asp-route-id="@Model.Id"
-						   class="btn btn-primary">
-							<i class="bi bi-pencil-square"></i> Edit
-						</a>
+                    @if (User?.Identity?.IsAuthenticated == true && (User.IsInRole("Manager") || User.IsInRole("Admin")))
+                    {
+                        <a asp-area="ControlPanel"
+                           asp-controller="ControlPanelProduct"
+                           asp-action="Edit"
+                           asp-route-id="@Model.Id"
+                           class="btn btn-primary">
+                            <i class="bi bi-pencil-square"></i> Edit
+                        </a>
 
-						<a asp-area="ControlPanel"
-						   asp-controller="ControlPanelProduct"
-						   asp-action="Delete"
-						   asp-route-id="@Model.Id"
-						   class="btn btn-danger">
-							<i class="bi bi-trash-fill"></i> Delete
-						</a>
-					}
-				</div>
-			</div>
-		</div>
-	</div>
+                        <a asp-area="ControlPanel"
+                           asp-controller="ControlPanelProduct"
+                           asp-action="Delete"
+                           asp-route-id="@Model.Id"
+                           class="btn btn-danger">
+                            <i class="bi bi-trash-fill"></i> Delete
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4" id="reviews">
+        <div class="card p-4 shadow-lg bg-white text-dark">
+            <button class="btn btn-link text-decoration-none w-100 text-start p-0 reviews-toggle"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#reviewsCollapse"
+                    aria-expanded="false"
+                    aria-controls="reviewsCollapse"
+                    id="reviewsToggleBtn"
+                    data-product-id="@Model.Id">
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>Reviews</strong>
+                        <span class="text-muted ms-1" id="reviewsSummary"></span>
+                    </div>
+
+                    <i class="bi bi-chevron-down reviews-chevron"></i>
+                </div>
+            </button>
+
+            <div class="collapse mt-3" id="reviewsCollapse">
+                <div id="reviewsContainer">
+                    <div class="text-center py-4">
+                        <div class="spinner-border" role="status"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<style>
+    .reviews-toggle {
+        color: inherit;
+    }
+
+        .reviews-toggle:hover {
+            text-decoration: none;
+        }
+
+    .reviews-chevron {
+        transition: transform 0.25s ease;
+        font-size: 1.2rem;
+    }
+
+    .reviews-toggle[aria-expanded="true"] .reviews-chevron {
+        transform: rotate(180deg);
+    }
+</style>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        function renderStars(avg) {
+            const rounded = Math.round(avg);
+
+            let html = '';
+            for (let i = 1; i <= 5; i++) {
+                if (i <= rounded) html += '<span class="text-warning">★</span>';
+                else html += '<span class="text-muted">☆</span>';
+            }
+
+            return html + ` <span class="ms-1">${avg.toFixed(1)}/5</span>`;
+        }
+
+        (function () {
+            const collapseEl = document.getElementById('reviewsCollapse');
+            const container = document.getElementById('reviewsContainer');
+            const toggleBtn = document.getElementById('reviewsToggleBtn');
+            const summaryEl = document.getElementById('reviewsSummary');
+
+            const pageSize = 5;
+            const productId = toggleBtn.getAttribute('data-product-id');
+
+            let loadedOnce = false;
+
+            async function loadSummary() {
+                try {
+                    const url = `/Review/Stats?productId=${productId}`;
+                    const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+
+                    if (!res.ok) return;
+
+                    const data = await res.json();
+
+                    const count = data.totalCount ?? data.TotalCount;
+                    const avg = data.averageRating ?? data.AverageRating;
+
+                    if (summaryEl != null && typeof count === 'number' && typeof avg === 'number') {
+                        summaryEl.innerHTML = `(${count}) • ${renderStars(avg)}`;
+                    }
+                } catch {
+                }
+            }
+
+            async function loadPage(page) {
+                container.innerHTML = `
+                    <div class="text-center py-4">
+                        <div class="spinner-border" role="status"></div>
+                    </div>`;
+
+                const url = `/Review/Panel?productId=${productId}&page=${page}&pageSize=${pageSize}`;
+                const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+
+                if (!res.ok) {
+                    container.innerHTML = `<div class="alert alert-danger">Failed to load reviews.</div>`;
+                    return;
+                }
+
+                container.innerHTML = await res.text();
+
+                const meta = container.querySelector('[data-total-count][data-average-rating]');
+                if (meta && summaryEl) {
+                    const count = parseInt(meta.dataset.totalCount);
+                    const avg = parseFloat(meta.dataset.averageRating);
+
+                    if (!Number.isNaN(count) && !Number.isNaN(avg)) {
+                        summaryEl.innerHTML = `(${count}) • ${renderStars(avg)}`;
+                    }
+                }
+            }
+
+            async function openAndLoadReviews() {
+                const bsCollapse = bootstrap.Collapse.getOrCreateInstance(collapseEl, { toggle: false });
+                bsCollapse.show();
+
+                if (!loadedOnce) {
+                    loadedOnce = true;
+                    await loadPage(1);
+                }
+            }
+
+            loadSummary();
+
+            collapseEl.addEventListener('show.bs.collapse', async function () {
+                if (!loadedOnce) {
+                    loadedOnce = true;
+                    await loadPage(1);
+                }
+            });
+
+            container.addEventListener('click', function (e) {
+                const a = e.target.closest('a.js-reviews-page');
+                if (!a) return;
+
+                e.preventDefault();
+
+                const parent = a.closest('.page-item');
+                if (parent?.classList.contains('disabled') || parent?.classList.contains('active')) return;
+
+                const page = parseInt(a.getAttribute('data-page'));
+                if (!Number.isNaN(page)) loadPage(page);
+            });
+
+            if (window.location.hash === '#reviews') {
+                openAndLoadReviews();
+            }
+        })();
+    </script>
+}
