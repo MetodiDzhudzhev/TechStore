@@ -1,0 +1,204 @@
+﻿@using TechStore.Web.ViewModels.Review
+@model MyReviewsListViewModel
+
+@{
+    ViewData["Title"] = "My reviews";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3" style="margin-top: 20px;">
+    <h2>@ViewData["Title"]</h2>
+</div>
+<hr />
+
+@if (Model.Reviews == null || !Model.Reviews.Any())
+{
+    <div class="alert alert-info">
+        You don’t have any reviews yet.
+    </div>
+}
+else
+{
+    <div class="row text-center">
+        @foreach (var review in Model.Reviews)
+        {
+            var collapseId = $"review_{review.ReviewId}";
+
+            <div class="col-12 col-lg-8 mx-auto mb-4">
+                <div class="card h-100 border" style="width:100%; background-color:#1c1c1e; border-color:#444;">
+                    <div class="card-body d-flex flex-column text-start">
+
+                        <div>
+
+                            <h5 class="card-title mb-2" style="color:#f0f0f0;">
+                                Review #@review.ReviewId
+                            </h5>
+
+                            <div class="mb-2" style="color:#cfcfcf;">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="bi bi-box-seam"></i>
+                                    <span>@review.ProductName</span>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+
+                                <div class="d-flex align-items-center gap-2" style="color:#cfcfcf;">
+                                    <i class="bi bi-star-fill"></i>
+                                    <span>@review.Rating / 5</span>
+                                </div>
+
+                                <button class="btn btn-info btn-sm toggle-details-btn"
+                                        type="button"
+                                        data-bs-toggle="collapse"
+                                        data-bs-target="#@collapseId"
+                                        aria-expanded="false"
+                                        aria-controls="@collapseId"
+                                        data-target="#@collapseId">
+                                    <span class="btn-text">Show details</span>
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                        <div class="collapse mt-3" id="@collapseId">
+                            <hr style="border-color:#444;" />
+
+                            <div class="mb-3" style="color:#cfcfcf;">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="bi bi-calendar3"></i>
+                                    <span>@review.CreatedAt</span>
+                                </div>
+                            </div>
+
+                            <div class="border rounded p-3"
+                                 style="border-color:#444; background-color:#121212;">
+                                <div class="fw-semibold mb-1" style="color:#f0f0f0;">Comment</div>
+
+                                @if (!string.IsNullOrWhiteSpace(review.Comment))
+                                {
+                                    <div style="color:#cfcfcf; white-space: pre-line;">
+                                        @review.Comment
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="small" style="color:#bdbdbd;">
+                                        No comment provided.
+                                    </div>
+                                }
+                            </div>
+
+                            <div class="mt-3">
+                                <div class="fw-semibold mb-2" style="color:#f0f0f0;">Product</div>
+
+                                <a asp-area=""
+                                   asp-controller="Product"
+                                   asp-action="Details"
+                                   asp-route-id="@review.ProductId"
+                                   class="text-decoration-none">
+
+                                    <div class="border rounded p-2"
+                                         style="border-color:#444; background-color:#121212;">
+                                        <div class="d-flex gap-2">
+                                            <div style="width: 56px; height: 56px;">
+                                                @if (!string.IsNullOrWhiteSpace(review.ProductImage))
+                                                {
+                                                    <img src="@review.ProductImage"
+                                                         alt="@review.ProductName"
+                                                         style="width: 56px; height: 56px; object-fit: cover;"
+                                                         class="rounded" />
+                                                }
+                                                else
+                                                {
+                                                    <img src="~/images/default-image.jpg"
+                                                         alt="No Image Available"
+                                                         style="width: 56px; height: 56px; object-fit: cover;"
+                                                         class="rounded" />
+                                                }
+                                            </div>
+
+                                            <div class="flex-grow-1">
+                                                <div class="fw-semibold" style="color:#f0f0f0;">
+                                                    @review.ProductName
+                                                </div>
+                                                <div class="small" style="color:#bdbdbd;">
+                                                    Click to open product details
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </a>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <nav aria-label="Reviews pagination" class="mt-3">
+            <ul class="pagination justify-content-center">
+
+                <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
+                    <a class="page-link"
+                       asp-area="Account"
+                       asp-controller="Account"
+                       asp-action="MyReviews"
+                       asp-route-page="@(Model.CurrentPage - 1)">
+                        Previous
+                    </a>
+                </li>
+
+                @for (int p = 1; p <= Model.TotalPages; p++)
+                {
+                    <li class="page-item @(p == Model.CurrentPage ? "active" : "")">
+                        <a class="page-link"
+                           asp-area="Account"
+                           asp-controller="Account"
+                           asp-action="MyReviews"
+                           asp-route-page="@p">
+                            @p
+                        </a>
+                    </li>
+                }
+
+                <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
+                    <a class="page-link"
+                       asp-area="Account"
+                       asp-controller="Account"
+                       asp-action="MyReviews"
+                       asp-route-page="@(Model.CurrentPage + 1)">
+                        Next
+                    </a>
+                </li>
+
+            </ul>
+        </nav>
+    }
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll('.toggle-details-btn').forEach(function (btn) {
+                const targetSelector = btn.getAttribute('data-target');
+                const targetEl = document.querySelector(targetSelector);
+                const textSpan = btn.querySelector('.btn-text');
+                if (!targetEl || !textSpan) return;
+
+                targetEl.addEventListener('show.bs.collapse', function () {
+                    textSpan.textContent = "Hide details";
+                });
+
+                targetEl.addEventListener('hide.bs.collapse', function () {
+                    textSpan.textContent = "Show details";
+                });
+            });
+        });
+    </script>
+}

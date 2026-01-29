@@ -9,16 +9,19 @@ namespace TechStore.Web.Areas.Account.Controllers
     {
         private readonly IOrderService orderService;
         private readonly IUserService userService;
+        private readonly IReviewService reviewService;
         private readonly ILogger<AccountController> logger;
 
         private const int PageSize = 5;
         
         public AccountController(IOrderService orderService, 
             IUserService userService,
+            IReviewService reviewService,
             ILogger<AccountController> logger)
         {
             this.orderService = orderService;
             this.userService = userService;
+            this.reviewService = reviewService;
             this.logger = logger;
         }
 
@@ -87,6 +90,20 @@ namespace TechStore.Web.Areas.Account.Controllers
             TempData["Success"] = "Delivery details updated successfully.";
             logger.LogInformation("Delivery details for user {UserId} updated successfully!", currentUserId);
             return RedirectToAction(nameof(DeliveryDetails));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> MyReviews(int page = 1)
+        {
+            string? userId = this.GetUserId();
+
+            if (!Guid.TryParse(userId, out Guid currentUserId))
+            {
+                return Unauthorized();
+            }
+
+            var viewModel = await reviewService.GetMyReviewsPagedAsync(currentUserId, page, PageSize);
+            return View(viewModel);
         }
     }
 }

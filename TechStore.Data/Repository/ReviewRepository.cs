@@ -71,5 +71,29 @@ namespace TechStore.Data.Repository
                 .Select(r => (double?)r.Rating)
                 .AverageAsync() ?? 0;
         }
+
+        public async Task<IReadOnlyList<Review>> GetPagedByUserAsync(Guid userId, int page, int pageSize)
+        {
+            int skip = (page - 1) * pageSize;
+
+            return await this
+                .GetAllAttached()
+                .AsNoTracking()
+                .Where(r => r.UserId == userId)
+                .OrderByDescending(r => r.CreatedAt)
+                .Skip(skip)
+                .Take(pageSize)
+                .Include(r => r.Product)
+                .ToListAsync();
+        }
+
+        public async Task<int> GetCountByUserAsync(Guid userId)
+        {
+            return await this
+                .GetAllAttached()
+                .AsNoTracking()
+                .Where(r => r.UserId == userId)
+                .CountAsync();
+        }
     }
 }

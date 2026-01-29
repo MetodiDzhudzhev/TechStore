@@ -2,6 +2,7 @@
 using TechStore.Data.Repository.Interfaces;
 using TechStore.Services.Core.Interfaces;
 using TechStore.Web.ViewModels.Review;
+using static TechStore.GCommon.ValidationConstants.Review;
 
 namespace TechStore.Services.Core
 {
@@ -113,6 +114,47 @@ namespace TechStore.Services.Core
             {
                 TotalCount = totalCount,
                 AverageRating = average
+            };
+        }
+
+        public async Task<MyReviewsListViewModel> GetMyReviewsPagedAsync(Guid userId, int page, int pageSize)
+        {
+            if (page < 1)
+            {
+                page = 1;
+            }
+
+            if (pageSize < 1)
+            {
+                pageSize = 5;
+            }
+
+            int totalCount = await reviewRepository.GetCountByUserAsync(userId);
+            int totalPages = Math.Max(1, (int)Math.Ceiling(totalCount / (double)pageSize));
+
+            if (page > totalPages)
+            {
+                page = totalPages;
+            }
+
+            IReadOnlyList<Review> reviews = await reviewRepository.GetPagedByUserAsync(userId, page, pageSize);
+
+            List<MyReviewsItemViewModel> mappedReviews = reviews.Select(r => new MyReviewsItemViewModel
+            {
+                ReviewId = r.Id,
+                Rating = r.Rating,
+                CreatedAt = r.CreatedAt.ToString(CreatedAtFormat),
+                Comment = r.Comment,
+                ProductId = r.ProductId,
+                ProductName = r.Product.Name,
+                ProductImage = r.Product.ImageUrl
+            }).ToList();
+
+            return new MyReviewsListViewModel
+            {
+                Reviews = mappedReviews,
+                CurrentPage = page,
+                TotalPages = totalPages,
             };
         }
 
