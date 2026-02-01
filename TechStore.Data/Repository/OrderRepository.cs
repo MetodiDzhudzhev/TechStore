@@ -46,6 +46,15 @@ namespace TechStore.Data.Repository
                 .FirstOrDefaultAsync(o => o.Id == orderId && o.UserId == userId);
         }
 
+        public async Task<Order?> GetOrderDetailsAsync(long orderId)
+        {
+            return await this
+                .GetAllAttached()
+                .Include(o => o.OrdersProducts)
+                .ThenInclude(op => op.Product)
+                .FirstOrDefaultAsync(o => o.Id == orderId);
+        }
+
         public async Task<IReadOnlyList<Order>> GetPagedByUserAsync(Guid userId, int page, int pageSize)
         {
             if (page < 1)

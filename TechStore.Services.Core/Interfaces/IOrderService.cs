@@ -1,4 +1,5 @@
 ﻿using TechStore.Data.Models;
+using TechStore.Data.Models.Enums;
 using TechStore.Web.ViewModels.Order;
 using TechStore.Web.ViewModels.Payment;
 
@@ -15,5 +16,8 @@ namespace TechStore.Services.Core.Interfaces
         Task MarkOrderAsPaidByOrderIdAsync(long orderId);
         Task<bool> MarkOrderAsCashOnDeliveryAsync(string userId, long orderId);
         Task<MyOrdersViewModel> GetMyOrdersPagedAsync(Guid userId, int page, int pageSize);
+        Task<OrderEditPageViewModel?> GetEditPageAsync(long orderId);
+        Task<bool> EditStatusAsync(long orderId, Status newStatus);
+        Task<bool> EditShippingDetailsAsync(OrderEditShippingDetailsInputModel model);
     }
 }

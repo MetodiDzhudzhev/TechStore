@@ -337,5 +337,129 @@ namespace TechStore.Services.Core
                 TotalPages = totalPages
             };
         }
+
+        public async Task<OrderEditPageViewModel?> GetEditPageAsync(long orderId)
+        {
+            var order = await orderRepository.GetOrderDetailsAsync(orderId);
+
+            if (order == null)
+            {
+                return null;
+            }
+
+            IReadOnlyCollection<Status> allowed = GetAllowedNextStatuses(order.Status);
+
+            return new OrderEditPageViewModel
+            {
+                Id = order.Id,
+                OrderDate = order.OrderDate.ToString(OrderDateFormat),
+                PaymentMethod = order.PaymentMethod,
+                TotalSum = order.TotalAmount,
+                CurrentStatus = order.Status,
+
+                CanEditShipping = CanEditShipping(order.Status),
+                AllowedStatuses = allowed,
+
+                Status = new OrderEditStatusInputModel
+                {
+                    Id = order.Id,
+                    NewStatus = order.Status
+                },
+
+                Shipping = new OrderEditShippingDetailsInputModel
+                {
+                    Id = order.Id,
+                    RecipientName = order.RecipientName,
+                    ShippingAddress = order.ShippingAddress,
+                    PhoneNumber = order.PhoneNumber,
+                    Email = order.Email
+                }
+            };
+        }
+
+        public async Task<bool> EditStatusAsync(long orderId, Status newStatus)
+        {
+            var order = await orderRepository.GetByIdAsync(orderId);
+
+            if (order == null)
+            {
+                return false;
+            }
+
+            if (order.Status == Status.Delivered || order.Status == Status.Cancelled)
+            {
+                return false;
+            }
+
+            IReadOnlyCollection<Status> allowed = GetAllowedNextStatuses(order.Status);
+
+            if (!allowed.Contains(newStatus))
+            {
+                return false;
+            }
+
+            order.Status = newStatus;
+
+            orderRepository.Update(order);
+            await orderRepository.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<bool> EditShippingDetailsAsync(OrderEditShippingDetailsInputModel model)
+        {
+            var order = await orderRepository.GetByIdAsync(model.Id);
+
+            if (order == null)
+            {
+                return false;
+            }
+
+            if (!CanEditShipping(order.Status))
+            {
+                return false;
+            }
+
+            order.RecipientName = model.RecipientName.Trim();
+            order.ShippingAddress = model.ShippingAddress.Trim();
+            order.PhoneNumber = model.PhoneNumber.Trim();
+            order.Email = model.Email.Trim();
+
+            orderRepository.Update(order);
+            await orderRepository.SaveChangesAsync();
+
+            return true;
+        }
+
+        private static bool CanEditShipping(Status status)
+        {
+            return status == Status.PendingPayment || status == Status.Processing;
+        }
+
+        private static IReadOnlyCollection<Status> GetAllowedNextStatuses(Status currentStatus)
+        {
+            List<Status> result = new List<Status>();
+
+            switch (currentStatus)
+            {
+                case Status.PendingPayment:
+                    result.Add(Status.Cancelled);
+                    break;
+
+                case Status.Processing:
+                    result.Add(Status.Shipped);
+                    result.Add(Status.Cancelled);
+                    break;
+
+                case Status.Shipped:
+                    result.Add(Status.Delivered);
+                    break;
+
+                default:
+                    break;
+            }
+
+            return result;
+        }
     }
 }
