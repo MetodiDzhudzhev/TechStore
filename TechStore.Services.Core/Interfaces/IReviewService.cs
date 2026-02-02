@@ -8,5 +8,7 @@ namespace TechStore.Services.Core.Interfaces
         Task<ReviewsPanelViewModel> GetPanelAsync(Guid productId, Guid? userId, int page, int pageSize);
         Task<ReviewsStatsViewModel> GetStatsAsync(Guid productId);
         Task<MyReviewsListViewModel> GetMyReviewsPagedAsync(Guid userId, int page, int pageSize);
+        Task<ReviewManageListViewModel> GetManageReviewsPageAsync(int page, int pageSize);
+        Task<bool> SoftDeleteReviewAsync(long reviewId);
     }
 }

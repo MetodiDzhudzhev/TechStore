@@ -13,6 +13,8 @@ namespace TechStore.Data.Repository.Interfaces
         Task<double> GetAverageRatingByProductAsync(Guid productId);
 
         Task<IReadOnlyList<Review>> GetPagedByUserAsync(Guid userId, int page, int pageSize);
+        Task<IReadOnlyList<Review>> GetPagedAsync(int page, int pageSize);
+        Task<int> GetCountAsync();
         Task<int> GetCountByUserAsync(Guid userId);
     }
 }

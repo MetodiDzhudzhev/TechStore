@@ -158,5 +158,61 @@ namespace TechStore.Services.Core
             };
         }
 
+        public async Task<ReviewManageListViewModel> GetManageReviewsPageAsync(int page, int pageSize)
+        {
+            if (page < 1)
+            {
+                page = 1;
+            }
+
+            if (pageSize < 1)
+            {
+                pageSize = 5;
+            }
+
+            int totalCount = await reviewRepository.GetCountAsync();
+            int totalPages = Math.Max(1, (int)Math.Ceiling(totalCount / (double)pageSize));
+
+            if (page > totalPages)
+            {
+                page = totalPages;
+            }
+
+            IReadOnlyList<Review> reviews = await reviewRepository.GetPagedAsync(page, pageSize);
+
+            List<ReviewManageItemViewModel> mappedReviews = reviews.Select(r => new ReviewManageItemViewModel
+            {
+                Author = r.User.FullName ?? r.User.Email ?? "Anonymous",
+                ReviewId = r.Id,
+                Rating = r.Rating,
+                CreatedAt = r.CreatedAt.ToString(CreatedAtFormat),
+                Comment = r.Comment,
+                ProductId = r.ProductId,
+                ProductName = r.Product.Name,
+                ProductImage = r.Product.ImageUrl
+            }).ToList();
+
+            return new ReviewManageListViewModel
+            {
+                Reviews = mappedReviews,
+                CurrentPage = page,
+                TotalPages = totalPages,
+            };
+        }
+
+        public async Task<bool> SoftDeleteReviewAsync(long reviewId)
+        {
+            Review? review = await reviewRepository.GetByIdAsync(reviewId);
+            if (review == null)
+            {
+                return false;
+            }
+
+            this.reviewRepository.Delete(review);
+            await reviewRepository.SaveChangesAsync();
+
+            return true;
+        }
+
     }
 }

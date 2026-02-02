@@ -87,6 +87,21 @@ namespace TechStore.Data.Repository
                 .ToListAsync();
         }
 
+        public async Task<IReadOnlyList<Review>> GetPagedAsync(int page, int pageSize)
+        {
+            int skip = (page - 1) * pageSize;
+
+            return await this
+                .GetAllAttached()
+                .AsNoTracking()
+                .Include(r => r.User)
+                .Include(r => r.Product)
+                .OrderByDescending(r => r.CreatedAt)
+                .Skip(skip)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+
         public async Task<int> GetCountByUserAsync(Guid userId)
         {
             return await this
@@ -94,6 +109,14 @@ namespace TechStore.Data.Repository
                 .AsNoTracking()
                 .Where(r => r.UserId == userId)
                 .CountAsync();
+        }
+
+        public async Task<int> GetCountAsync()
+        {
+            return await this
+               .GetAllAttached()
+               .AsNoTracking()
+               .CountAsync();
         }
     }
 }
