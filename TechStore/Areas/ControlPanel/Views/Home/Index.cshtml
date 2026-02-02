@@ -1,5 +1,6 @@
 ﻿@{
     ViewData["Title"] = "Control Panel";
+    bool isManager = User.IsInRole("Manager");
 }
 
 <div class="container mt-5">
@@ -9,7 +10,7 @@
     </div>
 
     <div class="d-flex flex-wrap justify-content-center gap-4">
-        <!-- Manage Categories -->
+
         <div class="card bg-dark text-white shadow rounded" style="width: 18rem;">
             <div class="card-body d-flex flex-column text-center">
                 <i class="bi bi-tags-fill text-warning display-4 mb-3"></i>
@@ -24,7 +25,6 @@
             </div>
         </div>
 
-        <!-- Manage Products -->
         <div class="card bg-dark text-white shadow rounded" style="width: 18rem;">
             <div class="card-body d-flex flex-column text-center">
                 <i class="bi bi-box-seam text-success display-4 mb-3"></i>
@@ -39,7 +39,6 @@
             </div>
         </div>
 
-        <!-- Manage Brands -->
         <div class="card bg-dark text-white shadow rounded" style="width: 18rem;">
             <div class="card-body d-flex flex-column text-center">
                 <i class="bi bi-star-fill text-primary display-4 mb-3"></i>
@@ -50,13 +49,26 @@
                    asp-action="Manage"
                    class="btn btn-primary mt-auto fw-bold">
                     <i class="bi bi-arrow-right-circle"></i> Go to Brands
-                   </a>
+                </a>
             </div>
         </div>
 
-        @if (User.IsInRole("Manager"))
+        <div class="card bg-dark text-white shadow rounded" style="width: 18rem;">
+            <div class="card-body d-flex flex-column text-center">
+                <i class="bi bi-receipt text-purple display-4 mb-3"></i>
+                <h5 class="card-title fw-bold">Manage Orders</h5>
+                <p class="card-text text-muted">View and manage customer orders.</p>
+                <a asp-area="ControlPanel"
+                   asp-controller="ControlPanelOrder"
+                   asp-action="Manage"
+                   class="btn btn-purple mt-auto fw-bold">
+                    <i class="bi bi-arrow-right-circle"></i> Go to Orders
+                </a>
+            </div>
+        </div>
+
+        @if (isManager)
         {
-            <!-- Manage Users -->
             <div class="card bg-dark text-white shadow rounded" style="width: 18rem;">
                 <div class="card-body d-flex flex-column text-center">
                     <i class="bi bi-people-fill text-info display-4 mb-3"></i>
