@@ -3,83 +3,112 @@
     bool isManager = User.IsInRole("Manager");
 }
 
-<div class="container mt-5">
+<div class="container mt-3">
     <div class="text-center mb-5">
         <h1 class="display-4 text-warning fw-bold">Welcome to the Control Panel</h1>
         <p class="lead text-muted">Manage your store using the sections below:</p>
     </div>
 
-    <div class="d-flex flex-wrap justify-content-center gap-4">
+    <div class="row justify-content-center g-4 mb-4">
 
-        <div class="card bg-dark text-white shadow rounded" style="width: 18rem;">
-            <div class="card-body d-flex flex-column text-center">
-                <i class="bi bi-tags-fill text-warning display-4 mb-3"></i>
-                <h5 class="card-title fw-bold">Manage Categories</h5>
-                <p class="card-text text-muted">Add, edit or delete categories.</p>
-                <a asp-area="ControlPanel"
-                   asp-controller="ControlPanelCategory"
-                   asp-action="Manage"
-                   class="btn btn-warning mt-auto fw-bold">
-                    <i class="bi bi-arrow-right-circle"></i> Go to Categories
-                </a>
+        <div class="col-md-6 col-lg-4 col-xl-3">
+            <div class="card bg-dark text-white shadow rounded h-100">
+                <div class="card-body d-flex flex-column text-center">
+                    <i class="bi bi-tags-fill text-warning display-4 mb-3"></i>
+                    <h5 class="card-title fw-bold">Manage Categories</h5>
+                    <p class="card-text text-muted">Add, edit or delete categories.</p>
+                    <a asp-area="ControlPanel"
+                       asp-controller="ControlPanelCategory"
+                       asp-action="Manage"
+                       class="btn btn-warning mt-auto fw-bold text-white">
+                        <i class="bi bi-arrow-right-circle"></i> Go to Categories
+                    </a>
+                </div>
             </div>
         </div>
 
-        <div class="card bg-dark text-white shadow rounded" style="width: 18rem;">
-            <div class="card-body d-flex flex-column text-center">
-                <i class="bi bi-box-seam text-success display-4 mb-3"></i>
-                <h5 class="card-title fw-bold">Manage Products</h5>
-                <p class="card-text text-muted">Add, edit or delete products.</p>
-                <a asp-area="ControlPanel"
-                   asp-controller="ControlPanelProduct"
-                   asp-action="Manage"
-                   class="btn btn-success mt-auto fw-bold">
-                    <i class="bi bi-arrow-right-circle"></i> Go to Products
-                </a>
+        <div class="col-md-6 col-lg-4 col-xl-3">
+            <div class="card bg-dark text-white shadow rounded h-100">
+                <div class="card-body d-flex flex-column text-center">
+                    <i class="bi bi-box-seam text-success display-4 mb-3"></i>
+                    <h5 class="card-title fw-bold">Manage Products</h5>
+                    <p class="card-text text-muted">Add, edit or delete products.</p>
+                    <a asp-area="ControlPanel"
+                       asp-controller="ControlPanelProduct"
+                       asp-action="Manage"
+                       class="btn btn-success mt-auto fw-bold">
+                        <i class="bi bi-arrow-right-circle"></i> Go to Products
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center g-4">
+
+        <div class="col-md-6 col-lg-4 col-xl-3">
+            <div class="card bg-dark text-white shadow rounded h-100">
+                <div class="card-body d-flex flex-column text-center">
+                    <i class="bi bi-star-fill text-primary display-4 mb-3"></i>
+                    <h5 class="card-title fw-bold">Manage Brands</h5>
+                    <p class="card-text text-muted">Add, edit or delete brands.</p>
+                    <a asp-area="ControlPanel"
+                       asp-controller="ControlPanelBrand"
+                       asp-action="Manage"
+                       class="btn btn-primary mt-auto fw-bold">
+                        <i class="bi bi-arrow-right-circle"></i> Go to Brands
+                    </a>
+                </div>
             </div>
         </div>
 
-        <div class="card bg-dark text-white shadow rounded" style="width: 18rem;">
-            <div class="card-body d-flex flex-column text-center">
-                <i class="bi bi-star-fill text-primary display-4 mb-3"></i>
-                <h5 class="card-title fw-bold">Manage Brands</h5>
-                <p class="card-text text-muted">Add, edit or delete brands.</p>
-                <a asp-area="ControlPanel"
-                   asp-controller="ControlPanelBrand"
-                   asp-action="Manage"
-                   class="btn btn-primary mt-auto fw-bold">
-                    <i class="bi bi-arrow-right-circle"></i> Go to Brands
-                </a>
+        <div class="col-md-6 col-lg-4 col-xl-3">
+            <div class="card bg-dark text-white shadow rounded h-100">
+                <div class="card-body d-flex flex-column text-center">
+                    <i class="bi bi-receipt text-purple display-4 mb-3"></i>
+                    <h5 class="card-title fw-bold">Manage Orders</h5>
+                    <p class="card-text text-muted">Manage customer orders.</p>
+                    <a asp-area="ControlPanel"
+                       asp-controller="ControlPanelOrder"
+                       asp-action="Manage"
+                       class="btn btn-purple mt-auto fw-bold">
+                        <i class="bi bi-arrow-right-circle"></i> Go to Orders
+                    </a>
+                </div>
             </div>
         </div>
 
-        <div class="card bg-dark text-white shadow rounded" style="width: 18rem;">
-            <div class="card-body d-flex flex-column text-center">
-                <i class="bi bi-receipt text-purple display-4 mb-3"></i>
-                <h5 class="card-title fw-bold">Manage Orders</h5>
-                <p class="card-text text-muted">View and manage customer orders.</p>
-                <a asp-area="ControlPanel"
-                   asp-controller="ControlPanelOrder"
-                   asp-action="Manage"
-                   class="btn btn-purple mt-auto fw-bold">
-                    <i class="bi bi-arrow-right-circle"></i> Go to Orders
-                </a>
+        <div class="col-md-6 col-lg-4 col-xl-3">
+            <div class="card bg-dark text-white shadow rounded h-100">
+                <div class="card-body d-flex flex-column text-center">
+                    <i class="bi bi-chat-square-text-fill text-danger display-4 mb-3"></i>
+                    <h5 class="card-title fw-bold">Manage Reviews</h5>
+                    <p class="card-text text-muted">Manage customer reviews.</p>
+                    <a asp-area="ControlPanel"
+                       asp-controller="ControlPanelReview"
+                       asp-action="Manage"
+                       class="btn btn-danger mt-auto fw-bold">
+                        <i class="bi bi-arrow-right-circle"></i> Go to Reviews
+                    </a>
+                </div>
             </div>
         </div>
 
         @if (isManager)
         {
-            <div class="card bg-dark text-white shadow rounded" style="width: 18rem;">
-                <div class="card-body d-flex flex-column text-center">
-                    <i class="bi bi-people-fill text-info display-4 mb-3"></i>
-                    <h5 class="card-title fw-bold">Manage Users</h5>
-                    <p class="card-text text-muted">Add, edit or remove users and assign roles.</p>
-                    <a asp-area="ControlPanel"
-                       asp-controller="ControlPanelUser"
-                       asp-action="Manage"
-                       class="btn btn-info mt-auto fw-bold">
-                        <i class="bi bi-arrow-right-circle"></i> Go to Users
-                    </a>
+            <div class="col-md-6 col-lg-4 col-xl-3">
+                <div class="card bg-dark text-white shadow rounded h-100">
+                    <div class="card-body d-flex flex-column text-center">
+                        <i class="bi bi-people-fill text-info display-4 mb-3"></i>
+                        <h5 class="card-title fw-bold">Manage Users</h5>
+                        <p class="card-text text-muted">Manage users and assign roles.</p>
+                        <a asp-area="ControlPanel"
+                           asp-controller="ControlPanelUser"
+                           asp-action="Manage"
+                           class="btn btn-info mt-auto fw-bold text-white">
+                            <i class="bi bi-arrow-right-circle"></i> Go to Users
+                        </a>
+                    </div>
                 </div>
             </div>
         }
