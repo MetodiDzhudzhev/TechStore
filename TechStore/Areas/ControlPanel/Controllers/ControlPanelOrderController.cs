@@ -13,6 +13,8 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
         private readonly IOrderService orderService;
         private readonly ILogger<ControlPanelOrderController> logger;
 
+        private const int PageSize = 5;
+
         public ControlPanelOrderController(IOrderService orderService,
             ILogger<ControlPanelOrderController> logger)
         {
@@ -149,6 +151,21 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
                 TempData["ErrorMessage"] = "An unexpected error occurred while updating shipping details.";
                 return RedirectToAction(nameof(Edit), new { id = model.Id });
             }
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "Admin,Manager")]
+        public async Task<IActionResult> Manage(int page = 1)
+        {
+            string? userId = this.GetUserId();
+
+            if (!Guid.TryParse(userId, out Guid currentUserId))
+            {
+                return Unauthorized();
+            }
+
+            var viewModel = await orderService.GetManageOrdersPageAsync(page, PageSize);
+            return View(viewModel);
         }
 
         private static IEnumerable<SelectListItem> ToSelectListItems(IEnumerable<Status> statuses)

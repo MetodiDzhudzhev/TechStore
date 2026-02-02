@@ -11,6 +11,8 @@ namespace TechStore.Data.Repository.Interfaces
         Task<Order?> GetOrderDetailsAsync(Guid userId, long id);
         Task<Order?> GetOrderDetailsAsync(long orderId);
         Task<IReadOnlyList<Order>> GetPagedByUserAsync(Guid userId, int page, int pageSize);
+        Task<IReadOnlyList<Order>> GetOrdersPagedAsync(int page, int pageSize);
         Task<int> GetCountByUserAsync(Guid userId);
+        Task<int> GetCountAsync();
     }
 }

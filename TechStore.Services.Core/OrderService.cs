@@ -431,6 +431,66 @@ namespace TechStore.Services.Core
             return true;
         }
 
+        public async Task<OrderManageListViewModel> GetManageOrdersPageAsync(int page, int pageSize)
+        {
+            if (page < 1)
+            {
+                page = 1;
+            }
+
+            if (pageSize < 1)
+            {
+                pageSize = 5;
+            }
+
+            int totalCount = await orderRepository.GetCountAsync();
+            int totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+            if (totalPages == 0)
+            {
+                return new OrderManageListViewModel
+                {
+                    Orders = new List<OrderDetailsViewModel>(),
+                    CurrentPage = 1,
+                    TotalPages = 0
+                };
+            }
+
+            if (page > totalPages)
+            {
+                page = totalPages;
+            }
+
+            var orders = await orderRepository.GetOrdersPagedAsync(page, pageSize);
+
+            List<OrderDetailsViewModel> mappedOrders = orders.Select(o => new OrderDetailsViewModel
+            {
+                Id = o.Id,
+                RecipientName = o.RecipientName,
+                Date = o.OrderDate.ToString(OrderDateFormat),
+                Status = o.Status.ToString(),
+                ShippingAddress = o.ShippingAddress,
+                PaymentMethod = o.PaymentMethod.ToString(),
+                PhoneNumber = o.PhoneNumber,
+                Email = o.Email,
+                Products = o.OrdersProducts.Select(op => new OrderProductDetailsViewModel
+                {
+                    ProductName = op.Product.Name,
+                    Description = op.Product.Description,
+                    ImageUrl = op.Product.ImageUrl,
+                    Price = op.UnitPrice,
+                    Quantity = op.Quantity,
+                }).ToList()
+            }).ToList();
+
+            return new OrderManageListViewModel
+            {
+                Orders = mappedOrders,
+                CurrentPage = page,
+                TotalPages = totalPages
+            };
+        }
+
         private static bool CanEditShipping(Status status)
         {
             return status == Status.PendingPayment || status == Status.Processing;

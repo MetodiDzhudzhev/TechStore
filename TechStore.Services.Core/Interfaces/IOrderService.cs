@@ -19,5 +19,6 @@ namespace TechStore.Services.Core.Interfaces
         Task<OrderEditPageViewModel?> GetEditPageAsync(long orderId);
         Task<bool> EditStatusAsync(long orderId, Status newStatus);
         Task<bool> EditShippingDetailsAsync(OrderEditShippingDetailsInputModel model);
+        Task<OrderManageListViewModel> GetManageOrdersPageAsync(int page, int pageSize);
     }
 }
