@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TechStore.Services.Core.Interfaces;
 using TechStore.Web.ViewModels.Product;
-using static TechStore.GCommon.ApplicationConstants;
-
 
 namespace TechStore.Web.Controllers
 {
@@ -22,21 +20,16 @@ namespace TechStore.Web.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> IndexByCategory(int categoryId)
+        public async Task<IActionResult> IndexByCategory(int categoryId, ProductSort sort = ProductSort.NameAsc)
         {
             try
             {
-                bool categoryExists = await this.categoryService.ExistsAsync(categoryId);
-                if (!categoryExists)
-                {
-                    logger.LogWarning("Attempt to access IndexByCategory with non-existing categoryId - {CategoryId}", categoryId);
-                    return NotFound();
-                }
                 ProductsByCategoryViewModel? products = await productService
-                .GetProductsByCategoryAsync(categoryId);
+                .GetProductsByCategoryAsync(categoryId, sort);
 
                 if (products == null)
                 {
+                    logger.LogWarning("Attempt to access IndexByCategory with non-existing categoryId - {CategoryId}", categoryId);
                     return NotFound();
                 }
 

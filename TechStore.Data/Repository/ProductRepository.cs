@@ -50,13 +50,12 @@ namespace TechStore.Data.Repository
             return products;
         }
 
-        public async Task<IEnumerable<Product>> GetByCategoryAsync(int categoryId)
+        public IQueryable<Product> GetByCategoryQuery(int categoryId)
         {
-            ICollection<Product> products = await this
+            IQueryable<Product> products =  this
                 .GetAllAttached()
                 .AsNoTracking()
-                .Where(p => p.CategoryId == categoryId)
-                .ToListAsync();
+                .Where(p => p.CategoryId == categoryId);
 
             return products;
         }

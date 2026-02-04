@@ -25,19 +25,33 @@ namespace TechStore.Services.Core
             this.userRepository = userRepository;
         }
 
-        public async Task<IEnumerable<ProductInCategoryViewModel?>> GetAllProductsByCategoryIdAsync(int categoryId)
+        public async Task<ProductsByCategoryViewModel?> GetProductsByCategoryAsync(int categoryId, ProductSort sort)
         {
-            Category? Category = await this.categoryRepository.GetByIdAsync(categoryId);
+            Category? category = await this.categoryRepository.GetByIdAsync(categoryId);
 
-            if (Category == null)
+            if (category == null)
             {
                 return null;
             }
 
-            IEnumerable<Product> products = await this.productRepository.GetByCategoryAsync(categoryId);
+            IQueryable<Product> query = productRepository.GetByCategoryQuery(categoryId);
 
-            IEnumerable<ProductInCategoryViewModel> result = products
-                .OrderBy(p => p.Name)
+            switch (sort)
+            {
+                case ProductSort.PriceAsc:
+                    query = query.OrderBy(p => p.Price);
+                    break;
+
+                case ProductSort.PriceDesc:
+                    query = query.OrderByDescending(p => p.Price);
+                    break;
+
+                default:
+                    query = query.OrderBy(p => p.Name);
+                    break;
+            }
+
+            List<ProductInCategoryViewModel> products = await query
                 .Select(p => new ProductInCategoryViewModel
                 {
                     Id = p.Id,
@@ -46,29 +60,15 @@ namespace TechStore.Services.Core
                     Price = p.Price,
                     QuantityInStock = p.QuantityInStock
                 })
-                .ToList();
+                .ToListAsync();
 
-            return result;
-        }
-
-        public async Task<ProductsByCategoryViewModel?> GetProductsByCategoryAsync(int categoryId)
-        {
-            Category? category = await this.categoryRepository.GetByIdAsync(categoryId);
-            if (category == null)
-            {
-                return null;
-            }
-
-            IEnumerable<ProductInCategoryViewModel?> products = await this.GetAllProductsByCategoryIdAsync(categoryId);
-
-            ProductsByCategoryViewModel viewModel = new ProductsByCategoryViewModel
+            return new ProductsByCategoryViewModel
             {
                 CategoryId = category.Id,
                 CategoryName = category.Name,
-                Products = products
+                Products = products,
+                Sort = sort
             };
-
-            return viewModel;
         }
 
         public async Task<ProductDetailsViewModel?> GetProductDetailsViewModelAsync(string? id)
