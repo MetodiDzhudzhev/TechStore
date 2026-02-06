@@ -379,7 +379,7 @@ namespace TechStore.Services.Core
 
         public async Task<bool> EditStatusAsync(long orderId, Status newStatus)
         {
-            var order = await orderRepository.GetByIdAsync(orderId);
+            var order = await orderRepository.GetOrderDetailsAsync(orderId);
 
             if (order == null)
             {
@@ -398,12 +398,31 @@ namespace TechStore.Services.Core
                 return false;
             }
 
-            order.Status = newStatus;
+            await unitOfWork.BeginTransactionAsync();
 
-            orderRepository.Update(order);
-            await orderRepository.SaveChangesAsync();
+            try
+            {
+                if (newStatus == Status.Cancelled)
+                {
+                    foreach (var op in order.OrdersProducts)
+                    {
+                        op.Product.QuantityInStock += op.Quantity;
+                    }
+                }
 
-            return true;
+                order.Status = newStatus;
+
+                orderRepository.Update(order);
+                await unitOfWork.SaveChangesAsync();
+                await unitOfWork.CommitAsync();
+
+                return true;
+            }
+            catch (Exception)
+            {
+                await unitOfWork.RollbackAsync();
+                return false;
+            }
         }
 
         public async Task<bool> EditShippingDetailsAsync(OrderEditShippingDetailsInputModel model)
