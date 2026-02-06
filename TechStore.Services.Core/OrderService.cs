@@ -77,18 +77,18 @@ namespace TechStore.Services.Core
                 return null;
             }
 
-            foreach (CartProduct product in cart.Products)
-            {
-                if (product.Quantity > product.Product.QuantityInStock)
-                {
-                    return null;
-                }
-            }
-
             await unitOfWork.BeginTransactionAsync();
 
             try
             {
+                foreach (CartProduct product in cart.Products)
+                {
+                    if (product.Quantity > product.Product.QuantityInStock)
+                    {
+                        return null;
+                    }
+                }
+
                 Order order = new Order
                 {
                     RecipientName = model.RecipientName,
