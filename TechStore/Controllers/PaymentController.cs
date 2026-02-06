@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Stripe;
 using Stripe.Checkout;
 using TechStore.Services.Core.Interfaces;
 using TechStore.Web.ViewModels.Payment;
@@ -122,19 +123,45 @@ namespace TechStore.Web.Controllers
         public async Task<IActionResult> Success(string session_id)
         {
             string? userId = GetUserId();
+
             if (userId == null)
             {
                 return RedirectToAction("Login", "Account");
             }
 
-            var sessionService = new SessionService();
-            var session = await sessionService.GetAsync(session_id);
-
-            var orderIdStr = session?.Metadata?["orderId"];
-            if (!long.TryParse(orderIdStr, out var orderId))
+            if (string.IsNullOrWhiteSpace(session_id) || session_id.Length > 80)
             {
                 return BadRequest();
-            }    
+            }
+
+            var sessionService = new SessionService();
+            Session session;
+
+            try
+            {
+                session = await sessionService.GetAsync(session_id);
+            }
+            catch (StripeException ex)
+            {
+                logger.LogWarning(ex, "Stripe session lookup failed. SessionId={SessionId}", session_id);
+                return NotFound();
+            }
+
+            if (session?.Metadata == null || !session.Metadata.TryGetValue("orderId", out var orderIdStr))
+            {
+                logger.LogWarning("Stripe session missing orderId metadata. SessionId={SessionId}", session_id);
+                return NotFound();
+            }
+
+            if (!long.TryParse(orderIdStr, out var orderId))
+            {
+                return NotFound();
+            }
+
+            if (!string.Equals(session.PaymentStatus, "paid", StringComparison.OrdinalIgnoreCase))
+            {
+                return RedirectToAction(nameof(Cancel), new { orderId });
+            }
 
             var model = await orderService.GetPaymentSuccessAsync(userId, orderId);
 
