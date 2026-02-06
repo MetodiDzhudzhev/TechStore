@@ -196,7 +196,7 @@ namespace TechStore.Services.Core
                 .ThenInclude(op => op.Product)
                 .FirstOrDefaultAsync();
 
-            if (order == null)
+            if (order == null || order.Status == Status.Cancelled)
             {
                 return null;
             }
