@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.ComponentModel.DataAnnotations;
+using TechStore.Data;
 using TechStore.Data.Models;
 
 namespace TechStore.Web.Areas.Identity.Pages.Account
@@ -18,19 +19,22 @@ namespace TechStore.Web.Areas.Identity.Pages.Account
         private readonly IUserStore<User> _userStore;
         private readonly IUserEmailStore<User> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
+        private readonly ApplicationDbContext _dbContext;
         //private readonly IEmailSender _emailSender;
 
         public RegisterModel(
             UserManager<User> userManager,
             IUserStore<User> userStore,
             SignInManager<User> signInManager,
-            ILogger<RegisterModel> logger)
+            ILogger<RegisterModel> logger,
+            ApplicationDbContext dbContext)
         {
             _userManager = userManager;
             _userStore = userStore;
             _emailStore = GetEmailStore();
             _signInManager = signInManager;
             _logger = logger;
+            _dbContext = dbContext;
         }
 
         /// <summary>
@@ -98,20 +102,57 @@ namespace TechStore.Web.Areas.Identity.Pages.Account
         {
             returnUrl ??= Url.Content("~/");
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
-            if (ModelState.IsValid)
-            {
-                var user = CreateUser();
 
+            if (!ModelState.IsValid)
+            {
+                return Page();
+            }
+
+            await using var transaction = await _dbContext.Database.BeginTransactionAsync();
+
+            var user = CreateUser();
+
+            try
+            {
                 await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
+
                 var result = await _userManager.CreateAsync(user, Input.Password);
 
-                if (result.Succeeded)
+                if (!result.Succeeded)
                 {
-                    _logger.LogInformation("User created a new account with password.");
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
 
-                    await _userManager.AddToRoleAsync(user, "User");
+                    await transaction.RollbackAsync();
+                    return Page();
+                }
 
+                _dbContext.Carts.Add(new Cart { Id = user.Id });
+                await _dbContext.SaveChangesAsync();
+
+                var roleResult = await _userManager.AddToRoleAsync(user, "User");
+
+                if (!roleResult.Succeeded)
+                {
+                    foreach (var e in roleResult.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, e.Description);
+                    }
+
+                    await transaction.RollbackAsync();
+                    await _userManager.DeleteAsync(user);
+                    return Page();
+                }
+
+                await transaction.CommitAsync();
+
+                _logger.LogInformation("User and cart created, role assigned.");
+
+                if (_userManager.Options.SignIn.RequireConfirmedAccount)
+                {
                     //var userId = await _userManager.GetUserIdAsync(user);
                     //var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     //code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
@@ -123,25 +164,23 @@ namespace TechStore.Web.Areas.Identity.Pages.Account
 
                     //await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
                     //    $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
-
-                    if (_userManager.Options.SignIn.RequireConfirmedAccount)
-                    {
-                        return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
-                    }
-                    else
-                    {
-                        await _signInManager.SignInAsync(user, isPersistent: false);
-                        return LocalRedirect(returnUrl);
-                    }
+                    
+                    return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
                 }
-                foreach (var error in result.Errors)
-                {
-                    ModelState.AddModelError(string.Empty, error.Description);
-                }
+                
+                await _signInManager.SignInAsync(user, isPersistent: false);
+                return LocalRedirect(returnUrl);         
             }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error during registration workflow. Rolling back.");
 
-            // If we got this far, something failed, redisplay form
-            return Page();
+                await transaction.RollbackAsync();
+                await _userManager.DeleteAsync(user);
+                ModelState.AddModelError(string.Empty, "Registration failed. Please try again.");
+
+                return Page();
+            }
         }
 
         private User CreateUser()
