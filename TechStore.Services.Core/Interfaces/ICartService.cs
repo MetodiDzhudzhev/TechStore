@@ -10,5 +10,6 @@ namespace TechStore.Services.Core.Interfaces
         Task<bool> RemoveProductAsync(string cartId, string? productId);
         Task<bool> DecreaseProductAsync(string cartId, string? productId);
         Task<bool> ClearCartAsync(string? cartId);
+        Task<int> GetCartItemsCountAsync(Guid userId);
     }
 }

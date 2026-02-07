@@ -9,12 +9,15 @@ namespace TechStore.Services.Core
     {
         private readonly ICartRepository cartRepository;
         private readonly IProductRepository productRepository;
+        private readonly IUserRepository userRepository;
 
         public CartService(ICartRepository cartRepository,
-            IProductRepository productRepository)
+            IProductRepository productRepository,
+            IUserRepository userRepository)
         {
             this.cartRepository = cartRepository;
             this.productRepository = productRepository;
+            this.userRepository = userRepository;
         }
 
         public async Task<CartViewModel?> GetCartAsync(string? id)
@@ -139,6 +142,11 @@ namespace TechStore.Services.Core
 
             await cartRepository.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<int> GetCartItemsCountAsync(Guid userId)
+        {
+            return await cartRepository.GetCartItemsCountAsync(userId);
         }
 
         private async Task<bool> AddQuantityInternalAsync(string cartId, string? productId, int quantityToAdd)
