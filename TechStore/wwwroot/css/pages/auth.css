@@ -106,3 +106,28 @@
 .field__toggle:hover {
     color: white;
 }
+
+.field--checkbox {
+    margin-bottom: 1rem;
+}
+
+.field__checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+.auth__links {
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.auth__links a {
+    color: #6ea8ff;
+    text-decoration: none;
+}
+
+.auth__links a:hover {
+    text-decoration: underline;
+}
