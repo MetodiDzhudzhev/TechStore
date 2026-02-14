@@ -4,158 +4,123 @@
     ViewData["Title"] = "My Cart";
 }
 
-<div class="cart-wrapper">
-
-    <h2 class="mb-4">🛒 My Cart</h2>
+<section class="cart">
+    <header class="cart__header">
+        <h1 class="cart__title">🛒 My Cart</h1>
+    </header>
 
     @if (TempData["ErrorMessage"] != null)
     {
-        <div class="alert alert-danger cart-alert">
+        <div class="notice notice--danger" role="alert">
             @TempData["ErrorMessage"]
         </div>
     }
 
     @if (!Model.Products.Any())
     {
-        <div class="alert cart-empty-alert mt-3">
+        <div class="notice notice--empty" role="status">
             Your cart is empty.
         </div>
     }
     else
     {
-        <table class="table cart-table table-striped align-middle">
-            <thead>
-                <tr>
-                    <th></th>
-                    <th>Product</th>
-                    <th>Price</th>
-                    <th style="width: 160px;">Quantity</th>
-                    <th>Total</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var product in Model.Products)
-                {
+        <div class="cart__tableWrap">
+            <table class="cartTable">
+                <thead class="cartTable__head">
                     <tr>
-                        <td>
-                            <a asp-controller="Product"
-                               asp-action="Details"
-                               asp-route-id="@product.ProductId"
-                               title="View product details">
-                                <img src="@product.ImageUrl"
-                                     alt="@product.Name"
-                                     class="cart-product-img" />
-                            </a>
-                        </td>
-
-                        <td>@product.Name</td>
-                        <td>@product.Price.ToString("F2") €</td>
-
-                        <td>
-                            <div class="d-flex gap-1 cart-quantity-controls">
-
-                                <form asp-action="Decrease" method="post">
-                                    <input type="hidden" name="productId" value="@product.ProductId" />
-                                    <button class="btn cart-btn-outline-light btn-sm"
-                                            @(product.Quantity == 1 ? "disabled" : "")>
-                                        −
-                                    </button>
-                                </form>
-
-                                <span class="px-2">@product.Quantity</span>
-
-                                <form asp-action="Increase" method="post">
-                                    <input type="hidden" name="productId" value="@product.ProductId" />
-                                    <input type="hidden" name="quantity" value="1" />
-                                    <button class="btn cart-btn-outline-light btn-sm">+</button>
-                                </form>
-                            </div>
-                        </td>
-
-                        <td>@(product.Price* product.Quantity) €</td>
-
-                        <td>
-                            <form asp-action="Remove" method="post">
-                                <input type="hidden" name="productId" value="@product.ProductId" />
-                                <button class="btn btn-danger btn-sm">Remove</button>
-                            </form>
-                        </td>
+                        <th class="cartTable__colImg"></th>
+                        <th>Product</th>
+                        <th class="cartTable__colPrice">Price</th>
+                        <th class="cartTable__colQty">Quantity</th>
+                        <th class="cartTable__colTotal">Total</th>
+                        <th class="cartTable__colActions"></th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
 
-        <div class="d-flex justify-content-between align-items-center mt-4">
-            <form asp-action="Clear" method="post"
-                  onsubmit="return confirm('Are you sure you want to clear your cart?');">
-                <button type="submit" class="btn btn-danger btn-sm">Clear cart</button>
-            </form>
+                <tbody class="cartTable__body">
+                    @foreach (var product in Model.Products)
+                    {
+                        <tr class="cartRow">
+                            <td>
+                                <a class="cartRow__imgLink"
+                                   asp-controller="Product"
+                                   asp-action="Details"
+                                   asp-route-id="@product.ProductId"
+                                   title="View product details">
+                                    <img src="@product.ImageUrl"
+                                         alt="@product.Name"
+                                         class="cartRow__img" />
+                                </a>
+                            </td>
 
-            <div class="text-end">
-                <h4>Total: <strong>@Model.TotalPrice.ToString("F2") €</strong></h4>
+                            <td class="cartRow__name">@product.Name</td>
+
+                            <td class="cartRow__price">@product.Price.ToString("F2") €</td>
+
+                            <td>
+                                <div class="qty">
+                                    <form asp-action="Decrease" method="post">
+                                        <input type="hidden" name="productId" value="@product.ProductId" />
+                                        <button type="submit"
+                                                class="btn btn--ghost"
+                                                @(product.Quantity == 1 ? "disabled" : "")>
+                                            −
+                                        </button>
+                                    </form>
+
+                                    <span class="qty__value">@product.Quantity</span>
+
+                                    <form asp-action="Increase" method="post">
+                                        <input type="hidden" name="productId" value="@product.ProductId" />
+                                        <input type="hidden" name="quantity" value="1" />
+                                        <button type="submit" class="btn btn--ghost">+</button>
+                                    </form>
+                                </div>
+                            </td>
+
+                            <td class="cartRow__total">@((product.Price * product.Quantity).ToString("F2")) €</td>
+
+                            <td class="cartRow__actions">
+                                <form asp-action="Remove" method="post">
+                                    <input type="hidden" name="productId" value="@product.ProductId" />
+                                    <button type="submit" class="btn btn--danger btn--sm">Remove</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <footer class="cart__footer">
+            <div class="cart__footerTop">
+                <div class="cart__total">
+                    <span>Total:</span>
+                    <strong>@Model.TotalPrice.ToString("F2") €</strong>
+                </div>
+            </div>
+
+            <div class="cart__footerBottom">
+                <form asp-action="Clear" method="post" data-cart-clear>
+                    <button type="submit" class="btn btn--danger btn--sm">Clear cart</button>
+                </form>
 
                 <a asp-controller="Order"
                    asp-action="Checkout"
-                   class="btn btn-success btn-lg mt-2">
+                   class="btn btn--primary btn--lg">
                     Proceed to checkout
                 </a>
             </div>
-        </div>
+        </footer>
+
+
     }
-</div>
+</section>
 
-<style>
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/cart.css" asp-append-version="true" />
+}
 
-    .cart-wrapper {
-        color: white;
-    }
-
-    .cart-table th,
-    .cart-table td {
-        color: white;
-        vertical-align: middle;
-    }
-
-    .cart-table tbody tr {
-        height: 90px;
-    }
-
-    .cart-product-img {
-        width: 60px;
-        height: auto;
-        cursor: pointer;
-        transition: transform 0.2s ease, opacity 0.2s ease;
-    }
-
-    .cart-product-img:hover {
-        transform: scale(1.1);
-        opacity: 0.85;
-    }
-
-    .cart-btn-outline-light {
-        color: white;
-        border-color: white;
-    }
-
-    .cart-btn-outline-light:hover {
-        background-color: white;
-        color: black;
-    }
-
-    .cart-alert,
-    .cart-empty-alert {
-        color: white;
-    }
-
-    .cart-empty-alert {
-        background-color: #1f2933;
-        border: 1px solid #374151;
-        font-size: 1.05rem;
-    }
-
-    .cart-quantity-controls {
-        gap: 0.5rem;
-    }
-</style>
-
+@section Scripts {
+    <script src="~/js/cart.js" asp-append-version="true"></script>
+}
