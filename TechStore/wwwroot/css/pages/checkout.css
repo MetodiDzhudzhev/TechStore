@@ -1,0 +1,130 @@
+﻿.checkout {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1.25rem;
+}
+
+.checkout__card {
+    width: 100%;
+    max-width: 45rem;
+    background: #1c1c1e;
+    padding: 2rem;
+    border-radius: 0.75rem;
+    border: 1px solid #444;
+}
+
+.checkout__header {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.checkout__title {
+    margin: 0;
+    font-size: 1.9rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.checkout__form {
+    display: flex;
+    flex-direction: column;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 0.8rem;
+}
+
+.field__label {
+    font-size: 0.9em;
+    font-weight: 500;
+    color: #f0f0f0;
+}
+
+.field__input {
+    width: 100%;
+    padding: 0.75rem 0.9rem;
+    border-radius: 0.75rem;
+    border: 1px solid #444;
+    background: #121212;
+    color: #f0f0f0;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 120ms ease, background 120ms ease;
+}
+
+.field__input::placeholder {
+    color: #F0F0F073;
+}
+
+.field__input:focus {
+    border-color: #0DCAF08C;
+}
+
+.field__error {
+    font-size: 0.9em;
+    color: #ff9b9b;
+}
+
+.checkout .btn {
+    border: 1px solid #666;
+    background: transparent;
+    color: #f0f0f0;
+    border-radius: 0.75rem;
+    padding: 0.6rem 0.75rem;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: 0.2s ease;
+}
+
+.checkout .btn--primary {
+    padding: 0.75rem 1rem;
+    border-radius: 0.85rem;
+    font-weight: 700;
+    border-color: #2b69ff;
+    background: #0d6efd;
+    color: #fff;
+}
+
+.checkout .btn--primary:hover {
+    filter: brightness(1.10);
+    background: #0d6efd;
+    border-color: #2b69ff;
+}
+
+.checkout .btn--outline {
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: transparent;
+    color: #f0f0f0;
+    transition: all 0.25s ease;
+}
+
+.checkout .btn--outline:hover {
+    background: #ffffff;
+    border-color: #ffffff;
+    color: #000000;
+}
+
+.checkout__actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+@media (max-width: 600px) {
+    .checkout__actions {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .checkout__actions .btn {
+        width: 50%;
+    }
+}
