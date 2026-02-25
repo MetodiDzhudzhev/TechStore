@@ -1,48 +1,69 @@
 ﻿@model TechStore.Web.ViewModels.Payment.PaymentSummaryViewModel
 
-<div class="container mt-5">
-    <div class="card p-4 shadow-lg bg-white text-dark">
-        <h2 class="fw-bold text-dark mb-3">Payment</h2>
+@{
+    ViewData["Title"] = "Payment";
+}
 
-        <p class="text-secondary fs-5 mb-2">
-            <strong>Order #</strong> @Model.OrderId
-        </p>
+<section class="payment">
+    <div class="payment__card">
 
-        <p class="text-body mb-2">
-            <strong>Recipient:</strong><br />
-            @Model.RecipientName
-        </p>
+        <header class="payment__header">
+            <h2 class="payment__title">Payment</h2>
+        </header>
 
-        <p class="text-body mb-2">
-            <strong>Email:</strong><br />
-            @Model.Email
-        </p>
+        <div class="payment__summary">
 
-        <p class="text-body mb-2">
-            <strong>Shipping Address:</strong><br />
-            @Model.ShippingAddress
-        </p>
+            <p class="payment__order">
+                <span class="payment__label">Order # <span class="payment__value">@Model.OrderId</span></span>
+            </p>
 
-        <h4 class="text-success mt-3 mb-4">
-            Total: @Model.TotalAmount.ToString("F2") €
-        </h4>
+            <div class="payment__info">
+                <span class="payment__label">Recipient</span>
+                <span class="payment__value">@Model.RecipientName</span>
+            </div>
 
-        <div class="d-flex gap-2 flex-wrap">
-            <form asp-controller="Payment" asp-action="CreateCheckoutSession" method="post">
+            <div class="payment__info">
+                <span class="payment__label">Email</span>
+                <span class="payment__value">@Model.Email</span>
+            </div>
+
+            <div class="payment__info">
+                <span class="payment__label">Shipping Address</span>
+                <span class="payment__value">@Model.ShippingAddress</span>
+            </div>
+
+            <div class="payment__total">
+                Total: @Model.TotalAmount.ToString("F2") €
+            </div>
+        </div>
+
+        <div class="payment__actions">
+
+            <form asp-controller="Payment"
+                  asp-action="ConfirmCashOnDelivery"
+                  method="post">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="orderId" value="@Model.OrderId" />
-                <button type="submit" class="btn btn-primary btn-lg">
-                    Pay with card
+                <button type="submit"
+                        class="btn btn--outline btn--lg">
+                    Cash on delivery
                 </button>
             </form>
 
-            <form asp-controller="Payment" asp-action="ConfirmCashOnDelivery" method="post">
+            <form asp-controller="Payment"
+                  asp-action="CreateCheckoutSession"
+                  method="post">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="orderId" value="@Model.OrderId" />
-                <button type="submit" class="btn btn-outline-dark btn-lg">
-                    Cash on delivery
+                <button type="submit"
+                        class="btn btn--primary btn--lg">
+                    Pay with card
                 </button>
             </form>
         </div>
     </div>
-</div>
+</section>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/payment.css" asp-append-version="true" />
+}
