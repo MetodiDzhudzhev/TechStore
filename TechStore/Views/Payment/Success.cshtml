@@ -4,80 +4,99 @@
     ViewData["Title"] = "Payment Successful";
 }
 
-<div class="container mt-5">
-    <div class="card p-4 shadow-lg bg-white text-dark">
+<section class="successStripe">
+    <div class="successStripe__card">
 
-        <h2 class="text-success mb-3">Thank you for your order!</h2>
+        <h2 class="successStripe__heading">
+            Order #@Model.OrderId has been paid successfully!
+        </h2>
 
-        <p class="fs-5">
-            Your payment was successful. Your order has been received.
-        </p>
-
-        <div class="mb-4">
-            <strong>Order #:</strong> @Model.OrderId<br />
+        <div class="successStripe__summary">
             <strong>Total Paid:</strong>
-            <span class="fw-bold text-success">
+            <span class="successStripe__total">
                 @Model.TotalAmount.ToString("F2") €
             </span>
         </div>
 
-        <h4 class="mt-4 mb-3">Products in your order</h4>
+        <h3 class="successStripe__productsTitle">
+            Products in your order:
+        </h3>
 
         @if (!Model.Products.Any())
         {
-            <div class="alert alert-warning">
+            <div class="successStripe__empty">
                 Products are not available for display.
             </div>
         }
         else
         {
-            <div class="list-group mb-4">
+            <div class="orderItems">
                 @foreach (var p in Model.Products)
                 {
-                    <div class="list-group-item py-3">
-                        <div class="row align-items-center">
+                    <div class="orderItem">
+                        <div class="orderItem__row">
 
-                            <div class="col-md-2 text-center">
-                                <img src="@p.Product.ImageUrl"
-                                     alt="@p.Product.Name"
-                                     class="img-fluid rounded border"
-                                     style="max-height:80px;" />
+                            <div class="orderItem__thumb">
+                                @if (!string.IsNullOrWhiteSpace(p.Product.ImageUrl))
+                                {
+                                    <img src="@p.Product.ImageUrl" alt="@p.Product.Name" />
+                                }
+                                else
+                                {
+                                    <img src="~/images/default-image.jpg" alt="No Image Available" />
+                                }
                             </div>
 
-                            <div class="col-md-6">
-                                <h6 class="fw-bold mb-1">@p.Product.Name</h6>
-                                <div class="text-muted small">
-                                    Quantity: <strong>@p.Quantity</strong><br />
-                                    Unit price: <strong>@p.UnitPrice.ToString("F2") €</strong>
+                            <div class="orderItem__content">
+
+                                <div class="orderItem__name">
+                                    @p.Product.Name
+                                </div>
+
+                                <div class="orderItem__badges">
+                                    <span class="badge">
+                                        Qty:
+                                        <span class="badge__value">@p.Quantity</span>
+                                    </span>
+
+                                    <span class="badge">
+                                        Unit price:
+                                        <span class="badge__value">
+                                            @p.UnitPrice.ToString("F2") €
+                                        </span>
+                                    </span>
+
+                                    <span class="badge">
+                                        Total:
+                                        <span class="badge__value">
+                                            @((p.Quantity * p.UnitPrice).ToString("F2")) €
+                                        </span>
+                                    </span>
                                 </div>
                             </div>
-
-                            <div class="col-md-4 text-end">
-                                <span class="fw-bold fs-5">
-                                    @((p.Quantity * p.UnitPrice).ToString("F2")) €
-                                </span>
-                            </div>
-
                         </div>
                     </div>
                 }
             </div>
         }
 
-        <div class="d-flex gap-2">
+        <div class="successStripe__actions">
             <a asp-controller="Category"
                asp-action="Index"
-               class="btn btn-primary">
-                Continue Shopping
+               class="btn btn--primary">
+                Continue shopping
             </a>
 
-            <a asp-area ="Account"
+            <a asp-area="Account"
                asp-controller="Account"
                asp-action="MyOrders"
-               class="btn btn-outline-dark">
-                View My Orders
+               class="btn btn--outline">
+                View my orders
             </a>
         </div>
-
     </div>
-</div>
+</section>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/success-stripe.css" asp-append-version="true" />
+}

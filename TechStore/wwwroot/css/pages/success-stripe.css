@@ -1,0 +1,143 @@
+﻿.successStripe {
+    display: flex;
+    justify-content: center;
+    padding: 5rem 1rem;
+}
+
+.successStripe__card {
+    width: 100%;
+    max-width: 50rem;
+    background: #1c1c1e;
+    padding: 2.5rem;
+    border-radius: 0.75rem;
+    border: 1px solid #444;
+}
+
+.successStripe__heading {
+    margin-bottom: 1rem;
+}
+
+.successStripe__summary {
+    margin-bottom: 1.5rem;
+}
+
+.successStripe__total {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #4caf50;
+}
+
+.successStripe__productsTitle {
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.successStripe .orderItems {
+    display: grid;
+    gap: 0.6rem;
+    margin-bottom: 2rem;
+}
+
+.successStripe .orderItem {
+    border: 1px solid #444;
+    background: #121212;
+    border-radius: 0.75rem;
+    padding: 0.75rem;
+}
+
+.successStripe .orderItem__row {
+    display: grid;
+    grid-template-columns: 4rem 1fr;
+    gap: 1rem;
+    align-items: start;
+}
+
+.successStripe .orderItem__thumb img {
+    width: 4rem;
+    height: 4rem;
+    object-fit: cover;
+    border-radius: 0.5rem;
+}
+
+.successStripe .orderItem__name {
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.successStripe .orderItem__badges {
+    margin-top: 0.6rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.successStripe .badge {
+    padding: 0.35rem 0.6rem;
+    border-radius: 0.4rem;
+    background: #f8f9fa;
+    color: #111;
+    font-size: 0.75rem;
+}
+
+.successStripe .badge__value {
+    font-weight: 700;
+}
+
+.successStripe__actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.successStripe .btn {
+    border: 1px solid #666;
+    background: transparent;
+    color: #f0f0f0;
+    border-radius: 0.75rem;
+    padding: 0.6rem 1.2rem;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: 0.2s ease;
+}
+
+.successStripe .btn--primary {
+    font-weight: 700;
+    border-color: #2b69ff;
+    background: #0d6efd;
+    color: #fff;
+}
+
+.successStripe .btn--primary:hover {
+    filter: brightness(1.10);
+}
+
+.successStripe .btn--outline {
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: transparent;
+    color: #f0f0f0;
+    transition: all 0.25s ease;
+}
+
+.successStripe .btn--outline:hover {
+    background: #ffffff;
+    border-color: #ffffff;
+    color: #000000;
+}
+
+@media (max-width: 600px) {
+
+    .successStripe .orderItem__row {
+        display: inherit;
+    }
+
+    .successStripe__actions {
+        flex-direction: column;
+    }
+
+    .successStripe__actions .btn {
+        width: 100%;
+    }
+}
