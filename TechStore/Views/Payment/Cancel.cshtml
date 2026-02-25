@@ -4,31 +4,38 @@
     ViewData["Title"] = "Payment cancelled";
 }
 
-<div class="container mt-5">
-    <div class="card p-4 shadow-lg bg-white text-dark">
-        <h2 class="text-danger mb-3">Payment cancelled</h2>
+<section class="cancel">
+    <div class="cancel__card">
 
-        <p class="fs-5">
+        <h2 class="cancel__heading">
+            Payment cancelled
+        </h2>
+
+        <p class="cancel__text">
             Your payment was not completed. No charges were made.
         </p>
 
-        <p>
-            <strong>Order #:</strong> @Model.OrderId
+        <p class="cancel__order">
+            <strong>Order #</strong>@Model.OrderId
         </p>
 
-        <div class="d-flex gap-2">
+        <div class="cancel__actions">
             <a asp-controller="Payment"
                asp-action="Payment"
                asp-route-id="@Model.OrderId"
-               class="btn btn-outline-dark">
+               class="btn btn--outline">
                 Back to order
             </a>
 
             <a asp-controller="Home"
                asp-action="Index"
-               class="btn btn-primary">
+               class="btn btn--primary">
                 Back to Home
             </a>
         </div>
     </div>
-</div>
+</section>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/cancel-stripe.css" asp-append-version="true" />
+}

@@ -1,0 +1,73 @@
+﻿.cancel {
+    display: flex;
+    justify-content: center;
+    padding: 5rem 1rem;
+}
+
+.cancel__card {
+    max-width: 37rem;
+    background: #1c1c1e;
+    padding: 2rem;
+    border-radius: 0.75rem;
+    border: 1px solid #444;
+}
+
+.cancel__heading {
+    margin-bottom: 1rem;
+    color: #ff4d4f;
+}
+
+.cancel__text {
+    margin-bottom: 1.25rem;
+}
+
+.cancel__order {
+    margin-bottom: 2rem;
+}
+
+.cancel__actions {
+    display: flex;
+    justify-content:center;
+    gap: 1rem;
+}
+
+.cancel .btn {
+    border: 1px solid #666;
+    background: transparent;
+    color: #f0f0f0;
+    border-radius: 0.75rem;
+    padding: 0.6rem 0.9rem;
+    text-decoration: none;
+    transition: 0.2s ease;
+}
+
+.cancel .btn--primary {
+    border-color: #2b69ff;
+    background: #0d6efd;
+    color: #fff;
+}
+
+.cancel .btn--primary:hover {
+    filter: brightness(1.1);
+}
+
+.cancel .btn--outline {
+    border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.cancel .btn--outline:hover {
+    background: #ffffff;
+    color: #000000;
+}
+
+@media (max-width: 600px) {
+
+    .cancel__actions {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .cancel__actions .btn {
+        width: 130px;
+    }
+}
