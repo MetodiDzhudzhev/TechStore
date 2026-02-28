@@ -68,7 +68,7 @@
     gap: 1rem;
 }
 
-.btn {
+.categories .btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -82,17 +82,17 @@
     cursor: pointer;
 }
 
-.btn--primary {
+.categories .btn--primary {
     background: #0d6efd;
     color: #ffffff;
 }
 
-.btn--accent {
+.categories .btn--accent {
     background: linear-gradient(135deg, #0dcaf0, #0aa2c0);
     color: #000;
 }
 
-.btn--accent:hover {
+.categories .btn--accent:hover {
     transform: translateY(-0.2rem);
 }
 
@@ -102,7 +102,7 @@
     gap: 0.75rem;
 }
 
-.icon-btn {
+.categories .icon-btn {
     width: 2.25rem;
     height: 2.25rem;
     display: inline-flex;
@@ -114,23 +114,23 @@
     transition: all 0.2s ease;
 }
 
-.icon-btn--edit {
+.categories .icon-btn--edit {
     color: #ffc107;
     background: #FFC1071F;
 }
 
-.icon-btn--edit:hover {
+.categories .icon-btn--edit:hover {
     background: #ffc107;
     color: #000;
     transform: translateY(-0.15rem);
 }
 
-.icon-btn--delete {
+.categories .icon-btn--delete {
     color: #dc3545;
     background: #DC35451F;
 }
 
-.icon-btn--delete:hover {
+.categories .icon-btn--delete:hover {
     background: #dc3545;
     color: #fff;
     transform: translateY(-0.15rem);
