@@ -1,0 +1,171 @@
+﻿.cp {
+    margin-top: 1.5rem;
+    margin-inline: auto;
+}
+
+.cp__header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.cp__title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #ffc107;
+}
+
+.cp__subtitle {
+    font-size: 1.1rem;
+    color: #6c757d;
+}
+
+.cp__row {
+    display: grid;
+    gap: 1.5rem;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+}
+
+.cp__row--top {
+    grid-template-columns: repeat(2, minmax(16rem, 18rem));
+}
+
+.cp__row--bottom {
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 18rem));
+}
+
+.cp-card {
+    width: 100%;
+    max-width: 18rem;
+    background: #212529;
+    color: #ffffff;
+    border-radius: 0.5rem;
+    transition: transform 0.2s ease;
+}
+
+.cp-card:hover {
+    transform: translateY(-4px);
+}
+
+.cp-card__body {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    height: 100%;
+}
+
+.cp-card__icon {
+    font-size: 4rem;
+}
+
+.cp-card__icon--warning {
+    color: #ffc107;
+}
+
+.cp-card__icon--success {
+    color: #198754;
+}
+
+.cp-card__icon--primary {
+    color: #0d6efd;
+}
+
+.cp-card__icon--danger {
+    color: #dc3545;
+}
+
+.cp-card__icon--info {
+    color: #0dcaf0;
+}
+
+.cp-card__icon--purple {
+    color: #6f42c1;
+}
+
+.cp-card__title {
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.cp-card__text {
+    color: #adb5bd;
+    margin-bottom: 1rem;
+}
+
+.cp-card__btn {
+    margin-top: auto;
+    padding: 0.5rem 1rem;
+    font-weight: 700;
+    border-radius: 0.375rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    justify-content: center;
+}
+
+.cp-card__btn:hover {
+    color: #ffffff;
+    transform: translateY(-4px);
+}
+
+.cp-card__btn--warning {
+    background: #ffc107;
+    color: #fff;
+}
+
+.cp-card__btn--success {
+    background: #198754;
+    color: #fff;
+}
+
+.cp-card__btn--primary {
+    background: #0d6efd;
+    color: #fff;
+}
+
+.cp-card__btn--danger {
+    background: #dc3545;
+    color: #fff;
+}
+
+.cp-card__btn--info {
+    background: #0dcaf0;
+    color: #fff;
+}
+
+.cp-card__btn--purple {
+    background: #6f42c1;
+    color: #fff;
+}
+
+@media (max-width: 1200px) {
+    .cp__row--bottom {
+        grid-template-columns: repeat(3, minmax(16rem, 18rem));
+    }
+}
+
+@media (max-width: 900px) {
+    .cp__row--bottom {
+        grid-template-columns: repeat(2, minmax(16rem, 18rem));
+    }
+}
+
+@media (max-width: 560px) {
+
+    .cp__row--top,
+    .cp__row--bottom {
+        grid-template-columns: auto;
+        justify-content: center;
+    }
+
+    .cp-card {
+        width: 100%;
+        max-width: 18rem;
+    }
+
+    .cp__title {
+        font-size: 2rem;
+    }
+}
