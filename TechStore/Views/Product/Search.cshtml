@@ -2,69 +2,86 @@
 @model IEnumerable<ProductInCategoryViewModel>
 
 @{
-	ViewData["Title"] = "Search Results";
+    ViewData["Title"] = "Search Results";
 }
 
-<div class="container mt-4">
-	<h2>@ViewData["Title"]</h2>
+<div class="search-results">
 
-	@if (!string.IsNullOrWhiteSpace(ViewBag.Query))
-	{
-		<p class="text-muted">Showing results for: <strong>@ViewBag.Query</strong></p>
-	}
+    <header class="search-results__header">
+        <h2 class="search-results__title">
+            @ViewData["Title"]
+        </h2>
 
-	@if (!string.IsNullOrWhiteSpace(ViewBag.Message))
-	{
-		<div class="alert alert-warning mt-3">
-			@ViewBag.Message
-		</div>
-	}
+        @if (!string.IsNullOrWhiteSpace(ViewBag.Query))
+        {
+            <p class="search-results__query">
+                Showing results for:
+                <span>@ViewBag.Query</span>
+            </p>
+        }
+    </header>
 
-	<hr />
+    @if (!string.IsNullOrWhiteSpace(ViewBag.Message))
+    {
+        <div class="search-results__message--warning">
+            @ViewBag.Message
+        </div>
+    }
 
-	@if (!Model.Any() && string.IsNullOrWhiteSpace(ViewBag.Message))
-	{
-		<div class="alert alert-info mt-3">
-			No products found matching your search.
-		</div>
-	}
-	else
-	{
-		foreach (var product in Model)
-		{
-			<div class="card bg-light text-dark shadow rounded mb-4 p-3" style="max-width: 100%;">
-				<div class="row g-0 align-items-center">
-					<div class="col-md-4 text-center">
-						<img src="@product.ImageUrl"
-							 alt="@product.Name"
-							 class="img-fluid rounded"
-							 style="max-height: 300px; object-fit: contain;" />
-					</div>
-					<div class="col-md-8">
-						<div class="card-body">
-							<h4 class="card-title fw-bold">@product.Name</h4>
-							<p class="card-text">
-								<strong>Price:</strong> @product.Price.ToString("F2") BGN<br />
-								<strong>Quantity in Stock:</strong> @product.QuantityInStock
-							</p>
-							<a asp-controller="Product"
-							   asp-action="Details"
-							   asp-route-id="@product.Id"
-							   class="btn btn-primary fw-semibold mt-2 px-4 rounded-pill">
-								View Details
-							</a>
-						</div>
-					</div>
-				</div>
-			</div>
-		}
-	}
+    <div class="search-results__divider"></div>
 
-	<div class="mt-4">
-		<a asp-controller="Home"
-		   asp-action="Index"
-		   class="btn btn-outline-secondary fw-bold px-4 rounded-pill">
-			<i class="fas fa-arrow-left"></i> Back to Home
-		</a>
-	</div>
+    @if (!Model.Any() && string.IsNullOrWhiteSpace(ViewBag.Message))
+    {
+        <div class="search-results__message--blank">
+            No products found matching your search.
+        </div>
+    }
+    else
+    {
+        <div class="category-products__list">
+
+            @foreach (var product in Model)
+            {
+                <article class="product-card">
+
+                    <div class="product-card__image-wrapper">
+                        <img src="@product.ImageUrl"
+                             alt="@product.Name"
+                             class="product-card__image" />
+                    </div>
+
+                    <div class="product-card__content">
+                        <h4 class="product-card__title">
+                            @product.Name
+                        </h4>
+
+                        <div class="product-card__meta">
+                            <div class="product-card__price">
+                                <span class="product-card__label">Price:</span>
+                                @product.Price.ToString("F2") €
+                            </div>
+
+                            <div class="product-card__stock">
+                                <span class="product-card__label">Quantity in stock:</span>
+                                @product.QuantityInStock
+                            </div>
+                        </div>
+
+                        <a asp-controller="Product"
+                           asp-action="Details"
+                           asp-route-id="@product.Id"
+                           class="product-card__details-btn">
+                            View details
+                        </a>
+                    </div>
+                </article>
+            }
+
+        </div>
+    }
 </div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/Product/search.css" />
+    <link rel="stylesheet" href="~/css/Product/index-by-category.css" />
+}

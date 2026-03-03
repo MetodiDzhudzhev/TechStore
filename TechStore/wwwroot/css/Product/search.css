@@ -1,0 +1,39 @@
+﻿.search-results {
+    margin-top: 1.5rem;
+    max-width: 90%;
+    margin-inline: auto;
+}
+
+.search-results__header {
+    margin-bottom: 1rem;
+}
+
+.search-results__title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.search-results__query {
+    color: #666;
+    font-size: 1rem;
+}
+
+.search-results__query span {
+    font-weight: 700;
+}
+
+.search-results__divider {
+    margin: 1.2rem 0 2rem;
+    height: 1px;
+    background-color: #e5e5e5;
+}
+
+.search-results__message--blank {
+    border-radius: 0.75rem;
+    padding: 0.75rem;
+    margin: 0 0 1rem;
+    border: 1px solid #374151;
+    background: #1f2933;
+    font-size: 1rem;
+}
