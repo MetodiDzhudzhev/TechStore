@@ -1,0 +1,257 @@
+﻿.manage-orders {
+    margin-top: 1.5rem;
+    color: #f0f0f0;
+}
+
+.manage-orders__title {
+    margin-bottom: 2rem;
+}
+
+.manage-orders__empty {
+    background: #2c2c2e;
+    padding: 1rem;
+    border-radius: 0.4rem;
+    color: #ccc;
+}
+
+.order-card {
+    border: 1px solid #444;
+    border-radius: 0.5rem;
+    background: #1c1c1e;
+    margin-bottom: 0.75rem;
+}
+
+.order-card__summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.order-card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+    flex: 1;
+}
+
+.order-card__id {
+    font-weight: 700;
+}
+
+.order-card__date,
+.order-card__email,
+.order-card__separator {
+    color: #bdbdbd;
+}
+
+.order-card__total {
+    margin-left: auto;
+    font-weight: 600;
+}
+
+.order-card__status {
+    padding: 0.25rem 0.6rem;
+    border-radius: 0.3rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.order-card__status--pendingpayment {
+    background: #ffc107;
+    color: #000;
+}
+
+.order-card__status--processing {
+    background: #0dcaf0;
+    color: #000;
+}
+
+.order-card__status--shipped {
+    background: #0d6efd;
+}
+
+.order-card__status--delivered {
+    background: #198754;
+}
+
+.order-card__status--cancelled {
+    background: #dc3545;
+}
+
+.order-card__status--default {
+    background: #6c757d;
+}
+
+.order-card__actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.order-card__btn {
+    padding: 0.3rem 0.7rem;
+    border-radius: 0.3rem;
+    border: 1px solid #777;
+    background: transparent;
+    color: #fff;
+    font-size: 0.85rem;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.order-card__btn--edit {
+    border-color: #0d6efd;
+    color: #0d6efd;
+}
+
+.order-card__btn:hover {
+    opacity: 0.85;
+}
+
+.order-card__details {
+    display: none;
+    padding: 1rem;
+    border-top: 1px solid #444;
+}
+
+.order-card__details.is-open {
+    display: block;
+}
+
+.order-card__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.order-card__label {
+    font-size: 0.8rem;
+    color: #bdbdbd;
+}
+
+.order-card__value {
+    margin-bottom: 0.5rem;
+}
+
+.order-card__divider {
+    border-color: #444;
+    margin: 1rem 0;
+}
+
+.order-item {
+    display: flex;
+    gap: 1rem;
+    border: 1px solid #444;
+    border-radius: 0.4rem;
+    padding: 0.6rem;
+    background: #121212;
+}
+
+.order-item__image img {
+    width: 56px;
+    height: 56px;
+    object-fit: cover;
+    border-radius: 0.3rem;
+}
+
+.order-item__title {
+    font-weight: 600;
+}
+
+.order-item__description {
+    font-size: 0.85rem;
+    color: #bdbdbd;
+}
+
+.order-item__badges {
+    margin-top: 0.5rem;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.order-item__badge {
+    background: #e9ecef;
+    color: #000;
+    padding: 0.2rem 0.6rem;
+    border-radius: 0.3rem;
+    font-size: 0.8rem;
+}
+
+.manage-orders__pagination {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.pagination__link {
+    padding: 0.4rem 0.7rem;
+    background: #1c1c1e;
+    border: 1px solid #444;
+    color: #f0f0f0;
+    text-decoration: none;
+    border-radius: 0.3rem;
+}
+
+.pagination__link.is-active {
+    background: #0d6efd;
+    border-color: #0d6efd;
+    color: #fff;
+}
+
+.pagination__link.is-disabled {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+
+@media (max-width: 1000px) {
+
+    .order-card__meta {
+        gap: 0.75rem;
+    }
+
+    .order-card__email {
+        flex-basis: 100%;
+    }
+
+    .order-card__total {
+        margin-left: 0;
+        flex-basis: 100%;
+        margin-top: 0.3rem;
+        font-weight: 700;
+    }
+
+    .order-card__separator {
+        display: none;
+    }
+}
+
+@media (max-width: 450px) {
+
+    .order-card__summary {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .order-card__meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.4rem;
+    }
+
+    .order-card__actions {
+        margin-top: 0.75rem;
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .order-card__btn {
+        flex: 1;
+        text-align: center;
+    }
+}
