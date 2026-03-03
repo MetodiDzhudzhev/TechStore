@@ -1,0 +1,74 @@
+﻿.brand-details {
+    margin-top: 3rem;
+    max-width: 70rem;
+    margin-inline: auto;
+    padding: 0 1.5rem;
+}
+
+.brand-details__card {
+    background: #ffffff;
+    padding: 2rem;
+    border-radius: 0.75rem;
+}
+
+.brand-details__layout {
+    display: flex;
+    gap: 3rem;
+    align-items: flex-start;
+}
+
+.brand-details__logo-wrapper {
+    flex: 0 0 16rem;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #e5e5e5;
+    border-radius: 0.5rem;
+    background: #f8f9fa;
+}
+
+.brand-details__logo {
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain;
+}
+
+.brand-details__content {
+    flex: 1;
+    color: #312e2e;
+}
+
+.brand-details__title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.brand-details__description {
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+.brand-details__description--empty {
+    color: #777;
+    font-style: italic;
+}
+
+@media (max-width: 768px) {
+
+    .brand-details__layout {
+        flex-direction: column;
+    }
+
+    .brand-details__logo-wrapper {
+        flex: none;
+        width: 100%;
+        max-width: 18rem;
+        margin-inline: auto;
+    }
+
+    .brand-details__content {
+        text-align: center;
+    }
+}

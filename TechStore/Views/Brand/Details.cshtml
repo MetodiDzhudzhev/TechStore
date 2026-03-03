@@ -2,37 +2,53 @@
 @model BrandDetailsViewModel
 
 @{
-	ViewData["Title"] = "Brand Details";
+    ViewData["Title"] = "Brand Details";
 }
 
-<div class="container mt-5">
-	<div class="card p-4 shadow-lg bg-white text-dark">
-		<div class="row">
-			<div class="col-md-4">
-				@if (!string.IsNullOrWhiteSpace(Model.logoUrl))
-				{
-					<img src="@Model.logoUrl" alt="@Model.Name Logo" class="img-fluid rounded border" />
-				}
-				else
-				{
-					<img src="~/images/default-brand.png" alt="No Logo" class="img-fluid rounded border" />
-				}
-			</div>
+<div class="brand-details">
 
-			<div class="col-md-8">
-				<h2 class="fw-bold text-dark">@Model.Name</h2>
+    <div class="brand-details__card">
 
-				@if (!string.IsNullOrWhiteSpace(Model.Description))
-				{
-					<p class="text-body mt-3">@Model.Description</p>
-				}
-				else
-				{
-					<p class="text-muted mt-3 fst-italic">No description available.</p>
-				}
-				</div>
-			</div>
-		</div>
-	</div>
+        <div class="brand-details__layout">
+
+            <div class="brand-details__logo-wrapper">
+                @if (!string.IsNullOrWhiteSpace(Model.logoUrl))
+                {
+                    <img src="@Model.logoUrl"
+                         alt="@Model.Name Logo"
+                         class="brand-details__logo" />
+                }
+                else
+                {
+                    <img src="~/images/default-brand.png"
+                         alt="No Logo"
+                         class="brand-details__logo" />
+                }
+            </div>
+
+            <div class="brand-details__content">
+
+                <h1 class="brand-details__title">
+                    @Model.Name
+                </h1>
+
+                @if (!string.IsNullOrWhiteSpace(Model.Description))
+                {
+                    <p class="brand-details__description">
+                        @Model.Description
+                    </p>
+                }
+                else
+                {
+                    <p class="brand-details__description brand-details__description--empty">
+                        No description available.
+                    </p>
+                }
+            </div>
+        </div>
+    </div>
 </div>
-	
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/Brand/details.css" />
+}
