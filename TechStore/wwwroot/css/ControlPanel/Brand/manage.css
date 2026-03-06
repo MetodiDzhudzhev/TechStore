@@ -1,0 +1,128 @@
+﻿.manage-brands {
+    max-width: 80rem;
+    margin: 0 auto;
+}
+
+.manage-brands__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.manage-brands__title {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-top: 1.5rem;
+}
+
+.manage-brands__add-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.8rem;
+    border-radius: 0.75rem;
+    background: #0d6efd;
+    color: #ffffff;
+    text-decoration: none;
+    margin-top: 1.5rem;
+}
+
+.manage-brands__add-btn:hover {
+    color: #ffffff;
+}
+
+.brand-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+}
+
+.brand-card {
+    padding: 1rem;
+    border-radius: 0.75rem;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.brand-card__image-link {
+    width: 100%;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    margin-bottom: 1rem;
+    transition: transform .2s ease;
+}
+
+.brand-card__image-link:hover {
+    transform: scale(1.10);
+}
+
+.brand-card__image {
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain;
+}
+
+.brand-card__actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.brand-card__btn {
+    width: 3rem;
+    height: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    text-decoration: none;
+    font-size: 1.2rem;
+    transition: all 0.2s ease;
+}
+
+.brand-card__btn--edit {
+    color: #ffc107;
+    background: #FFC1071F;
+}
+
+.brand-card__btn--edit:hover {
+    background: #ffc107;
+    color: #000;
+    transform: translateY(-0.15rem);
+}
+
+.brand-card__btn--delete {
+    color: #dc3545;
+    background: #DC35451F;
+}
+
+.brand-card__btn--delete:hover {
+    background: #dc3545;
+    color: #fff;
+    transform: translateY(-0.15rem);
+}
+
+@media (max-width: 1000px) {
+
+    .brand-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+
+    .brand-grid {
+        grid-template-columns: 1fr;
+        margin: 0 4rem;
+    }
+
+    .brand-card {
+        padding-top: 0;
+        margin-bottom: 0;
+    }
+}

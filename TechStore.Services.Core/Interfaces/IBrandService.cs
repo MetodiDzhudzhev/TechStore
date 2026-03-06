@@ -28,8 +28,6 @@ namespace TechStore.Services.Core.Interfaces
 
         Task<bool> RestoreByIdAsync(int id);
 
-        Task<IEnumerable<BrandManageViewModel>> GetPagedAsync(int page, int pageSize);
-
-        Task<int> GetTotalCountAsync();
+        Task<IEnumerable<BrandManageViewModel>> GetAllAsync();
     }
 }

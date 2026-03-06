@@ -254,13 +254,11 @@ namespace TechStore.Services.Core
             return await this.brandRepository.GetDeletedBrandByNameAsync(name);
         }
 
-        public async Task<IEnumerable<BrandManageViewModel>> GetPagedAsync(int page, int pageSize)
+        public async Task<IEnumerable<BrandManageViewModel>> GetAllAsync()
         {
-            IEnumerable<BrandManageViewModel> brands = await this.brandRepository
+            return await this.brandRepository
                 .GetAllAttached()
                 .OrderBy(b => b.Name)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
                 .Select(b => new BrandManageViewModel
                 {
                     Id = b.Id,
@@ -269,15 +267,6 @@ namespace TechStore.Services.Core
                     Description = b.Description,
                 })
                 .ToListAsync();
-
-            return brands;
-        }
-        public async Task<int> GetTotalCountAsync()
-        {
-            int countOfBrands = await this.brandRepository
-                .CountAsync();
-
-            return countOfBrands;
         }
     }
 }

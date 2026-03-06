@@ -14,8 +14,6 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
 
         private readonly ILogger<ControlPanelBrandController> logger;
 
-        private const int PageSize = 4;
-
         public ControlPanelBrandController(IBrandService brandService,
             ILogger<ControlPanelBrandController> logger)
         {
@@ -255,28 +253,13 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
 
         [HttpGet]
         [Authorize(Roles = "Admin,Manager")]
-        public async Task<IActionResult> Manage(int page = 1)
+        public async Task<IActionResult> Manage()
         {
-            int totalCount = await brandService.GetTotalCountAsync();
-            int totalPages = (int)Math.Ceiling((double)totalCount / PageSize);
-
-            if (page < 1)
-            {
-                page = 1;
-            }
-
-            if (page > totalPages && totalPages > 0)
-            {
-                page = totalPages;
-            }
-
-            IEnumerable<BrandManageViewModel> brands = await brandService.GetPagedAsync(page, PageSize);
+            IEnumerable<BrandManageViewModel> brands = await brandService.GetAllAsync();
 
             BrandManageListViewModel viewModel = new BrandManageListViewModel
             {
-                Brands = brands,
-                CurrentPage = page,
-                TotalPages = totalPages
+                Brands = brands
             };
 
             return View(viewModel);
