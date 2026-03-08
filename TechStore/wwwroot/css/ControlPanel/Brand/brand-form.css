@@ -1,0 +1,109 @@
+﻿.brand-form {
+    display: flex;
+    justify-content: center;
+    padding: 2rem 1rem;
+}
+
+.brand-form__card {
+    width: 100%;
+    max-width: 34rem;
+    padding: 2rem;
+    border-radius: 0.75rem;
+    border: 1px solid #444;
+    background: #1c1c1e;
+}
+
+.brand-form__header {
+    margin-bottom: 1rem;
+}
+
+.brand-form__title {
+    font-size: 1.6rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+.brand-form__form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+}
+
+.brand-form__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.brand-form__label {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.brand-form__input,
+.brand-form__textarea {
+    color: #fff;
+    width: 100%;
+    padding: 0.75rem 0.9rem;
+    background: #121212;
+    border-radius: 0.75rem;
+    border: 1px solid #444;
+}
+
+.brand-form__textarea {
+    height: 6rem;
+}
+
+.brand-form__input:focus,
+.brand-form__textarea:focus {
+    border-color: #0DCAF08C;
+}
+
+.brand-form__error,
+.brand-form__validation {
+    font-size: 0.8rem;
+    color: #dc3545;
+}
+
+.brand-form__actions {
+    display: flex;
+    gap: 0.7rem;
+    margin-top: 0.5rem;
+}
+
+.brand-form__btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    font-weight: 700;
+    padding: 0.5rem 0.7rem;
+    border: 1px solid transparent;
+    border-radius: 0.45rem;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.brand-form__btn--add,
+.brand-form__btn--save {
+    background: #0d6efd;
+    color: #fff;
+}
+
+.brand-form__btn--add:hover,
+.brand-form__btn--save:hover {
+    background: #0b5ed7;
+}
+
+.brand-form__btn--back {
+    background: transparent;
+    border-color: #444;
+    color: #f0f0f0;
+}
+
+.brand-form__btn--back:hover {
+    background: #2c2c2e;
+    color: #f0f0f0;
+}

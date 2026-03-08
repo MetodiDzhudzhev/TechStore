@@ -5,29 +5,58 @@
     ViewData["Title"] = "Restore Brand";
 }
 
-<h2>Restore Brand</h2>
+<section class="brand-restore">
 
-<p>
-    A brand with the name <strong>@Model.Name</strong> already exists, but it is deactivated.<br />
-    Do you want to restore it?
-</p>
+    <div class="brand-restore__card">
 
-@if (!string.IsNullOrWhiteSpace(Model.LogoUrl))
-{
-    <img src="@Model.LogoUrl" alt="@Model.Name" style="max-width: 150px;" class="rounded border border-secondary mb-3" />
+        <h2 class="brand-restore__title">
+            Restore brand
+        </h2>
+
+        <p class="brand-restore__message">
+            Brand with the name
+            <strong>@Model.Name</strong> already exists, but is deactivated.
+            <br />
+            Do you want to restore it?
+        </p>
+
+
+        @if (!string.IsNullOrWhiteSpace(Model.LogoUrl))
+        {
+            <div class="brand-restore__image-wrapper">
+
+                <img src="@Model.LogoUrl"
+                     alt="@Model.Name"
+                     class="brand-restore__image" />
+            </div>
+        }
+
+        <form asp-area="ControlPanel"
+              asp-controller="ControlPanelBrand"
+              asp-action="RestoreConfirmed"
+              asp-route-id="@Model.Id"
+              method="post"
+              class="brand-restore__actions">
+
+            <input type="hidden" asp-for="Id" />
+
+            @Html.AntiForgeryToken()
+
+            <a asp-area="ControlPanel"
+               asp-controller="ControlPanelBrand"
+               asp-action="Add"
+               class="brand-restore__btn brand-restore__btn--cancel">
+                Cancel
+            </a>
+
+            <button type="submit"
+                    class="brand-restore__btn brand-restore__btn--restore">
+                Yes, restore
+            </button>
+        </form>
+    </div>
+</section>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/ControlPanel/Brand/restore.css" />
 }
-
-<form asp-area="ControlPanel"
-      asp-controller="ControlPanelBrand"
-      asp-action="RestoreConfirmed"
-      asp-route-id="@Model.Id"
-      method="post">
-    <input type="hidden" asp-for="Id" />
-    <button type="submit" class="btn btn-success me-2">Yes, restore</button>
-    <a asp-area="ControlPanel"
-       asp-controller="ControlPanelBrand"
-       asp-action="Add"
-       class="btn btn-secondary">Cancel</a>
-
-    @Html.AntiForgeryToken()
-</form>
