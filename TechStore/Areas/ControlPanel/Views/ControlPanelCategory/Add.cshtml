@@ -5,43 +5,69 @@
     ViewData["Title"] = "Add Category";
 }
 
-<h2 class="mt-4 mb-3 text-center">Add New Category</h2>
+<section class="category-form">
 
-<form asp-area="ControlPanel" asp-controller="ControlPanelCategory" asp-action="Add" method="post" class="col-md-6 offset-md-3">
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="category-form__card">
 
-    @Html.AntiForgeryToken()
+        <header class="category-form__header">
+            <h2 class="category-form__title">Add new category</h2>
+        </header>
 
-    <div class="form-group mb-3">
-        <label asp-for="Name" class="form-label"></label>
-        <input asp-for="Name" class="form-control" />
-        <span asp-validation-for="Name" class="text-danger"></span>
+        <form asp-area="ControlPanel"
+              asp-controller="ControlPanelCategory"
+              asp-action="Add"
+              method="post"
+              class="category-form__form">
+
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly"
+                 class="category-form__validation"></div>
+
+            <div class="category-form__field">
+
+                <label asp-for="Name"
+                       class="category-form__label"></label>
+
+                <input asp-for="Name"
+                       class="category-form__input" />
+
+                <span asp-validation-for="Name"
+                      class="category-form__error"></span>
+            </div>
+
+            <div class="category-form__field">
+
+                <label asp-for="ImageUrl"
+                    class="category-form__label">
+                    Image URL (optional)
+                </label>
+
+                <input asp-for="ImageUrl"
+                       class="category-form__input" />
+
+                <span asp-validation-for="ImageUrl"
+                      class="category-form__error"></span>
+            </div>
+
+            <div class="category-form__actions">
+
+                <a asp-area="ControlPanel"
+                   asp-controller="ControlPanelCategory"
+                   asp-action="Manage"
+                   class="category-form__btn category-form__btn--back">
+                    <span>Back</span>
+                </a>
+
+                <button type="submit"
+                        class="category-form__btn category-form__btn--add">
+                    <span>Add category</span>
+                </button>
+            </div>
+        </form>
     </div>
+</section>
 
-    <div class="form-group mb-4">
-        <label asp-for="ImageUrl" class="form-label">Image URL (optional)</label>
-        <input asp-for="ImageUrl" class="form-control" />
-        <span asp-validation-for="ImageUrl" class="text-danger"></span>
-    </div>
-
-    <div class="d-flex justify-content-between gap-2">
-        <a asp-area="" asp-controller="Category" asp-action="Index" class="btn btn-secondary w-50">
-            <i class="bi bi-arrow-left-circle"></i> Back to Categories
-        </a>
-
-        <a asp-area="ControlPanel"
-           asp-controller="ControlPanelCategory"
-           asp-action="Manage"
-           class="btn btn-secondary w-50">
-            <i class="bi bi-speedometer2"></i> Back to Control Panel
-        </a>
-
-        <button type="submit" class="btn btn-primary w-50">
-            <i class="bi bi-plus-circle"></i> Add Category
-        </button>
-    </div>
-</form>
-
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
+@section Styles {
+    <link rel="stylesheet" href="~/css/ControlPanel/Category/category-form.css" />
 }

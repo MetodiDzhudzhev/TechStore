@@ -1,25 +1,61 @@
 ﻿@using TechStore.Web.ViewModels.Category
 @model CategoryFormInputViewModel
 
-<h2>Restore Category</h2>
+@{
+    ViewData["Title"] = "Restore Category";
+}
 
-<p>
-    A category with the name <strong>@Model.Name</strong> already exists, but it is deactivated.
-    Do you want to restore it?
-</p>
+<section class="category-restore">
 
-<img src="@Model.ImageUrl" alt="@Model.Name" style="max-width: 150px;" />
+    <div class="category-restore__card">
 
-<form asp-area="ControlPanel"
-      asp-controller="ControlPanelCategory"
-      asp-action="RestoreConfirmed"
-      method="post">
-    <input type="hidden" asp-for="Id" />
-    <button type="submit" class="btn btn-success">Yes, restore</button>
-    <a asp-area="ControlPanel"
-       asp-controller="ControlPanelCategory"
-       asp-action="Add"
-       class="btn btn-secondary">Cancel</a>
+        <h2 class="category-restore__title">
+            Restore category
+        </h2>
 
-    @Html.AntiForgeryToken()
-</form>
+        <p class="category-restore__message">
+            Category with the name
+            <strong>@Model.Name</strong> already exists, but is deactivated.
+            <br />
+            Do you want to restore it?
+        </p>
+
+        @if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
+        {
+            <div class="category-restore__image-wrapper">
+
+                <img src="@Model.ImageUrl"
+                     alt="@Model.Name"
+                     class="category-restore__image" />
+            </div>
+        }
+
+        <form asp-area="ControlPanel"
+              asp-controller="ControlPanelCategory"
+              asp-action="RestoreConfirmed"
+              asp-route-id="@Model.Id"
+              method="post"
+              class="category-restore__actions">
+
+            <input type="hidden" asp-for="Id" />
+
+            @Html.AntiForgeryToken()
+
+            <a asp-area="ControlPanel"
+               asp-controller="ControlPanelCategory"
+               asp-action="Add"
+               class="category-restore__btn category-restore__btn--cancel">
+                Cancel
+            </a>
+
+            <button type="submit"
+                    class="category-restore__btn category-restore__btn--restore">
+                Yes, restore
+            </button>
+        </form>
+    </div>
+</section>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/ControlPanel/Category/restore.css" />
+}
