@@ -1,0 +1,38 @@
+﻿@model IEnumerable<TechStore.Web.ViewModels.Common.CardItemViewModel>
+
+<div class="card-grid">
+
+    @foreach (var item in Model)
+    {
+        <article class="card">
+
+            <a href="@item.DetailsUrl"
+               class="card__image-link">
+
+                <img src="@item.ImageUrl"
+                     alt="@item.Name"
+                     class="card__image" />
+            </a>
+
+            @if (item.ShowName)
+            {
+                <div class="card__title">
+                    @item.Name
+                </div>
+            }
+
+            <div class="card__actions">
+
+                <a href="@item.EditUrl"
+                   class="card__btn card__btn--edit">
+                    <i class="bi bi-pencil"></i>
+                </a>
+
+                <a href="@item.DeleteUrl"
+                   class="card__btn card__btn--delete">
+                    <i class="bi bi-trash"></i>
+                </a>
+            </div>
+        </article>
+    }
+</div>

@@ -1,22 +1,22 @@
-﻿.manage-brands {
+﻿.manage-page {
     max-width: 80rem;
     margin: 0 auto;
 }
 
-.manage-brands__header {
+.manage-page__header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 2rem;
 }
 
-.manage-brands__title {
+.manage-page__title {
     font-size: 2rem;
     font-weight: 600;
     margin-top: 1.5rem;
 }
 
-.manage-brands__add-btn {
+.manage-page__add-btn {
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
@@ -28,17 +28,17 @@
     margin-top: 1.5rem;
 }
 
-.manage-brands__add-btn:hover {
-    color: #ffffff;
+.manage-page__add-btn:hover {
+    color: #312e2e;
 }
 
-.brand-grid {
+.card-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 2rem;
 }
 
-.brand-card {
+.manage-page .card {
     padding: 1rem;
     border-radius: 0.75rem;
     background: #ffffff;
@@ -47,7 +47,7 @@
     align-items: center;
 }
 
-.brand-card__image-link {
+.card__image-link {
     width: 100%;
     height: 200px;
     display: flex;
@@ -58,22 +58,30 @@
     transition: transform .2s ease;
 }
 
-.brand-card__image-link:hover {
+.card__image-link:hover {
     transform: scale(1.10);
 }
 
-.brand-card__image {
+.card__image {
     max-width: 90%;
     max-height: 90%;
     object-fit: contain;
 }
 
-.brand-card__actions {
+.card__title {
+    color: #000;
+    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+.card__actions {
     display: flex;
     gap: 1rem;
 }
 
-.brand-card__btn {
+.manage-page .card__btn {
     width: 3rem;
     height: 3rem;
     display: flex;
@@ -85,23 +93,23 @@
     transition: all 0.2s ease;
 }
 
-.brand-card__btn--edit {
+.manage-page .card__btn--edit {
     color: #ffc107;
     background: #FFC1071F;
 }
 
-.brand-card__btn--edit:hover {
+.manage-page .card__btn--edit:hover {
     background: #ffc107;
     color: #000;
     transform: translateY(-0.15rem);
 }
 
-.brand-card__btn--delete {
+.manage-page .card__btn--delete {
     color: #dc3545;
     background: #DC35451F;
 }
 
-.brand-card__btn--delete:hover {
+.manage-page .card__btn--delete:hover {
     background: #dc3545;
     color: #fff;
     transform: translateY(-0.15rem);
@@ -109,19 +117,19 @@
 
 @media (max-width: 1000px) {
 
-    .brand-grid {
+    .card-grid {
         grid-template-columns: repeat(2, 1fr);
     }
 }
 
 @media (max-width: 600px) {
 
-    .brand-grid {
+    .card-grid {
         grid-template-columns: 1fr;
         margin: 0 4rem;
     }
 
-    .brand-card {
+    .manage-page .card {
         padding-top: 0;
         margin-bottom: 0;
     }

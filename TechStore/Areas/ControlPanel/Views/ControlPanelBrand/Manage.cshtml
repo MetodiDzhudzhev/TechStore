@@ -1,61 +1,51 @@
 ﻿@using TechStore.Web.ViewModels.Brand
+@using TechStore.Web.ViewModels.Common
 @model BrandManageListViewModel
 
 @{
     ViewData["Title"] = "Manage Brands";
 }
 
-<section class="manage-brands">
+<section class="manage-page">
 
-    <header class="manage-brands__header">
+    <header class="manage-page__header">
 
-        <h2 class="manage-brands__title">Manage Brands</h2>
+        <h2 class="manage-page__title">Manage Brands</h2>
 
-        <a asp-action="Add" class="manage-brands__add-btn">
-            <span>Add Brand</span>
+        <a asp-action="Add"
+           class="manage-page__add-btn">
+            <span>Add brand</span>
         </a>
+
     </header>
 
-    <div class="brand-grid">
-
-        @foreach (var brand in Model.Brands)
+    @{
+        var cards = Model.Brands.Select(b => new CardItemViewModel
         {
-            <article class="brand-card">
+            Name = b.Name,
+            ImageUrl = b.LogoUrl,
+            DetailsUrl = Url.Action(
+                "Details",
+                "Brand",
+                new { area = "", id = b.Id })!,
 
-                <a asp-area=""
-                   asp-controller="Brand"
-                   asp-action="Details"
-                   asp-route-id="@brand.Id"
-                   class="brand-card__image-link">
+            EditUrl = Url.Action(
+                "Edit",
+                "ControlPanelBrand",
+                new { area = "ControlPanel", brandId = b.Id })!,
 
-                    <img src="@brand.LogoUrl"
-                         alt="@brand.Name"
-                         class="brand-card__image" />
-                </a>
+            DeleteUrl = Url.Action(
+                "Delete",
+                "ControlPanelBrand",
+                new { area = "ControlPanel", id = b.Id })!,
 
-                <div class="brand-card__actions">
+            ShowName = false
+        });
+    }
 
-                    <a asp-area="ControlPanel"
-                       asp-controller="ControlPanelBrand"
-                       asp-action="Edit"
-                       asp-route-brandId="@brand.Id"
-                       class="brand-card__btn brand-card__btn--edit">
-                        <i class="bi bi-pencil"></i>
-                    </a>
-
-                    <a asp-area="ControlPanel"
-                       asp-controller="ControlPanelBrand" 
-                       asp-action="Delete"
-                       asp-route-id="@brand.Id"
-                       class="brand-card__btn brand-card__btn--delete">
-                        <i class="bi bi-trash"></i>
-                    </a>
-                </div>
-            </article>
-        }
-    </div>
+    @await Component.InvokeAsync("CardGrid", cards)
 </section>
 
 @section Styles {
-    <link rel="stylesheet" href="~/css/ControlPanel/Brand/manage.css" />
+    <link rel="stylesheet" href="~/css/ControlPanel/Common/manage.css" />
 }
