@@ -403,10 +403,12 @@ namespace TechStore.Services.Core
                 {
                     Id = p.Id,
                     Name = p.Name,
+                    Description = p.Description,
                     CategoryName = p.Category.Name,
                     BrandName = p.Brand.Name,
                     Price = p.Price,
-                    QuantityInStock = p.QuantityInStock
+                    QuantityInStock = p.QuantityInStock,
+                    ImageUrl = p.ImageUrl ?? DefaultImageUrl,
                 })
                 .ToListAsync();
 

@@ -1,66 +1,173 @@
 ﻿@using TechStore.Web.ViewModels.Product
 @model ProductManageListViewModel
 
-@* TODO: Better pagination. Implement AJAX for inline editing *@
+@{
+    ViewData["Title"] = "Manage Products";
+}
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="mb-0">Manage Products</h2>
-    <a asp-action="Add" class="btn btn-primary">
-        <i class="fas fa-plus"></i> Add product
-    </a>
-</div>
+<section class="manage-products">
 
-<div class="card shadow-sm border-0">
-    <div class="card-body p-0">
-        <table class="table table-hover table-striped table-bordered mb-0">
-            <thead class="table-dark">
-                <tr>
-                    <th>Name</th>
-                    <th>Category</th>
-                    <th>Brand</th>
-                    <th>Price</th>
-                    <th>Quantity In Stock</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
+    <header class="manage-products__header">
+        <h2 class="manage-products__title">Manage Products</h2>
+
+        <a asp-action="Add"
+           class="btn btn-add">
+            <span>Add product</span>
+        </a>
+    </header>
+
+    @if (Model.Products == null || !Model.Products.Any())
+    {
+        <div class="manage-products__empty">
+            No products found.
+        </div>
+    }
+    else
+    {
+
+        <div class="product-table">
+
+            <div class="product-table__header">
+
+                <span>Name</span>
+                <span>Category</span>
+                <span>Brand</span>
+                <span>Price</span>
+                <span>Stock</span>
+                <span></span>
+            </div>
+
+            <div class="product-list">
+
                 @foreach (var product in Model.Products)
                 {
-                    <tr>
-                        <td>@product.Name</td>
-                        <td>@product.CategoryName</td>
-                        <td>@product.BrandName</td>
-                        <td>@product.Price.ToString("C")</td>
-                        <td>@product.QuantityInStock</td>
-                        <td>
-                            <a asp-action="Edit" asp-route-id="@product.Id" class="btn btn-sm btn-outline-primary">Edit</a>
-                            <a asp-action="Delete" asp-route-id="@product.Id" class="btn btn-sm btn-outline-danger">Delete</a>
-                        </td>
-                    </tr>
+                    var collapseId = $"product-{product.Id}";
+
+                    <article class="product-card">
+
+                        <div class="product-card__summary js-product-toggle"
+                             data-target="@collapseId">
+
+                            <span class="product-card__name"
+                                  data-label="Name">
+                                @product.Name
+                            </span>
+
+                            <span class="product-card__category"
+                                  data-label="Category">
+                                @product.CategoryName
+                            </span>
+
+                            <span class="product-card__brand"
+                                  data-label="Brand">
+                                @product.BrandName
+                            </span>
+
+                            <span class="product-card__price"
+                                  data-label="Price">
+                                @product.Price.ToString("F2") €
+                            </span>
+
+                            <span class="product-card__stock"
+                                  data-label="Stock">
+                                @product.QuantityInStock
+                            </span>
+
+                            <div class="product-card__actions">
+
+                                <a asp-area="ControlPanel"
+                                   asp-controller="ControlPanelProduct"
+                                   asp-action="Edit"
+                                   asp-route-id="@product.Id"
+                                   class="btn btn--edit">
+                                    Edit
+                                </a>
+
+                                <a asp-area="ControlPanel"
+                                   asp-controller="ControlPanelProduct"
+                                   asp-action="Delete"
+                                   asp-route-id="@product.Id"
+                                   class="btn btn--delete">
+                                    Delete
+                                </a>
+                            </div>
+                        </div>
+
+                        <div id="@collapseId" class="product-card__details">
+
+                            <div class="product-details">
+
+                                <div class="product-details__image">
+
+                                    <img src="@(!string.IsNullOrWhiteSpace(product.ImageUrl)
+                                                     ? product.ImageUrl
+                                                     : Url.Content("~/images/default-image.jpg"))"
+                                    alt="@product.Name" />
+                                </div>
+
+                                <div class="product-details__description">
+
+                                    @if (!string.IsNullOrWhiteSpace(product.Description))
+                                    {
+                                        <div class="product-details__text">
+                                            @product.Description
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="product-details__empty">
+                                            No description available.
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </article>
                 }
-            </tbody>
-        </table>
-    </div>
-</div>
+            </div>
+        </div>
 
-@if (Model.TotalPages > 1)
-{
-    <nav aria-label="Page navigation" class="mt-3">
-        <ul class="pagination justify-content-center">
-            <li class="page-item @(Model.CurrentPage == 1 ? "disabled" : "")">
-                <a class="page-link" asp-action="Manage" asp-route-page="@(Model.CurrentPage - 1)">Previous</a>
-            </li>
+        @if (Model.TotalPages > 1)
+        {
+            <nav class="manage-products__pagination">
 
-            @for (int i = 1; i <= Model.TotalPages; i++)
-            {
-                <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
-                    <a class="page-link" asp-action="Manage" asp-route-page="@i">@i</a>
-                </li>
-            }
+                <a class="pagination__link @(Model.HasPreviousPage ? "" : "is-disabled")"
+                   asp-area="ControlPanel"
+                   asp-controller="ControlPanelProduct"
+                   asp-action="Manage"
+                   asp-route-page="@(Model.CurrentPage - 1)">
+                    Previous
+                </a>
 
-            <li class="page-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
-                <a class="page-link" asp-action="Manage" asp-route-page="@(Model.CurrentPage + 1)">Next</a>
-            </li>
-        </ul>
-    </nav>
+                @for (int i = 1; i <= Model.TotalPages; i++)
+                {
+                    bool isActive = i == Model.CurrentPage;
+
+                    <a class="pagination__link @(isActive ? "is-active" : "")"
+                       asp-area="ControlPanel"
+                       asp-controller="ControlPanelProduct"
+                       asp-action="Manage"
+                       asp-route-page="@i">
+                        @i
+                    </a>
+                }
+
+                <a class="pagination__link @(Model.HasNextPage ? "" : "is-disabled")"
+                   asp-area="ControlPanel"
+                   asp-controller="ControlPanelProduct"
+                   asp-action="Manage"
+                   asp-route-page="@(Model.CurrentPage + 1)">
+                    Next
+                </a>
+            </nav>
+        }
+    }
+</section>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/ControlPanel/Product/manage.css" />
+}
+
+@section Scripts {
+    <script src="~/js/ControlPanel/Product/manage.js"></script>
 }
