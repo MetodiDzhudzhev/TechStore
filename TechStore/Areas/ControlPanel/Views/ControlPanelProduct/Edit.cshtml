@@ -2,82 +2,142 @@
 @model ProductFormInputModel
 
 @{
-	ViewData["Title"] = "Edit Product";
+    ViewData["Title"] = "Edit Product";
 }
 
-<h2 class="text-center mb-4">Edit Product</h2>
+<section class="product-form">
 
-<form asp-area="ControlPanel"
-	  asp-controller="ControlPanelProduct"
-	  asp-action="Edit"
-	  method="post" class="mx-auto" style="max-width: 600px;">
-	<input type="hidden" asp-for="Id" />
+    <div class="product-form__card">
 
-	@Html.AntiForgeryToken()
+        <header class="product-form__header">
+            <h2 class="product-form__title">Edit product</h2>
+        </header>
 
-	<div class="mb-3">
-		<label asp-for="Name" class="form-label"></label>
-		<input asp-for="Name" class="form-control" />
-		<span asp-validation-for="Name" class="text-danger"></span>
-	</div>
+        <form asp-area="ControlPanel"
+              asp-controller="ControlPanelProduct"
+              asp-action="Edit"
+              method="post"
+              class="product-form__form">
 
-	<div class="mb-3">
-		<label asp-for="Description" class="form-label"></label>
-		<input asp-for="Description" class="form-control" rows="4"></>
-		<span asp-validation-for="Description" class="text-danger"></span>
-	</div>
+            <input type="hidden" asp-for="Id" />
 
-	<div class="mb-3">
-		<label asp-for="ImageUrl" class="form-label"></label>
-		<input asp-for="ImageUrl" class="form-control" />
-		<span asp-validation-for="ImageUrl" class="text-danger"></span>
-	</div>
+            @Html.AntiForgeryToken()
 
-	<div class="mb-3">
-		<label asp-for="Price" class="form-label"></label>
-		<input asp-for="Price" class="form-control" />
-		<span asp-validation-for="Price" class="text-danger"></span>
-	</div>
+            <div asp-validation-summary="ModelOnly"
+                 class="product-form__validation"></div>
 
-	<div class="mb-3">
-		<label asp-for="QuantityInStock" class="form-label"></label>
-		<input asp-for="QuantityInStock" class="form-control" />
-		<span asp-validation-for="QuantityInStock" class="text-danger"></span>
-	</div>
+            <div class="product-form__field">
 
-	<div class="mb-3">
-		<label asp-for="CategoryId" class="form-label">Category</label>
-		<select asp-for="CategoryId" asp-items="@(new SelectList(Model.Categories, "Id", "Name"))" class="form-select"></select>
-		<span asp-validation-for="CategoryId" class="text-danger"></span>
-	</div>
+                <label asp-for="Name"
+                       class="product-form__label"></label>
 
-	<div class="mb-3">
-		<label asp-for="BrandId" class="form-label">Brand</label>
-		<select asp-for="BrandId" asp-items="@(new SelectList(Model.Brands, "Id", "Name"))" class="form-select"></select>
-		<span asp-validation-for="BrandId" class="text-danger"></span>
-	</div>
+                <input asp-for="Name"
+                       class="product-form__input" />
 
-	<div class="d-flex justify-content-between gap-2">
-		<a asp-area=""
-		   asp-controller="Product"
-		   asp-action="Details"
-		   asp-route-id="@Model.Id" class="btn btn-secondary w-50">
-			<i class="bi bi-arrow-left-circle"></i> Back to Details
-		</a>
+                <span asp-validation-for="Name"
+                      class="product-form__error"></span>
+            </div>
 
-		<a asp-area="ControlPanel"
-		   asp-controller="ControlPanelProduct"
-		   asp-action="Manage"
-		   class="btn btn-secondary w-75">
-			<i class="bi bi-speedometer2"></i> Back to Control Panel
-		</a>
+            <div class="product-form__field">
 
-		<button type="submit" class="btn btn-primary w-50">
-			<i class="bi bi-save2"></i> Save Changes
-		</button>
-	</div>
-</form>
+                <label asp-for="Description"
+                       class="product-form__label"></label>
 
-@section Scripts {
-	<partial name="_ValidationScriptsPartial" />
+                    <textarea asp-for="Description"
+                       class="product-form__textarea"></textarea>
+
+                <span asp-validation-for="Description"
+                      class="product-form__error"></span>
+            </div>
+
+            <div class="product-form__field">
+
+                <label asp-for="ImageUrl"
+                       class="product-form__label"></label>
+
+                <input asp-for="ImageUrl"
+                       class="product-form__input" />
+
+                <span asp-validation-for="ImageUrl"
+                      class="product-form__error"></span>
+            </div>
+
+            <div class="product-form__field">
+
+                <label asp-for="Price"
+                       class="product-form__label"></label>
+
+                <input asp-for="Price"
+                       class="product-form__input" />
+
+                <span asp-validation-for="Price"
+                      class="product-form__error"></span>
+            </div>
+
+            <div class="product-form__field">
+
+                <label asp-for="QuantityInStock"
+                       class="product-form__label">
+                    Quantity in stock
+                </label>
+
+                <input asp-for="QuantityInStock"
+                       class="product-form__input" />
+
+                <span asp-validation-for="QuantityInStock"
+                      class="product-form__error"></span>
+            </div>
+
+            <div class="product-form__field">
+
+                <label asp-for="CategoryId"
+                       class="product-form__label">
+                    Category
+                </label>
+
+                <select asp-for="CategoryId"
+                        class="product-form__select"
+                        asp-items="@(new SelectList(Model.Categories, "Id", "Name"))">
+                </select>
+
+                <span asp-validation-for="CategoryId"
+                      class="product-form__error"></span>
+            </div>
+
+            <div class="product-form__field">
+
+                <label asp-for="BrandId"
+                       class="product-form__label">
+                    Brand
+                </label>
+
+                <select asp-for="BrandId"
+                        class="product-form__select"
+                        asp-items="@(new SelectList(Model.Brands, "Id", "Name"))">
+                </select>
+
+                <span asp-validation-for="BrandId"
+                      class="product-form__error"></span>
+            </div>
+
+            <div class="product-form__actions">
+
+                <a asp-area="ControlPanel"
+                   asp-controller="ControlPanelProduct"
+                   asp-action="Manage"
+                   class="product-form__btn product-form__btn--back">
+                    Back
+                </a>
+
+                <button type="submit"
+                        class="product-form__btn product-form__btn--save">
+                    Save changes
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/ControlPanel/Product/product-form.css" />
 }

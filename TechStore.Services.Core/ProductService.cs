@@ -242,6 +242,7 @@ namespace TechStore.Services.Core
                         {
                             Id = product.Id.ToString(),
                             Name = product.Name,
+                            Description = product.Description,
                             CategoryId = product.CategoryId,
                             ImageUrl = product.ImageUrl ?? DefaultImageUrl,
                         };

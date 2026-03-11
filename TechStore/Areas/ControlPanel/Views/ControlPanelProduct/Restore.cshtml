@@ -1,25 +1,61 @@
 ﻿@using TechStore.Web.ViewModels.Product
 @model ProductFormInputModel
 
-<h2>Restore Product</h2>
+@{
+    ViewData["Title"] = "Restore Product";
+}
 
-<p>
-	A product with the name <strong>@Model.Name</strong> already exists, but it is deactivated.
-	Do you want to restore it?
-</p>
+<section class="product-restore">
 
-<img src="@Model.ImageUrl" alt="@Model.Name" style="max-width: 150px;" />
+    <div class="product-restore__card">
 
-<form asp-area="ControlPanel"
-	  asp-controller="ControlPanelProduct"
-	  asp-action="RestoreConfirmed"
-	  method="post">
-	<input type="hidden" asp-for="Id" />
-	<button type="submit" class="btn btn-success">Yes, restore</button>
-	<a asp-area=""
-	   asp-controller="Category"
-	   asp-action="Index"
-	   class="btn btn-secondary">Cancel</a>
+        <h2 class="product-restore__title">
+            Restore product
+        </h2>
 
-	@Html.AntiForgeryToken()
-</form>
+        <p class="product-restore__message">
+            Product with the name
+            <strong>@Model.Name</strong> already exists, but is deactivated.
+            <br />
+            Do you want to restore it?
+        </p>
+
+        @if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
+        {
+            <div class="product-restore__image-wrapper">
+
+                <img src="@Model.ImageUrl"
+                     alt="@Model.Name"
+                     class="product-restore__image" />
+            </div>
+        }
+
+        <form asp-area="ControlPanel"
+              asp-controller="ControlPanelProduct"
+              asp-action="RestoreConfirmed"
+              asp-route-id="@Model.Id"
+              method="post"
+              class="product-restore__actions">
+
+            <input type="hidden" asp-for="Id" />
+
+            @Html.AntiForgeryToken()
+
+            <a asp-area="ControlPanel"
+               asp-controller="ControlPanelProduct"
+               asp-action="Manage"
+               class="product-restore__btn product-restore__btn--cancel">
+                Cancel
+            </a>
+
+            <button type="submit"
+                    class="product-restore__btn product-restore__btn--restore">
+                Yes, restore
+            </button>
+        </form>
+    </div>
+</section>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/ControlPanel/Product/restore.css" />
+}

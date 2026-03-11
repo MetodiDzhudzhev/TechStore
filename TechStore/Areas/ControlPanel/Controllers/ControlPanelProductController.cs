@@ -32,37 +32,10 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
             {
                 var categories = await this.categoryService.GetCategoriesDropDownDataAsync();
 
-                int selectedCategoryId;
-
-                if (categoryId.HasValue)
-                {
-                    if (categoryId <= 0)
-                    {
-                        logger.LogWarning("Negative categoryId supplied: {CategoryId}", categoryId);
-                        return NotFound();
-                    }
-
-                    bool exists = await this.categoryService.ExistsAsync(categoryId.Value);
-
-                    if (exists)
-                    {
-                        selectedCategoryId = categoryId.Value;
-                    }
-                    else
-                    {
-                        selectedCategoryId = categories.First().Id;
-                    }
-                }
-                else
-                {
-                    selectedCategoryId = categories.First().Id;
-                }
-
                 ProductFormInputModel inputModel = new ProductFormInputModel()
                 {
                     Categories = categories,
                     Brands = await this.brandService.GetBrandsDropDownDataAsync(),
-                    CategoryId = selectedCategoryId,
                 };
 
                 return this.View(inputModel);
@@ -85,6 +58,10 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
                 if (!this.ModelState.IsValid)
                 {
                     logger.LogWarning("Attempt by user {UserId} to add product with invalid model state", this.GetUserId());
+
+                    inputModel.Categories = await categoryService.GetCategoriesDropDownDataAsync();
+                    inputModel.Brands = await brandService.GetBrandsDropDownDataAsync();
+
                     return this.View(inputModel);
                 }
 
@@ -173,7 +150,7 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
                 }
 
                 logger.LogInformation("Product with Id {ProductId} was successfully restored by user {UserId}", id, this.GetUserId());
-                return this.RedirectToAction("IndexByCategory", "Product", new { area = "", categoryId = product!.CategoryId });
+                return this.RedirectToAction("Manage", "ControlPanelProduct", new { area = "ControlPanel"});
             }
             catch (Exception e)
             {
@@ -305,7 +282,7 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
                 }
 
                 logger.LogInformation("Product {ProductId} successfully deleted by user {UserId}", model.Id, this.GetUserId());
-                return this.RedirectToAction("IndexByCategory", "Product", new { area = "", categoryId = model.CategoryId });
+                return this.RedirectToAction("Manage", "ControlPanelProduct", new { area = "ControlPanel" });
 
             }
             catch (Exception e)

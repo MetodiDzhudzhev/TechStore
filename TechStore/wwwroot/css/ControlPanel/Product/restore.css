@@ -1,0 +1,88 @@
+﻿.product-restore {
+    display: flex;
+    justify-content: center;
+    padding: 2rem 1rem;
+}
+
+.product-restore__card {
+    width: 100%;
+    max-width: 32rem;
+    padding: 2rem;
+    border-radius: 0.75rem;
+    border: 1px solid #444;
+    background: #1c1c1e;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+}
+
+.product-restore__title {
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.product-restore__message {
+    margin-bottom: 0.7rem;
+}
+
+.product-restore__image-wrapper {
+    display: flex;
+    justify-content: center;
+}
+
+.product-restore__image {
+    max-width: 12rem;
+    padding: 0.5rem;
+    object-fit: contain;
+}
+
+.product-restore__actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.product-restore__btn {
+    min-width: 8rem;
+    padding: 0.5rem 1rem;
+    border-radius: 0.6rem;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.product-restore__btn--cancel {
+    background: transparent;
+    border-color: #444;
+    color: #f0f0f0;
+}
+
+.product-restore__btn--cancel:hover {
+    background: #2c2c2e;
+    color: #f0f0f0;
+}
+
+.product-restore__btn--restore {
+    background: #198754;
+    color: #fff;
+}
+
+.product-restore__btn--restore:hover {
+    background: #157347;
+}
+
+@media (max-width: 780px) {
+
+    .product-restore__actions {
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    .product-restore__btn {
+        max-width: 7rem;
+    }
+}

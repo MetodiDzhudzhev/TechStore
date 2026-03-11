@@ -33,7 +33,7 @@ namespace TechStore.Web.ViewModels.Product
         public int QuantityInStock { get; set; }
 
 
-        //If selected CategoryId does not exist or it is null -> first CategoryId from the list of categories will be taken.
+        [Required]
         public int CategoryId { get; set; }
         public IEnumerable<AddProductCategoryDropDownModel>? Categories { get; set; }
 
