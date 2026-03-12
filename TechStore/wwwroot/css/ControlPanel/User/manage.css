@@ -1,0 +1,125 @@
+﻿.manage-users {
+    margin-top: 1.5rem;
+}
+
+.manage-users__title {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+}
+
+.user-table__header {
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 1fr 1.5fr;
+    padding: 0.6rem 1rem;
+    font-weight: 600;
+    color: #aaa;
+}
+
+.user-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.user-row {
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 1fr 1.5fr;
+    align-items: center;
+    padding: 0.7rem 1rem;
+    border: 1px solid #444;
+    background: #1c1c1e;
+    border-radius: 0.4rem;
+}
+
+.role-badge {
+    padding: 0.15rem 0.45rem;
+    border-radius: 0.25rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.role-badge--admin {
+    background: #dc3545;
+    color: white;
+}
+
+.role-badge--manager {
+    background: #0d6efd;
+    color: white;
+}
+
+.role-badge--user {
+    background: #6c757d;
+    color: white;
+}
+
+.user-role-form {
+    display: flex;
+    gap: 0.4rem;
+}
+
+.user-role-form__select {
+    padding: 0.3rem 0.5rem;
+    border-radius: 0.3rem;
+    border: 1px solid #444;
+    background: #121212;
+    color: #fff;
+}
+
+.user-role-form__btn {
+    padding: 0.3rem 0.6rem;
+    border-radius: 0.3rem;
+    border: none;
+    background: #198754;
+    color: #fff;
+    cursor: pointer;
+}
+
+.manage-users__pagination {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.pagination__link {
+    padding: 0.4rem 0.7rem;
+    background: #1c1c1e;
+    border: 1px solid #444;
+    color: #f0f0f0;
+    text-decoration: none;
+    border-radius: 0.3rem;
+}
+
+.pagination__link.is-active {
+    background: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.pagination__link.is-disabled {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+@media (max-width: 800px) {
+
+    .user-table__header {
+        display: none;
+    }
+
+    .user-row {
+        grid-template-columns: 1fr;
+        gap: 0.4rem;
+    }
+
+    .user-row > div {
+        display: flex;
+        gap: 0.3rem;
+    }
+
+    .user-row > div::before {
+        content: attr(data-label) ":";
+        font-weight: 600;
+        color: #aaa;
+    }
+}
