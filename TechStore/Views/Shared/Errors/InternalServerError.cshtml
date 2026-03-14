@@ -1,0 +1,37 @@
+﻿@{
+    ViewData["Title"] = "Server Error";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<section class="error-page">
+
+    <div class="error-page__container">
+
+        <i class="bi bi-bug-fill error-page__icon error-page__icon--danger"></i>
+
+        <h1 class="error-page__title">
+            500 - Internal Server Error
+        </h1>
+
+        <p class="error-page__message">
+            Sorry, something went wrong on our end.
+        </p>
+
+        <p class="error-page__message">
+            Please try again later.
+        </p>
+
+        <div class="error-page__actions">
+
+            <a href="/"
+               class="error-page__button">
+                <i class="bi bi-house"></i>
+                Back to Home
+            </a>
+        </div>
+    </div>
+</section>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/Shared/error-pages.css" />
+}

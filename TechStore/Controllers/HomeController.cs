@@ -26,16 +26,17 @@ namespace TechStore.Web.Controllers
             switch (statusCode)
             {
                 case 401:
-                    return this.View("UnauthorizedError");
+                    return this.View("~/Views/Shared/Errors/UnauthorizedError.cshtml");
                 case 403:
-                    return this.View("ForbiddenError");
+                    return this.View("~/Views/Shared/Errors/ForbiddenError.cshtml");
                 case 404:
-                    return this.View("NotFoundError");
+                    return this.View("~/Views/Shared/Errors/NotFoundError.cshtml");
                 case 500:
                 case null:
-                    return this.View("InternalServerError");
+                    return this.View("~/Views/Shared/Errors/InternalServerError.cshtml");
                 default:
-                    return this.View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+                    return this.View("~/Views/Shared/Errors/Error.cshtml", 
+                        new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
             }
         }
     }

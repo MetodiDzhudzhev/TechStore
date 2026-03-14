@@ -1,0 +1,37 @@
+﻿@{
+    ViewData["Title"] = "Access Denied";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<section class="error-page">
+
+    <div class="error-page__container">
+
+        <i class="bi bi-shield-lock error-page__icon error-page__icon--danger"></i>
+
+        <h1 class="error-page__title">
+            403 - Access Denied
+        </h1>
+
+        <p class="error-page__message">
+            You do not have permission to view this page.
+        </p>
+
+        <p class="error-page__message">
+            If you believe this is a mistake, please contact the administrator.
+        </p>
+
+        <div class="error-page__actions">
+
+            <a href="/"
+               class="error-page__button">
+                <i class="bi bi-house"></i>
+                Back to Home
+            </a>
+        </div>
+    </div>
+</section>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/Shared/error-pages.css" />
+}

@@ -1,0 +1,37 @@
+﻿@{
+    ViewData["Title"] = "Unauthorized";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<section class="error-page">
+
+    <div class="error-page__container">
+
+        <i class="bi bi-person-lock error-page__icon error-page__icon--warning"></i>
+
+        <h1 class="error-page__title">
+            401 - Unauthorized
+        </h1>
+
+        <p class="error-page__message">
+            You must be logged in to access this page.
+        </p>
+
+        <p class="error-page__message">
+            Please log in with a valid account to continue.
+        </p>
+
+        <div class="error-page__actions">
+
+            <a href="/Identity/Account/Login"
+               class="error-page__button">
+                <i class="bi bi-box-arrow-in-right"></i>
+                Go to Login
+            </a>
+        </div>
+    </div>
+</section>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/Shared/error-pages.css" />
+}
