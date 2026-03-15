@@ -1,160 +1,111 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - TechStore</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="icon" type="image/svg+xml" href="~/favicon.svg" />
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+	<title>@ViewData["Title"] - TechStore</title>
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
-    
-    @await RenderSectionAsync("Styles", required: false)
+	<link rel="stylesheet" href="~/css/Layout/reset.css" asp-append-version="true" />
+	<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 
-    @*temporary*@
-    <style>
-        .navbar-dark-theme {
-            background-color: #1c1c1e;
-            padding-top: 1rem;
-            padding-bottom: 1rem;
-        }
+	<link rel="stylesheet" href="~/css/Layout/navbar.css" asp-append-version="true" />
+	<link rel="stylesheet" href="~/css/Layout/category-dropdown.css" asp-append-version="true" />
+	<link rel="stylesheet" href="~/css/Layout/authentication-menu.css" asp-append-version="true" />
 
-            .navbar-dark-theme .nav-link,
-            .navbar-dark-theme .navbar-brand,
-            .navbar-dark-theme .dropdown-toggle,
-            .navbar-dark-theme .form-control {
-                color: #f0f0f0 !important;
-            }
+	<link rel="stylesheet" href="~/css/Components/cart-icon.css" asp-append-version="true" />
 
-            .navbar-dark-theme .dropdown-menu {
-                background-color: #2c2c2e;
-                border-color: #444;
-            }
+	<link rel="icon" type="image/svg+xml" href="~/favicon.svg" />
 
-            .navbar-dark-theme .dropdown-item {
-                color: #f0f0f0;
-            }
+	<link rel="stylesheet"
+		  href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
 
-                .navbar-dark-theme .dropdown-item:hover {
-                    background-color: #3a3a3c;
-                }
+	@await RenderSectionAsync("Styles", required: false)
 
-            .navbar-dark-theme .form-control {
-                background-color: #2c2c2e;
-                border: 1px solid #444;
-            }
-
-            .navbar-dark-theme .btn-outline-secondary {
-                border-color: #666;
-                color: #f0f0f0;
-            }
-
-                .navbar-dark-theme .btn-outline-secondary:hover {
-                    background-color: #444;
-                    color: white;
-                }
-
-        .navbar-brand {
-            font-size: 1.8rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        body {
-            background-color: #121212;
-            color: #f0f0f0;
-        }
-
-        footer {
-            background-color: #1c1c1e;
-            color: #aaa;
-            padding: 1rem 0;
-            text-align: center;
-        }
-
-        .navbar-nav .nav-item .form-control {
-            max-width: 200px;
-        }
-    </style>
 </head>
-<body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-dark-theme border-bottom box-shadow mb-3">
-            <div class="container-fluid">
 
-                <a class="navbar-brand"
-                   asp-area=""
-                   asp-controller="Home"
-                   asp-action="Index">
-                    <i class="bi bi-cpu"></i> TechStore
-                </a>
+<body class="layout">
 
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
-                        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+	<header class="navbar">
 
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav me-auto align-items-center">
+		<div class="navbar__container">
 
-                        @await Component.InvokeAsync("CategoryDropdown")
+			<a class="navbar__brand"
+			   asp-area=""
+			   asp-controller="Home"
+			   asp-action="Index">
 
+				<i class="bi bi-cpu"></i>
+				<span>TechStore</span>
+			</a>
 
-                        <li class="nav-item ms-3">
-                            <form class="d-flex"
-                                  asp-area=""
-                                  asp-controller="Product"
-                                  asp-action="Search"
-                                  method="get">
-                                <input class="form-control me-2" type="search" placeholder="Search..." name="query" />
-                                <button class="btn btn-outline-secondary" type="submit">
-                                    <i class="bi bi-search"></i>
-                                </button>
-                            </form>
-                        </li>
+			<div class="navbar__content">
 
-                        @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
-                        {
-                            <li class="nav-item ms-3">
-                                <a class="nav-link"
-                                   asp-area="ControlPanel"
-                                   asp-controller="Home"
-                                   asp-action="Index">
-                                    Control Panel
-                                </a>
-                            </li>
-                        }
-                    </ul>
+				<div class="navbar__left">
 
-                    <partial name="_LoginPartial" />
-                </div>
-            </div>
-        </nav>
-    </header>
+					@await Component.InvokeAsync("CategoryDropdown")
 
-    <main class="container pb-3" role="main">
-        @if (TempData["ErrorMessage"] != null)
-        {
-            <div class="alert alert-danger text-center my-2">
-                @TempData["ErrorMessage"]
-            </div>
-        }
+					<form class="navbar__search"
+						  asp-area=""
+						  asp-controller="Product"
+						  asp-action="Search"
+						  method="get">
 
-        @RenderBody()
-    </main>
+						<input class="navbar__search-input"
+							   type="search"
+							   placeholder="Search..."
+							   name="query" />
 
-    <footer>
-        &copy; @DateTime.UtcNow.Year - TechStore<br />
-        Thank you for shopping with us!
-    </footer>
+						<button class="navbar__search-button" type="submit">
+							<i class="bi bi-search"></i>
+						</button>
+					</form>
 
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
+					@if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+					{
+						<a class="navbar__link"
+						   asp-area="ControlPanel"
+						   asp-controller="Home"
+						   asp-action="Index">
+							Control Panel
+						</a>
+					}
+				</div>
+
+				<div class="navbar__right">
+
+					<partial name="_LoginPartial" />
+				</div>
+			</div>
+		</div>
+	</header>
+
+	<main class="layout__main">
+
+		@if (TempData["ErrorMessage"] != null)
+		{
+			<div class="layout__alert">
+				@TempData["ErrorMessage"]
+			</div>
+		}
+
+		@RenderBody()
+	</main>
+
+	<footer class="footer">
+
+		<div class="footer__content">
+
+			© @DateTime.UtcNow.Year - TechStore
+			<br />
+			Thank you for shopping with us!
+		</div>
+	</footer>
+
+	<script src="~/js/Layout/navbar.js"></script>
+	<script src="~/js/Layout/category-dropdown.js"></script>
+	<script src="~/js/Layout/authentication-menu.js"></script>
+
+	@await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
