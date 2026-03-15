@@ -1,89 +1,100 @@
-﻿@using Microsoft.AspNetCore.Identity
-@using TechStore.Data.Models
+﻿<ul class="auth-menu">
 
-<ul class="navbar-nav">
     @if (User.Identity?.IsAuthenticated == true)
     {
-        <li class="nav-item me-3">
+        <li class="auth-menu__item auth-menu__item--cart">
             @await Component.InvokeAsync("CartCount")
         </li>
 
-        <li class="nav-item dropdown me-2">
-            <a class="nav-link text-light d-flex align-items-center"
-               href="#"
-               id="profileDropdown"
-               role="button"
-               data-bs-toggle="dropdown"
-               aria-expanded="false"
-               title="My profile">
-                <i class="bi bi-person-circle fs-5"></i>
-            </a>
+        <li class="auth-menu__item auth-menu__item--profile">
 
-            <ul class="dropdown-menu dropdown-menu-end"
-                aria-labelledby="profileDropdown">
+            <button class="profile-toggle"
+                    id="profileToggle"
+                    aria-expanded="false"
+                    aria-haspopup="true"
+                    title="My profile">
 
-                <li class="dropdown-header text-muted small">
-                    Signed in as<br />
-                    <strong>@User.Identity?.Name</strong>
-                </li>
+                <i class="bi bi-person-circle profile-toggle__icon"></i>
+            </button>
 
-                <li><hr class="dropdown-divider" /></li>
+            <div class="profile-dropdown" id="profileDropdown">
 
-                <li>
-                    <a class="dropdown-item"
-                       asp-area="Account"
+                <div class="profile-dropdown__header">
+
+                    <span class="profile-dropdown__label">
+                        Signed in as
+                    </span>
+
+                    <strong class="profile-dropdown__username">
+                        @User.Identity?.Name
+                    </strong>
+
+                </div>
+
+                <nav class="profile-dropdown__menu">
+
+                    <a asp-area="Account"
                        asp-controller="Account"
-                       asp-action="MyOrders">
-                        <i class="bi bi-receipt me-2"></i>
-                        My orders
-                    </a>
-                </li>
+                       asp-action="MyOrders"
+                       class="profile-dropdown__link">
 
-                <li>
-                    <a class="dropdown-item"
-                       asp-area="Account"
-                       asp-controller="Account"
-                       asp-action="MyReviews">
-                        <i class="bi bi-star me-2"></i>
-                        My reviews
+                        <i class="bi bi-receipt"></i>
+                        <span>My orders</span>
                     </a>
-                </li>
 
-                <li>
-                    <a class="dropdown-item"
-                       asp-area="Account"
+                    <a asp-area="Account"
                        asp-controller="Account"
-                       asp-action="DeliveryDetails">
-                        <i class="bi bi-box-seam me-2"></i>
-                        Delivery details
+                       asp-action="MyReviews"
+                       class="profile-dropdown__link">
+
+                        <i class="bi bi-star"></i>
+                        <span>My reviews</span>
                     </a>
-                </li>
-            </ul>
+
+                    <a asp-area="Account"
+                       asp-controller="Account"
+                       asp-action="DeliveryDetails"
+                       class="profile-dropdown__link">
+
+                        <i class="bi bi-box-seam"></i>
+                        <span>Delivery details</span>
+                    </a>
+                </nav>
+            </div>
         </li>
 
-        <li class="nav-item">
-            <form  class="form-inline" 
-                asp-area="Identity" 
-                asp-page="/Account/Logout" 
-                asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-                <button  type="submit" class="nav-link btn btn-link text-dark">Logout</button>
+        <li class="auth-menu__item">
+
+            <form asp-area="Identity"
+                  asp-page="/Account/Logout"
+                  asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+
+                <button type="submit"
+                        class="auth-menu__logout">
+                    Logout
+                </button>
             </form>
         </li>
     }
     else
     {
-        <li class="nav-item">
-            <a class="nav-link text-dark" 
-                asp-area="Identity" 
-                asp-page="/Account/Register">Register
+        <li class="auth-menu__item">
+
+            <a asp-area="Identity"
+               asp-page="/Account/Register"
+               class="auth-menu__link">
+                Register
             </a>
+
         </li>
 
-        <li class="nav-item">
-            <a class="nav-link text-dark" 
-                asp-area="Identity" 
-                asp-page="/Account/Login">Login
+        <li class="auth-menu__item">
+
+            <a asp-area="Identity"
+               asp-page="/Account/Login"
+               class="auth-menu__link">
+                Login
             </a>
         </li>
-}
+    }
 </ul>

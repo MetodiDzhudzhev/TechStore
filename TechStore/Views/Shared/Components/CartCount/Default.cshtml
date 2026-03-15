@@ -1,17 +1,18 @@
 ﻿@model int
 
-<a class="nav-link text-dark"
-   asp-area=""
+<a asp-area=""
    asp-controller="Cart"
    asp-action="Index"
-   title="My Cart">
+   class="cart-icon"
+   title="My cart">
 
-    <span class="position-relative d-inline-block">
-        <i class="bi bi-cart fs-5"></i>
+    <span class="cart-icon__wrapper">
+
+        <i class="bi bi-cart cart-icon__symbol"></i>
 
         @if (Model > 0)
         {
-            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"> 
+            <span class="cart-icon__badge">
                 @Model
             </span>
         }
