@@ -1,5 +1,6 @@
 ﻿.edit-order {
-    margin-top: 1.5rem;
+    margin: 1.5rem auto;
+    width: 85%;
 }
 
 .edit-order__header {

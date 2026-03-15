@@ -1,17 +1,25 @@
 ﻿.categories {
     margin-top: 2rem;
+    margin-bottom: 2rem;
+    max-width: 85%;
+    margin-inline: auto;
 }
 
 .categories__header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.75rem;
 }
 
 .categories__title {
     font-size: 1.7rem;
     font-weight: 600;
+}
+
+.categories__divider {
+    margin: 1.2rem 0 2rem;
+    height: 1px;
+    background-color: #e5e5e5;
 }
 
 .categories__grid {
@@ -87,6 +95,10 @@
     color: #ffffff;
 }
 
+.categories .btn--primary:hover {
+    color: #312e2e;
+}
+
 .categories .btn--accent {
     background: linear-gradient(135deg, #0dcaf0, #0aa2c0);
     color: #000;
@@ -140,7 +152,7 @@
 
     .categories {
         max-width: 80%;
-        margin: 0 auto;
+        margin: 2rem auto;
     }
 
     .btn--accent {

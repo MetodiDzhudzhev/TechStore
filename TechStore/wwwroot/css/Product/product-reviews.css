@@ -106,6 +106,8 @@
     font-size: 1.1rem;
     color: black;
     font-weight: 700;
+    word-break: break-word;
+    overflow-wrap: anywhere;
 }
 
 .review__date {
@@ -128,6 +130,7 @@
 
 .review__comment {
     color: black;
+    padding-bottom: 0.5rem;
 }
 
 .review-form {

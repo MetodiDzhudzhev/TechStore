@@ -1,6 +1,7 @@
 ﻿.manage-page {
-    max-width: 80rem;
+    width: 85%;
     margin: 0 auto;
+    margin-bottom: 2rem;
 }
 
 .manage-page__header {
@@ -126,7 +127,6 @@
 
     .card-grid {
         grid-template-columns: 1fr;
-        margin: 0 4rem;
     }
 
     .manage-page .card {

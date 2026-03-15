@@ -1,4 +1,9 @@
-﻿.reviews__header {
+﻿.reviews {
+    margin: 2rem auto;
+    width: 85%;
+}
+
+.reviews__header {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -8,6 +13,7 @@
 .reviews__title {
     margin: 0;
     font-size: 2rem;
+    font-weight: 600;
 }
 
 .reviews .notice {
@@ -26,8 +32,7 @@
 }
 
 .reviewCard {
-    width: 100%;
-    max-width: 54rem;
+    width: 85%;
     background-color: #1c1c1e;
     border: 1px solid #444;
     border-radius: 0.75rem;

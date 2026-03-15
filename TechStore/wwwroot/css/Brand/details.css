@@ -1,7 +1,6 @@
 ﻿.brand-details {
-    margin-top: 3rem;
-    max-width: 70rem;
-    margin-inline: auto;
+    width: 75%;
+    margin: 3rem auto;
     padding: 0 1.5rem;
 }
 

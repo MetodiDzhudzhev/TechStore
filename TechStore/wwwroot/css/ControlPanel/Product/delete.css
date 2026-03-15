@@ -105,6 +105,7 @@
 
     .product-delete__description-box {
         width: 100%;
+        min-height: 0;
     }
 
     .product-delete__actions {

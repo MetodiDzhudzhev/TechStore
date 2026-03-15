@@ -80,6 +80,10 @@
     font-size: 1rem;
 }
 
+.product-details__actions {
+    margin-top: 0.5rem;
+}
+
 .product-details__btn {
     padding: 0.6rem 1.2rem;
     cursor: pointer;
@@ -122,14 +126,20 @@
 }
 
 @media (max-width: 768px) {
+
+    .product-details {
+        width: 80%;
+        margin: 4rem auto;
+    }
+
     .product-details__layout {
         flex-direction: column;
+        align-items: center;
     }
 
     .product-details__image-wrapper {
-        align-self: center;
         flex: none;
         width: 100%;
-        max-width: 100%;
+        max-width: 18rem;
     }
 }

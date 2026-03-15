@@ -6,6 +6,8 @@
 .cp__header {
     text-align: center;
     margin-bottom: 3rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
 }
 
 .cp__title {
@@ -84,6 +86,7 @@
 }
 
 .cp-card__title {
+    font-size: 1rem;
     font-weight: 700;
     margin-bottom: 0.5rem;
 }
