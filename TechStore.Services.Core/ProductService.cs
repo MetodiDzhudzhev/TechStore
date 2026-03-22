@@ -393,10 +393,39 @@ namespace TechStore.Services.Core
                 .FirstOrDefaultAsync(p => p.Id == Guid.Parse(id));
         }
 
-        public async Task<IEnumerable<ProductManageViewModel>> GetPagedAsync(int page, int pageSize)
+        public async Task<ProductManageListViewModel> GetPagedAsync(int page, int pageSize)
         {
+            if (page < 1)
+            {
+                page = 1;
+            }
+
+            if (pageSize < 1)
+            {
+                pageSize = 10;
+            }
+
+            int totalCount = await productRepository.CountAsync();
+            int totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+
+            if (totalPages == 0)
+            {
+                return new ProductManageListViewModel
+                {
+                    Products = new List<ProductManageViewModel>(),
+                    CurrentPage = 1,
+                    TotalPages = 0
+                };
+            }
+
+            if (page > totalPages)
+            {
+                page = totalPages;
+            }
+
             IEnumerable<ProductManageViewModel> products = await this.productRepository
                 .GetAllAttached()
+                .AsNoTracking()
                 .OrderBy(p => p.Name)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
@@ -413,14 +442,12 @@ namespace TechStore.Services.Core
                 })
                 .ToListAsync();
 
-            return products;
-        }
-        public async Task<int> GetTotalCountAsync()
-        {
-            int countOfProducts = await this.productRepository
-                .CountAsync();
-
-            return countOfProducts;
+            return new ProductManageListViewModel
+            {
+                Products = products,
+                CurrentPage = page,
+                TotalPages = totalPages,
+            };
         }
     }
 }

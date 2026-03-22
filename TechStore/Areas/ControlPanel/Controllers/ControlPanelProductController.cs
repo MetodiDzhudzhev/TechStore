@@ -299,27 +299,7 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
         [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> Manage(int page = 1)
         {
-            int totalCount = await productService.GetTotalCountAsync();
-            int totalPages = (int)Math.Ceiling((double)totalCount / PageSize);
-
-            if (page < 1)
-            {
-                page = 1;
-            }
-
-            if (page > totalPages && totalPages > 0)
-            {
-                page = totalPages;
-            }
-
-            IEnumerable<ProductManageViewModel> products = await productService.GetPagedAsync(page, PageSize);
-
-            ProductManageListViewModel viewModel = new ProductManageListViewModel
-            {
-                Products = products,
-                CurrentPage = page,
-                TotalPages = totalPages
-            };
+            ProductManageListViewModel viewModel = await productService.GetPagedAsync(page, PageSize);
 
             return View(viewModel);
         }
