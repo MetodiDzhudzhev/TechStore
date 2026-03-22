@@ -3,6 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 using TechStore.Services.Core.Interfaces;
 using TechStore.Web.ViewModels.Product;
 
+using TechStore.GCommon;
+using ProductLog = TechStore.GCommon.LogMessages.Product;
+using ProductUi = TechStore.GCommon.UiMessages.Product;
+
 namespace TechStore.Web.Areas.ControlPanel.Controllers
 {
     [Area("ControlPanel")]
@@ -42,8 +46,8 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
             }
             catch (Exception e)
             {
-                logger.LogError(e, "Error while preparing Add product form for category {CategoryId}!", categoryId);
-                TempData["ErrorMessage"] = "Unable to prepare the Add product form. Please try again later.";
+                logger.LogError(e, ProductLog.AddProductPageLoadError);
+                TempData[TempDataKeys.ErrorMessage] = ProductUi.AddProductPageLoadError;
                 return this.RedirectToAction("IndexByCategory", "Product", new { area = "", categoryId = categoryId });
             }
         }
@@ -57,11 +61,8 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
             {
                 if (!this.ModelState.IsValid)
                 {
-                    logger.LogWarning("Attempt by user {UserId} to add product with invalid model state", this.GetUserId());
-
-                    inputModel.Categories = await categoryService.GetCategoriesDropDownDataAsync();
-                    inputModel.Brands = await brandService.GetBrandsDropDownDataAsync();
-
+                    logger.LogWarning(ProductLog.AddWithInvalidModelState, this.GetUserId());
+                    await PopulateDropdowns(inputModel);
                     return this.View(inputModel);
                 }
 
@@ -69,15 +70,15 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
 
                 if (inputModel.CategoryId == 0 || exist == false)
                 {
-                    ModelState.AddModelError(nameof(inputModel.CategoryId), "Please select a valid category.");
-                    inputModel.Categories = await categoryService.GetCategoriesDropDownDataAsync();
-                    inputModel.Brands = await brandService.GetBrandsDropDownDataAsync();
+                    logger.LogWarning(ProductLog.CategoryNotValid);
+                    ModelState.AddModelError(nameof(inputModel.CategoryId), ProductUi.CategoryNotValid);
+                    await PopulateDropdowns(inputModel);
                     return View(inputModel);
                 }
 
                 if (await productService.ExistsByNameAsync(inputModel.Name, inputModel.Id))
                 {
-                    logger.LogWarning("Attempt to add product name that already exists - {ProductName}", inputModel.Name);
+                    logger.LogWarning(ProductLog.NameAlreadyExist, inputModel.Name);
 
                     var deletedProduct = await this.productService
                         .GetDeletedProductByNameAsync(inputModel.Name);
@@ -89,9 +90,8 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
 
                     else
                     {
-                        ModelState.AddModelError(nameof(inputModel.Name), "Product with this name already exists.");
-                        inputModel.Categories = await categoryService.GetCategoriesDropDownDataAsync();
-                        inputModel.Brands = await brandService.GetBrandsDropDownDataAsync();
+                        ModelState.AddModelError(nameof(inputModel.Name), ProductUi.NameAlreadyExist);
+                        await PopulateDropdowns(inputModel);
                         return View(inputModel);
                     }
                 }
@@ -100,20 +100,20 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
 
                 if (result == false)
                 {
-                    logger.LogWarning("Failed to add product with name '{ProductName}' by user {UserId}", inputModel.Name, this.GetUserId());
-                    ModelState.AddModelError(string.Empty, "Error occured while adding a product");
-                    inputModel.Categories = await categoryService.GetCategoriesDropDownDataAsync();
-                    inputModel.Brands = await brandService.GetBrandsDropDownDataAsync();
+                    logger.LogWarning(ProductLog.AddFailed, inputModel.Name, this.GetUserId());
+                    ModelState.AddModelError(string.Empty, ProductUi.AddFailed);
+                    await PopulateDropdowns(inputModel);
                     return this.View(inputModel);
                 }
 
-                logger.LogInformation("Product '{ProductName}' successfully added by user {UserId}!", inputModel.Name, this.GetUserId());
+                logger.LogInformation(ProductLog.AddSuccess, inputModel.Name, this.GetUserId());
+                TempData[TempDataKeys.SuccessMessage] = ProductUi.AddSuccess;
                 return this.RedirectToAction("IndexByCategory", "Product", new { area = "", categoryId = inputModel.CategoryId });
             }
             catch (Exception e)
             {
-                logger.LogError(e, "Exception occurred while adding product '{ProductName}'.", inputModel.Name);
-                TempData["ErrorMessage"] = "An error occurred while adding the product. Please try again.";
+                logger.LogError(e, ProductLog.AddError, inputModel.Name);
+                TempData[TempDataKeys.ErrorMessage] = ProductUi.AddError;
                 return this.RedirectToAction("IndexByCategory", "Product", new { area = "", categoryId = inputModel.CategoryId });
             }
         }
@@ -126,7 +126,7 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
 
             if (product == null)
             {
-                logger.LogWarning("Restore attempt for non-existing product with Id {ProductId} by user {UserId}", id, this.GetUserId());
+                logger.LogWarning(ProductLog.RestoreNonExistingProduct, id, this.GetUserId());
                 return NotFound();
             }
 
@@ -142,20 +142,22 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
             {
                 bool result = await this.productService.RestoreByIdAsync(id);
 
-                var product = await this.productService.GetProductByIdAsync(id);
                 if (result == false)
                 {
-                    logger.LogError("Failed to restore product with Id {ProductId}.", id);
+                    logger.LogWarning(ProductLog.RestoreFailed, id);
+                    TempData[TempDataKeys.ErrorMessage] = ProductUi.RestoreFailed;
                     return this.RedirectToAction(nameof(Index), "Home");
                 }
 
-                logger.LogInformation("Product with Id {ProductId} was successfully restored by user {UserId}", id, this.GetUserId());
+                logger.LogInformation(ProductLog.RestoreSuccess, id, this.GetUserId());
+                TempData[TempDataKeys.SuccessMessage] = ProductUi.RestoreSuccess;
+
                 return this.RedirectToAction("Manage", "ControlPanelProduct", new { area = "ControlPanel"});
             }
             catch (Exception e)
             {
-                logger.LogError(e, "Exception occurred while restoring product with Id {ProductId}!", id);
-                TempData["ErrorMessage"] = "We couldn't restore the product. Please try again later.";
+                logger.LogError(e, ProductLog.RestoreError, id);
+                TempData[TempDataKeys.ErrorMessage] = ProductUi.RestoreError;
                 return this.RedirectToAction(nameof(Index), "Home");
             }
         }
@@ -170,19 +172,18 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
 
                 if (model == null)
                 {
-                    logger.LogWarning("Product with Id {ProductId} was not found", id);
+                    logger.LogWarning(ProductLog.NotFound, id);
                     return NotFound();
                 }
 
-                model.Categories = await this.categoryService.GetCategoriesDropDownDataAsync();
-                model.Brands = await this.brandService.GetBrandsDropDownDataAsync();
+                await PopulateDropdowns(model);
 
                 return this.View(model);
             }
             catch (Exception e)
             {
-                logger.LogError(e, "Error while preparing Edit product form for product with Id {ProductId}!", id);
-                TempData["ErrorMessage"] = "An error occurred while preparing the Edit product form.";
+                logger.LogError(e, ProductLog.EditProductPageLoadError, id);
+                TempData[TempDataKeys.ErrorMessage] = ProductUi.EditProductPageLoadError;
                 return this.RedirectToAction(nameof(Index), "Home");
             }
         }
@@ -196,16 +197,16 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
             {
                 if (!this.ModelState.IsValid)
                 {
-                    logger.LogWarning("Attempt to edit product with Id {ProductId} with invalid model state by user {UserId}", inputModel.Id, this.GetUserId());
-                    ModelState.AddModelError(string.Empty, "Error occured while editing the product. Please review the details and try again.");
+                    logger.LogWarning(ProductLog.EditWithInvalidModelState, inputModel.Id, this.GetUserId());
+                    ModelState.AddModelError(string.Empty, ProductUi.EditWithInvalidModelState);
+                    await PopulateDropdowns(inputModel);
                     return this.View(inputModel);
                 }
 
                 if (await productService.ExistsByNameAsync(inputModel.Name, inputModel.Id))
                 {
-                    inputModel.Categories = await this.categoryService.GetCategoriesDropDownDataAsync();
-                    inputModel.Brands = await this.brandService.GetBrandsDropDownDataAsync();
-                    ModelState.AddModelError(nameof(inputModel.Name), "Product with this name already exists.");
+                    await PopulateDropdowns(inputModel);
+                    ModelState.AddModelError(nameof(inputModel.Name), ProductUi.NameAlreadyExist);
                     return View(inputModel);
                 }
 
@@ -214,18 +215,19 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
 
                 if (result == false)
                 {
-                    logger.LogWarning("Failed to edit product '{ProductName}'!", inputModel.Name);
-                    this.ModelState.AddModelError(String.Empty, "Error occured while editing the product!");
+                    logger.LogWarning(ProductLog.EditFailed, inputModel.Name);
+                    this.ModelState.AddModelError(String.Empty, ProductUi.EditFailed);
+                    await PopulateDropdowns(inputModel);
                     return this.View(inputModel);
                 }
 
-                logger.LogInformation("Product '{ProductName}' successfully edited by user {UserId}", inputModel.Name, this.GetUserId());
+                logger.LogInformation(ProductLog.EditSuccess, inputModel.Name, this.GetUserId());
                 return this.RedirectToAction("Details", "Product", new { area = "", id = inputModel.Id });
             }
             catch (Exception e)
             {
-                logger.LogError(e, "Exception occurred while editing product '{ProductName}'!", inputModel.Name);
-                TempData["ErrorMessage"] = "An unexpected error occurred while editing the product. Please try again.";
+                logger.LogError(e, ProductLog.EditError, inputModel.Name);
+                TempData[TempDataKeys.ErrorMessage] = ProductUi.EditError;
                 return this.RedirectToAction(nameof(Index), "Home");
             }
         }
@@ -243,7 +245,7 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
 
                 if (modelForDelete == null)
                 {
-                    logger.LogWarning("Product with Id {ProductId} was not found", id);
+                    logger.LogWarning(ProductLog.NotFound, id);
                     return NotFound();
                 }
 
@@ -251,8 +253,8 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
             }
             catch (Exception e)
             {
-                logger.LogError(e, "Exception while preparing Delete product form for product with Id {ProductId}!", id);
-                TempData["ErrorMessage"] = "An error occurred while preparing the Delete product page.";
+                logger.LogError(e, ProductLog.DeleteProductPageLoadError, id);
+                TempData[TempDataKeys.ErrorMessage] = ProductUi.DeleteProductPageLoadError;
                 return this.RedirectToAction(nameof(Index), "Home");
             }
         }
@@ -266,8 +268,7 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
             {
                 if (!this.ModelState.IsValid)
                 {
-                    logger.LogWarning("Attempt to delete product with Id {ProductId} with invalid model state by user {UserId}", model.Id, this.GetUserId());
-                    ModelState.AddModelError(string.Empty, "Please do not modify the page");
+                    logger.LogWarning(ProductLog.DeleteWithInvalidModelState, model.Id, this.GetUserId());
                     return this.View(model);
                 }
 
@@ -276,19 +277,20 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
 
                 if (deleteResult == false)
                 {
-                    logger.LogWarning("Failed to delete product with Id {ProductId} by user {UserId}!", model.Id, this.GetUserId());
-                    this.ModelState.AddModelError(string.Empty, "Error occured while deleting the product!");
+                    logger.LogWarning(ProductLog.DeleteFailed, model.Id, this.GetUserId());
+                    this.ModelState.AddModelError(string.Empty, ProductUi.DeleteFailed);
                     return this.View(model);
                 }
 
-                logger.LogInformation("Product {ProductId} successfully deleted by user {UserId}", model.Id, this.GetUserId());
+                logger.LogInformation(ProductLog.DeleteSuccess, model.Id, this.GetUserId());
+                TempData[TempDataKeys.SuccessMessage] = ProductUi.DeleteSuccess;
                 return this.RedirectToAction("Manage", "ControlPanelProduct", new { area = "ControlPanel" });
 
             }
             catch (Exception e)
             {
-                logger.LogError(e, "Exception occurred while deleting product with Id {ProductId}", model.Id);
-                TempData["ErrorMessage"] = "An error occurred while deleting the product. Please try again.";
+                logger.LogError(e, ProductLog.DeleteError, model.Id);
+                TempData[TempDataKeys.ErrorMessage] = ProductUi.DeleteError;
                 return this.RedirectToAction(nameof(Index), "Home");
             }
         }
@@ -320,6 +322,11 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
             };
 
             return View(viewModel);
+        }
+        private async Task PopulateDropdowns(ProductFormInputModel model)
+        {
+            model.Categories = await categoryService.GetCategoriesDropDownDataAsync();
+            model.Brands = await brandService.GetBrandsDropDownDataAsync();
         }
     }
 }

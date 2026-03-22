@@ -2,6 +2,10 @@
 using TechStore.Services.Core.Interfaces;
 using TechStore.Web.ViewModels.Brand;
 
+using TechStore.GCommon;
+using BrandLog = TechStore.GCommon.LogMessages.Brand;
+using BrandUi = TechStore.GCommon.UiMessages.Brand;
+
 namespace TechStore.Web.Controllers
 {
     public class BrandController : BaseController
@@ -27,7 +31,7 @@ namespace TechStore.Web.Controllers
 
                 if (brandDetails == null)
                 {
-                    logger.LogWarning("Brand with Id {BrandId} was not found", id);
+                    logger.LogWarning(BrandLog.NotFound, id);
                     return NotFound();
                 }
 
@@ -35,8 +39,8 @@ namespace TechStore.Web.Controllers
             }
             catch (Exception e)
             {
-                logger.LogError(e, "An error occurred while loading details for brand with Id {BrandId}", id);
-                TempData["ErrorMessage"] = "An error occurred while loading the brand details. Please try again later.";
+                logger.LogError(e, BrandLog.DetailsLoadError, id);
+                TempData[TempDataKeys.ErrorMessage] = BrandUi.DetailsLoadError;
                 return this.RedirectToAction(nameof(Index), "Home");
             }
         }

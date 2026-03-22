@@ -4,6 +4,10 @@ using TechStore.Services.Core.Interfaces;
 using TechStore.Web.ViewModels.Category;
 using static TechStore.GCommon.ValidationConstants.Shared;
 
+using TechStore.GCommon;
+using CategoryLog = TechStore.GCommon.LogMessages.Category;
+using CategoryUi = TechStore.GCommon.UiMessages.Category;
+
 namespace TechStore.Web.Areas.ControlPanel.Controllers
 {
     [Area("ControlPanel")]
@@ -36,13 +40,13 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
             {
                 if (!this.ModelState.IsValid)
                 {
-                    logger.LogWarning("Attempt by user {UserId} to add category with invalid model state.", this.GetUserId());
+                    logger.LogWarning(CategoryLog.AddWithInvalidModelState, this.GetUserId());
                     return this.View(inputModel);
                 }
 
                 if (await categoryService.ExistsByNameAsync(inputModel.Name, inputModel.Id))
                 {
-                    logger.LogWarning("Attempt to add category name that already exists - {CategoryName}.", inputModel.Name);
+                    logger.LogWarning(CategoryLog.NameAlreadyExist, inputModel.Name);
                     var deletedCategory = await this.categoryService
                         .GetDeletedCategoryByNameAsync(inputModel.Name);
 
@@ -53,7 +57,7 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
 
                     else
                     {
-                        ModelState.AddModelError(nameof(inputModel.Name), "Category with this name already exists.");
+                        ModelState.AddModelError(nameof(inputModel.Name), CategoryUi.NameAlreadyExist);
                         return View(inputModel);
                     }
                 }
@@ -61,18 +65,18 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
 
                 if (result == false)
                 {
-                    logger.LogWarning("Failed to add category with name '{CategoryName}' by user {UserId}.", inputModel.Name, this.GetUserId());
-                    ModelState.AddModelError(string.Empty, "Error occured while adding the category.");
+                    logger.LogWarning(CategoryLog.AddFailed, inputModel.Name, this.GetUserId());
+                    ModelState.AddModelError(string.Empty, CategoryUi.AddError);
                     return this.View(inputModel);
                 }
 
-                logger.LogInformation("Category '{CategoryName}' successfully added by user {UserId}!", inputModel.Name, this.GetUserId());
+                logger.LogInformation(CategoryLog.AddSuccess, inputModel.Name, this.GetUserId());
                 return this.RedirectToAction(nameof(Index), "Category", new { area = "" });
             }
             catch (Exception e)
             {
-                logger.LogError(e, "Exception occurred while adding category '{CategoryName}'.", inputModel.Name);
-                TempData["ErrorMessage"] = "An error occurred while adding the category. Please try again.";
+                logger.LogError(e, CategoryLog.AddError, inputModel.Name);
+                TempData[TempDataKeys.ErrorMessage] = CategoryUi.AddError;
                 return this.RedirectToAction(nameof(Index), "Category", new { area = "" });
             }
         }
@@ -85,7 +89,7 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
 
             if (category == null)
             {
-                logger.LogWarning("Restore attempt for non-existing category with Id {CategoryId} by user {UserId}", id, this.GetUserId());
+                logger.LogWarning(CategoryLog.RestoreInvalidCategory, id, this.GetUserId());
                 return NotFound();
             }
 
@@ -103,17 +107,19 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
 
                 if (result == false)
                 {
-                    logger.LogError("Failed to restore category with Id {CategoryId}.", id);
+                    logger.LogWarning(CategoryLog.RestoreFailed, id);
+                    TempData[TempDataKeys.ErrorMessage] = CategoryUi.RestoreFailed;
                     return this.RedirectToAction(nameof(Index), "Category", new { area = "" });
                 }
 
-                logger.LogInformation("Category with Id {CategoryId} was successfully restored by user {UserId}.", id, this.GetUserId());
+                logger.LogInformation(CategoryLog.RestoreSuccess, id, this.GetUserId());
+                TempData[TempDataKeys.SuccessMessage] = CategoryUi.RestoreSuccess;
                 return this.RedirectToAction(nameof(Index), "Category", new { area = "" });
             }
             catch (Exception e)
             {
-                logger.LogError(e, "Exception occurred while restoring category with Id {CategoryId}!", id);
-                TempData["ErrorMessage"] = "We couldn't restore the category. Please try again later.";
+                logger.LogError(e, CategoryLog.RestoreError, id);
+                TempData[TempDataKeys.ErrorMessage] = CategoryUi.RestoreError;
                 return this.RedirectToAction(nameof(Index), "Category", new { area = "" });
             }
         }
@@ -129,7 +135,7 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
 
                 if (editableCategory == null)
                 {
-                    logger.LogWarning("Category with Id {CategoryId} was not found", categoryId);
+                    logger.LogWarning(CategoryLog.NotFound, categoryId);
                     return NotFound();
                 }
 
@@ -137,8 +143,8 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
             }
             catch (Exception e)
             {
-                logger.LogError(e, "Error while preparing Edit category form for category with Id {CategoryId}!", categoryId);
-                TempData["ErrorMessage"] = "An error occurred while preparing the Edit category form.";
+                logger.LogError(e, CategoryLog.EditCategoryPageLoadError, categoryId);
+                TempData[TempDataKeys.ErrorMessage] = CategoryUi.EditCategoryPageLoadError;
                 return this.RedirectToAction(nameof(Index), "Category", new { area = "" });
             }
         }
@@ -152,19 +158,20 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
             {
                 if (inputModel.Id > IntIdMaxValue || inputModel.Id < IntIdMinValue)
                 {
-                    ModelState.AddModelError(nameof(inputModel.Id), "Invalid Id.");
+                    ModelState.AddModelError(nameof(inputModel.Id), CategoryUi.InvalidId);
                 }
 
                 if (!this.ModelState.IsValid)
                 {
-                    logger.LogWarning("Attempt to edit category with Id {CategoryId} with invalid model state by user {UserId}.", inputModel.Id, this.GetUserId());
-                    ModelState.AddModelError(string.Empty, "Error occured while editing the category. Please review the details and try again.");
+                    logger.LogWarning(CategoryLog.EditWithInvalidModelState, inputModel.Id, this.GetUserId());
+                    ModelState.AddModelError(string.Empty, CategoryUi.EditWithInvalidModelState);
                     return this.View(inputModel);
                 }
 
                 if (await categoryService.ExistsByNameAsync(inputModel.Name, inputModel.Id))
                 {
-                    ModelState.AddModelError(nameof(inputModel.Name), "Category with this name already exists.");
+                    logger.LogWarning(CategoryLog.NameAlreadyExist, inputModel.Name);
+                    ModelState.AddModelError(nameof(inputModel.Name), CategoryUi.NameAlreadyExist);
                     return View(inputModel);
                 }
 
@@ -172,18 +179,17 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
 
                 if (result == false)
                 {
-                    logger.LogWarning("Failed to edit category '{CategoryName}'!", inputModel.Name);
-                    this.ModelState.AddModelError(String.Empty, "Error occured while editing the category!");
+                    logger.LogWarning(CategoryLog.EditFailed, inputModel.Name);
                     return View(inputModel);
                 }
 
-                logger.LogInformation("Category '{CategoryName}' successfully edited by user {UserId}.", inputModel.Name, this.GetUserId());
+                logger.LogInformation(CategoryLog.EditSuccess, inputModel.Name, this.GetUserId());
                 return this.RedirectToAction(nameof(Index), "Category", new { area = "" });
             }
             catch (Exception e)
             {
-                logger.LogError(e, "Exception occurred while editing category '{CategoryName}'!", inputModel.Name);
-                TempData["ErrorMessage"] = "An unexpected error occurred while editing the category. Please try again.";
+                logger.LogError(e, CategoryLog.EditError, inputModel.Name);
+                TempData[TempDataKeys.ErrorMessage] = CategoryUi.EditError;
                 return this.RedirectToAction(nameof(Index), "Category", new { area = "" });
             }
         }
@@ -199,7 +205,7 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
 
                 if (categoryToDelete == null)
                 {
-                    logger.LogWarning("Category with Id {CategoryId} was not found!", id);
+                    logger.LogWarning(CategoryLog.NotFound, id);
                     return NotFound();
                 }
 
@@ -207,8 +213,8 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
             }
             catch (Exception e)
             {
-                logger.LogError(e, "Exception while preparing Delete category form for category with Id {CategoryId}!", id);
-                TempData["ErrorMessage"] = "An error occurred while preparing the Delete category form.";
+                logger.LogError(e, CategoryLog.DeleteCategoryPageLoadError, id);
+                TempData[TempDataKeys.ErrorMessage] = CategoryUi.DeleteCategoryPageLoadError;
                 return this.RedirectToAction(nameof(Index), "Category", new { area = "" });
             }
         }
@@ -222,8 +228,7 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
             {
                 if (!this.ModelState.IsValid)
                 {
-                    logger.LogWarning("Attempt to delete category with Id {CategoryId} with invalid model state by user {UserId}", model.Id, this.GetUserId());
-                    ModelState.AddModelError(string.Empty, "Please do not modify the page");
+                    logger.LogWarning(CategoryLog.DeleteWithInvalidModelState, model.Id, this.GetUserId());
                     return this.View(model);
                 }
 
@@ -232,18 +237,18 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
 
                 if (result == false)
                 {
-                    logger.LogWarning("Failed to delete category with Id {CategoryId} by user {UserId}!", model.Id, this.GetUserId());
-                    this.ModelState.AddModelError(string.Empty, "Error occured while deleting the category!");
+                    logger.LogWarning(CategoryLog.DeleteFailed, model.Id, this.GetUserId());
+                    this.ModelState.AddModelError(string.Empty, CategoryUi.DeleteFailed);
                     return this.View(model);
                 }
 
-                logger.LogInformation("Category with Id {CategoryId} successfully deleted by user {UserId}.", model.Id, this.GetUserId());
+                logger.LogInformation(CategoryLog.DeleteSuccess, model.Id, this.GetUserId());
                 return this.RedirectToAction(nameof(Index), "Category", new { area = "" });
             }
             catch (Exception e)
             {
-                logger.LogError(e, "Exception occurred while deleting category with Id {CategoryId}.", model.Id);
-                TempData["ErrorMessage"] = "An error occurred while deleting the category. Please try again.";
+                logger.LogError(e, CategoryLog.DeleteError, model.Id);
+                TempData[TempDataKeys.ErrorMessage] = CategoryUi.DeleteError;
                 return this.RedirectToAction(nameof(Index), "Category", new { area = "" });
             }
         }

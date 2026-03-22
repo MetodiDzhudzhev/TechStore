@@ -3,6 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 using TechStore.Services.Core.Interfaces;
 using TechStore.Web.ViewModels.Cart;
 
+using TechStore.GCommon;
+using CartLog = TechStore.GCommon.LogMessages.Cart;
+using CartUi = TechStore.GCommon.UiMessages.Cart;
+
 namespace TechStore.Web.Controllers
 {
     [Authorize]
@@ -24,7 +28,7 @@ namespace TechStore.Web.Controllers
         {
             string userId = this.GetUserId()!;
 
-            CartViewModel model = await cartService.GetCartAsync(userId);
+            CartViewModel? model = await cartService.GetCartAsync(userId);
 
             return View(model);
         }
@@ -40,17 +44,17 @@ namespace TechStore.Web.Controllers
 
                 if (result == false)
                 {
-                    logger.LogWarning("Failed to add product with id {ProductId} to cart of user with id {UserId}!", productId, userId);
+                    logger.LogWarning(CartLog.ProductAddFailed, productId, userId);
                     return RedirectToAction(nameof(Index));
                 }
 
-                logger.LogInformation("Product with id {ProductId} successfully added to the cart of user with id {UserId}!", productId, userId);
+                logger.LogInformation(CartLog.ProductAdded, productId, userId);
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception e)
             {
-                logger.LogError(e, "Exception occurred while adding product {ProductId}.", productId);
-                TempData["ErrorMessage"] = "An error occurred while adding the product. Please try again.";
+                logger.LogError(e, CartLog.ProductAddError, productId);
+                TempData[TempDataKeys.ErrorMessage] = CartUi.ProductAddError;
                 return RedirectToAction(nameof(Index));
             }
         }
@@ -65,17 +69,17 @@ namespace TechStore.Web.Controllers
 
                 if (result == false)
                 {
-                    logger.LogWarning("Failed to increase the quantity of product with id {ProductId} in the cart of user with id {UserId}!", productId, userId);
+                    logger.LogWarning(CartLog.ProductIncreaseFailed, productId, userId);
                     return RedirectToAction(nameof(Index));
                 }
 
-                logger.LogInformation("Quantity of Product with id {ProductId} in the cart of user with id {UserId} successfully increased by one!", productId, userId);
+                logger.LogInformation(CartLog.ProductIncreaseSuccess, productId, userId);
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception e)
             {
-                logger.LogError(e, "Exception occurred while increasing the quantity of product with id {ProductId}.", productId);
-                TempData["ErrorMessage"] = "An error occurred while increasing the quantity of the product. Please try again.";
+                logger.LogError(e, CartLog.ProductIncreaseError, productId);
+                TempData[TempDataKeys.ErrorMessage] = CartUi.IncreaseError;
                 return RedirectToAction(nameof(Index));
             }
         }
@@ -90,17 +94,17 @@ namespace TechStore.Web.Controllers
 
                 if (result == false)
                 {
-                    logger.LogWarning("Failed to remove product with id {ProductId} from cart of user with id {UserId}!", productId, userId);
+                    logger.LogWarning(CartLog.ProductRemoveFailed, productId, userId);
                     return RedirectToAction(nameof(Index));
                 }
 
-                logger.LogInformation("Product with id {ProductId} successfully removed from the cart of user with id {UserId}!", productId, userId);
+                logger.LogInformation(CartLog.ProductRemoved, productId, userId);
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception e)
             {
-                logger.LogError(e, "Exception occurred while removing product with id {ProductId}.", productId);
-                TempData["ErrorMessage"] = "An error occurred while removing the product. Please try again.";
+                logger.LogError(e, CartLog.ProductRemoveError, productId);
+                TempData[TempDataKeys.ErrorMessage] = CartUi.RemoveError;
                 return RedirectToAction(nameof(Index));
             }
         }
@@ -115,17 +119,17 @@ namespace TechStore.Web.Controllers
 
                 if (result == false)
                 {
-                    logger.LogWarning("Failed to decrease product with id {ProductId} from cart of user with id {UserId}!", productId, userId);
+                    logger.LogWarning(CartLog.ProductDecreaseFailed, productId, userId);
                     return RedirectToAction(nameof(Index));
                 }
 
-                logger.LogInformation("Product with id {ProductId} was successfully decreased by one from the cart of user with id {UserId}!", productId, userId);
+                logger.LogInformation(CartLog.ProductDecreased, productId, userId);
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception e)
             {
-                logger.LogError(e, "Exception occurred while decreasing product with id{ProductId}.", productId);
-                TempData["ErrorMessage"] = "An error occurred while decreasing the product. Please try again.";
+                logger.LogError(e, CartLog.ProductDecreaseError, productId);
+                TempData[TempDataKeys.ErrorMessage] = CartUi.DecreaseError;
                 return RedirectToAction(nameof(Index));
             }
         }
@@ -141,17 +145,17 @@ namespace TechStore.Web.Controllers
 
                 if (result == false)
                 {
-                    logger.LogWarning("Failed to clear the cart of user with id {UserId}!", userId);
+                    logger.LogWarning(CartLog.CartClearFailed, userId);
                     return RedirectToAction(nameof(Index));
                 }
 
-                logger.LogInformation("The cart of user with id {UserId} has ben cleared succesfully!", userId);
+                logger.LogInformation(CartLog.CartCleared, userId);
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception e)
             {
-                logger.LogError(e, "Exception occurred while cleaning the cart of user with id {UserId}.", userId);
-                TempData["ErrorMessage"] = "An error occurred while cleaning the cart. Please try again.";
+                logger.LogError(e, CartLog.CartClearError, userId);
+                TempData[TempDataKeys.ErrorMessage] = CartUi.ClearError;
                 return RedirectToAction(nameof(Index));
             }
         }

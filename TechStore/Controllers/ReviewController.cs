@@ -3,6 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 using TechStore.Services.Core.Interfaces;
 using TechStore.Web.ViewModels.Review;
 
+using TechStore.GCommon;
+using ReviewLog = TechStore.GCommon.LogMessages.Review;
+using ReviewUi = TechStore.GCommon.UiMessages.Review;
+
 namespace TechStore.Web.Controllers
 {
     public class ReviewController : BaseController
@@ -26,8 +30,8 @@ namespace TechStore.Web.Controllers
             {
                 if (!this.ModelState.IsValid)
                 {
-                    logger.LogWarning("Attempt by user {UserId} to add review with invalid model state.", this.GetUserId());
-                    TempData["ErrorMessage"] = "Please select a rating (1-5) and try again.";
+                    logger.LogWarning(ReviewLog.InvalidModelState, this.GetUserId());
+                    TempData[TempDataKeys.ErrorMessage] = ReviewUi.InvalidInput;
                     return Redirect($"/Product/Details/{inputModel.ProductId}#reviews");
                 }
 
@@ -35,19 +39,19 @@ namespace TechStore.Web.Controllers
 
                 if (result == false)
                 {
-                    logger.LogWarning("User {UserId} failed to added review to product {ProductId}", this.GetUserId(), inputModel.ProductId);
-                    TempData["ErrorMessage"] = "You already have a review for this product.";
+                    logger.LogWarning(ReviewLog.AddFailed, this.GetUserId(), inputModel.ProductId);
+                    TempData[TempDataKeys.ErrorMessage] = ReviewUi.AlreadyAdded;
                     return Redirect($"/Product/Details/{inputModel.ProductId}#reviews");
                 }
 
-                logger.LogInformation("User {UserId} sucessfully added review to product {ProductId}", this.GetUserId(), inputModel.ProductId);
-                TempData["SuccessMessage"] = "Your review was added successfully!";
+                logger.LogInformation(ReviewLog.AddSuccess, this.GetUserId(), inputModel.ProductId);
+                TempData[TempDataKeys.SuccessMessage] = ReviewUi.AddSuccess;
                 return Redirect($"/Product/Details/{inputModel.ProductId}#reviews");
             }
             catch (Exception e)
             {
-                logger.LogError(e, "Exception occurred while adding review to product '{ProductId}'.", inputModel.ProductId);
-                TempData["ErrorMessage"] = "An error occurred while adding review. Please try again.";
+                logger.LogError(e, ReviewLog.AddError, inputModel.ProductId);
+                TempData[TempDataKeys.ErrorMessage] = ReviewUi.AddError;
                 return Redirect($"/Product/Details/{inputModel.ProductId}#reviews");
             }
         }
@@ -73,6 +77,5 @@ namespace TechStore.Web.Controllers
             ReviewsStatsViewModel viewModel = await reviewService.GetStatsAsync(productId);
             return Json(viewModel);
         }
-
     }
 }

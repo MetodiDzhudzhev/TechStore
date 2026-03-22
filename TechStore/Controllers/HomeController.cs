@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using TechStore.Web.ViewModels;
 
+using static TechStore.GCommon.LogMessages.Home;
+
 namespace TechStore.Web.Controllers
 {
     public class HomeController : BaseController
@@ -21,7 +23,7 @@ namespace TechStore.Web.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error(int? statusCode)
         {
-            logger.LogWarning("Error occurred with status code: {statusCode}", statusCode);
+            logger.LogWarning(ErrorStatusCode, statusCode);
 
             switch (statusCode)
             {

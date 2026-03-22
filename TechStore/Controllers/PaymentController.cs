@@ -5,6 +5,10 @@ using Stripe.Checkout;
 using TechStore.Services.Core.Interfaces;
 using TechStore.Web.ViewModels.Payment;
 
+using TechStore.GCommon;
+using static TechStore.GCommon.LogMessages.Payment;
+using static TechStore.GCommon.UiMessages.Payment;
+
 namespace TechStore.Web.Controllers
 {
     [Authorize]
@@ -29,6 +33,7 @@ namespace TechStore.Web.Controllers
 
                 if (userId == null)
                 {
+                    logger.LogWarning(UnauthenticatedPaymentAccess);
                     return RedirectToAction("Login", "Account");
                 }
 
@@ -36,6 +41,7 @@ namespace TechStore.Web.Controllers
 
                 if (model == null)
                 {
+                    logger.LogWarning(PaymentSummaryNotFound, id, userId);
                     return NotFound();
                 }
 
@@ -43,7 +49,7 @@ namespace TechStore.Web.Controllers
             }
             catch (Exception e)
             {
-                logger.LogError(e, "Unexpected error while loading payment page. OrderId: {OrderId}", id);
+                logger.LogError(e, PaymentPageLoadError, id);
                 return this.RedirectToAction(nameof(Index), "Home");
             }
         }
@@ -53,8 +59,10 @@ namespace TechStore.Web.Controllers
         public async Task<IActionResult> CreateCheckoutSession(long orderId)
         {
             string? userId = GetUserId();
+
             if (userId == null)
             {
+                logger.LogWarning(UnauthenticatedPaymentAccess);
                 return RedirectToAction("Login", "Account");
             }
 
@@ -63,18 +71,20 @@ namespace TechStore.Web.Controllers
 
             if (summary == null)
             {
+                logger.LogWarning(PaymentSummaryNotFound, orderId, userId);
                 return NotFound();
             }
-
-            var domain = $"{Request.Scheme}://{Request.Host}";
 
             var products = await orderService.GetOrderProductsAsync(userId, orderId);
 
             if (products == null || products.Count == 0)
             {
+                logger.LogWarning(OrderProductsNotFound, orderId, userId);
                 return NotFound();
             }
 
+            var domain = $"{Request.Scheme}://{Request.Host}";
+            
             var options = new SessionCreateOptions
             {
                 Mode = "payment",
@@ -112,7 +122,19 @@ namespace TechStore.Web.Controllers
             };
 
             var service = new SessionService();
-            Session session = service.Create(options);
+            Session session;
+
+            try
+            {
+                session = service.Create(options);
+            }
+            catch (StripeException ex)
+            {
+                logger.LogError(ex, StripeSessionCreationFailed, orderId);
+                TempData[TempDataKeys.ErrorMessage] = InitializationFailed;
+
+                return RedirectToAction(nameof(Payment), new { id = orderId });
+            }
 
             await orderService.AttachStripeSessionAsync(orderId, session.Id);
 
@@ -126,6 +148,7 @@ namespace TechStore.Web.Controllers
 
             if (userId == null)
             {
+                logger.LogWarning(UnauthenticatedPaymentAccess);
                 return RedirectToAction("Login", "Account");
             }
 
@@ -143,13 +166,13 @@ namespace TechStore.Web.Controllers
             }
             catch (StripeException ex)
             {
-                logger.LogWarning(ex, "Stripe session lookup failed. SessionId={SessionId}", session_id);
+                logger.LogWarning(ex, StripeSessionLookupFailed, session_id);
                 return NotFound();
             }
 
             if (session?.Metadata == null || !session.Metadata.TryGetValue("orderId", out var orderIdStr))
             {
-                logger.LogWarning("Stripe session missing orderId metadata. SessionId={SessionId}", session_id);
+                logger.LogWarning(MissingOrderIdMetadata, session_id);
                 return NotFound();
             }
 
@@ -167,6 +190,7 @@ namespace TechStore.Web.Controllers
 
             if (model == null)
             {
+                logger.LogWarning(PaymentSuccessDataMissing, orderId, userId);
                 return NotFound();
             }
 
@@ -189,18 +213,23 @@ namespace TechStore.Web.Controllers
         public async Task<IActionResult> ConfirmCashOnDelivery(long orderId)
         {
             string? userId = GetUserId();
+
             if (userId == null)
             {
+                logger.LogWarning(UnauthenticatedPaymentAccess);
                 return RedirectToAction("Login", "Account");
             }
 
             PaymentSummaryViewModel? summary = await orderService.GetPaymentSummaryAsync(userId, orderId);
+            
             if (summary == null)
             {
+                logger.LogWarning(PaymentSummaryNotFound, orderId, userId);
                 return NotFound();
             }
 
             await orderService.MarkOrderAsCashOnDeliveryAsync(userId, orderId);
+            
             return RedirectToAction(nameof(SuccessCashOnDelivery), new { orderId });
         }
 
@@ -209,6 +238,5 @@ namespace TechStore.Web.Controllers
         {
             return View(orderId);
         }
-
     }
 }

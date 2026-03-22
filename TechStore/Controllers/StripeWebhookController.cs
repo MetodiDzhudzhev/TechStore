@@ -3,6 +3,8 @@ using Stripe;
 using Stripe.Checkout;
 using TechStore.Services.Core.Interfaces;
 
+using static TechStore.GCommon.LogMessages.StripeWebhook;
+
 [ApiController]
 [Route("api/stripe/webhook")]
 public class StripeWebhookController : ControllerBase
@@ -37,11 +39,11 @@ public class StripeWebhookController : ControllerBase
                 Request.Headers["Stripe-Signature"],
                 secret);
 
-            logger.LogInformation("Stripe webhook received. Type={Type}", stripeEvent.Type);
+            logger.LogInformation(WebhookReceived , stripeEvent.Type);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Stripe webhook signature validation failed.");
+            logger.LogError(ex, ValidationFailed);
             return BadRequest();
         }
 
@@ -51,7 +53,7 @@ public class StripeWebhookController : ControllerBase
 
             if (session?.PaymentStatus != "paid")
             {
-                logger.LogInformation("Checkout completed but not paid. SessionId={SessionId}, PaymentStatus={Status}",
+                logger.LogInformation(CheckoutNotPaid,
                     session?.Id, session?.PaymentStatus);
                 return Ok();
             }
@@ -60,7 +62,7 @@ public class StripeWebhookController : ControllerBase
             if (long.TryParse(orderIdStr, out var orderId))
             {
                 await orderService.MarkOrderAsPaidByOrderIdAsync(orderId);
-                logger.LogInformation("Order {OrderId} marked as paid by webhook.", orderId);
+                logger.LogInformation(MarkedAsPaid, orderId);
             }
         }
 

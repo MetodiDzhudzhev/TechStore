@@ -4,6 +4,10 @@ using TechStore.Services.Core.Interfaces;
 using TechStore.Web.ViewModels.Brand;
 using static TechStore.GCommon.ValidationConstants.Shared;
 
+using TechStore.GCommon;
+using BrandLog = TechStore.GCommon.LogMessages.Brand;
+using BrandUi = TechStore.GCommon.UiMessages.Brand;
+
 
 namespace TechStore.Web.Areas.ControlPanel.Controllers
 {
@@ -38,13 +42,13 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
             {
                 if (!this.ModelState.IsValid)
                 {
-                    logger.LogWarning("Attempt by user {UserId} to add brand with invalid model state.", this.GetUserId());
+                    logger.LogWarning(BrandLog.AddWithInvalidModelState, this.GetUserId());
                     return this.View(inputModel);
                 }
 
                 if (await brandService.ExistsByNameAsync(inputModel.Name, inputModel.Id))
                 {
-                    logger.LogWarning("Attempt to add brand name that already exists - {BrandName}.", inputModel.Name);
+                    logger.LogWarning(BrandLog.NameAlreadyExist, inputModel.Name);
                     var deletedBrand = await this.brandService
                         .GetDeletedBrandByNameAsync(inputModel.Name);
 
@@ -55,7 +59,7 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
 
                     else
                     {
-                        ModelState.AddModelError(nameof(inputModel.Name), "Brand with this name already exists.");
+                        ModelState.AddModelError(nameof(inputModel.Name), BrandUi.NameAlreadyExist);
                         return View(inputModel);
                     }
                 }
@@ -63,18 +67,18 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
 
                 if (result == false)
                 {
-                    logger.LogWarning("Failed to add brand with name '{BrandName}' by user {UserId}.", inputModel.Name, this.GetUserId());
-                    ModelState.AddModelError(string.Empty, "Error occured while adding the brand.");
+                    logger.LogWarning(BrandLog.AddFailed, inputModel.Name, this.GetUserId());
+                    ModelState.AddModelError(string.Empty, BrandUi.AddError);
                     return this.View(inputModel);
                 }
 
-                logger.LogInformation("Brand '{BrandName}' successfully added by user {UserId}!", inputModel.Name, this.GetUserId());
+                logger.LogInformation(BrandLog.AddSuccess, inputModel.Name, this.GetUserId());
                 return this.RedirectToAction(nameof(Manage), "ControlPanelBrand");
             }
             catch (Exception e)
             {
-                logger.LogError(e, "Exception occurred while adding brand '{BrandName}'.", inputModel.Name);
-                TempData["ErrorMessage"] = "An error occurred while adding the brand. Please try again.";
+                logger.LogError(e, BrandLog.AddError, inputModel.Name);
+                TempData[TempDataKeys.ErrorMessage] = BrandUi.AddError;
                 return this.RedirectToAction(nameof(Manage), "ControlPanelBrand");
             }
         }
@@ -88,7 +92,7 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
 
             if (brand == null)
             {
-                logger.LogWarning("Restore attempt for non-existing brand with Id {BrandId} by user {UserId}", id, this.GetUserId());
+                logger.LogWarning(BrandLog.RestoreInvalidBrand, id, this.GetUserId());
                 return NotFound();
             }
 
@@ -106,17 +110,19 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
 
                 if (result == false)
                 {
-                    logger.LogError("Failed to restore brand with Id {BrandId}.", id);
+                    logger.LogWarning(BrandLog.RestoreFailed, id);
+                    TempData[TempDataKeys.ErrorMessage] = BrandUi.RestoreFailed;
                     return this.RedirectToAction(nameof(Manage), "ControlPanelBrand");
                 }
 
-                logger.LogInformation("Brand with Id {BrandId} was successfully restored by user {UserId}.", id, this.GetUserId());
+                logger.LogInformation(BrandLog.RestoreSuccess, id, this.GetUserId());
+                TempData[TempDataKeys.SuccessMessage] = BrandUi.RestoreSuccess;
                 return this.RedirectToAction(nameof(Manage), "ControlPanelBrand");
             }
             catch (Exception e)
             {
-                logger.LogError(e, "Exception occurred while restoring brand with Id {BrandId}!", id);
-                TempData["ErrorMessage"] = "We couldn't restore the brand. Please try again later.";
+                logger.LogError(e, BrandLog.RestoreError, id);
+                TempData[TempDataKeys.ErrorMessage] = BrandUi.RestoreError;
                 return this.RedirectToAction(nameof(Manage), "ControlPanelBrand");
             }
         }
@@ -132,7 +138,7 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
 
                 if (editableBrand == null)
                 {
-                    logger.LogWarning("Brand with Id {BrandId} was not found", brandId);
+                    logger.LogWarning(BrandLog.NotFound, brandId);
                     return NotFound();
                 }
 
@@ -140,8 +146,8 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
             }
             catch (Exception e)
             {
-                logger.LogError(e, "Error while preparing Edit brand form for brand with Id {BrandId}!", brandId);
-                TempData["ErrorMessage"] = "An error occurred while preparing the Edit brand form.";
+                logger.LogError(e, BrandLog.EditBrandPageLoadError, brandId);
+                TempData[TempDataKeys.ErrorMessage] = BrandUi.EditBrandPageLoadError;
                 return this.RedirectToAction(nameof(Manage), "ControlPanelBrand");
             }
         }
@@ -155,19 +161,20 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
             {
                 if (inputModel.Id > IntIdMaxValue || inputModel.Id < IntIdMinValue)
                 {
-                    ModelState.AddModelError(nameof(inputModel.Id), "Invalid Id.");
+                    ModelState.AddModelError(nameof(inputModel.Id), BrandUi.InvalidId);
                 }
 
                 if (!this.ModelState.IsValid)
                 {
-                    logger.LogWarning("Attempt to edit brand with Id {BrandId} with invalid model state by user {UserId}.", inputModel.Id, this.GetUserId());
-                    ModelState.AddModelError(string.Empty, "Error occured while editing the brand. Please review the details and try again.");
+                    logger.LogWarning(BrandLog.EditWithInvalidModelState, inputModel.Id, this.GetUserId());
+                    ModelState.AddModelError(string.Empty, BrandUi.EditWithInvalidModelState);
                     return this.View(inputModel);
                 }
 
                 if (await brandService.ExistsByNameAsync(inputModel.Name, inputModel.Id))
                 {
-                    ModelState.AddModelError(nameof(inputModel.Name), "Brand with this name already exists.");
+                    logger.LogWarning(BrandLog.NameAlreadyExist, inputModel.Name);
+                    ModelState.AddModelError(nameof(inputModel.Name), BrandUi.NameAlreadyExist);
                     return View(inputModel);
                 }
 
@@ -175,18 +182,17 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
 
                 if (result == false)
                 {
-                    logger.LogWarning("Failed to edit brand '{BrandName}'!", inputModel.Name);
-                    this.ModelState.AddModelError(String.Empty, "Error occured while editing the brand!");
+                    logger.LogWarning(BrandLog.EditFailed, inputModel.Name);
                     return View(inputModel);
                 }
 
-                logger.LogInformation("Brand '{BrandName}' successfully edited by user {UserId}.", inputModel.Name, this.GetUserId());
+                logger.LogInformation(BrandLog.EditSuccess, inputModel.Name, this.GetUserId());
                 return this.RedirectToAction(nameof(Manage), "ControlPanelBrand");
             }
             catch (Exception e)
             {
-                logger.LogError(e, "Exception occurred while editing brand '{BrandName}'!", inputModel.Name);
-                TempData["ErrorMessage"] = "An unexpected error occurred while editing the brand. Please try again.";
+                logger.LogError(e, BrandLog.EditError, inputModel.Name);
+                TempData[TempDataKeys.ErrorMessage] = BrandUi.EditError;
                 return this.RedirectToAction(nameof(Manage), "ControlPanelBrand");
             }
         }
@@ -202,7 +208,7 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
 
                 if (brandToDelete == null)
                 {
-                    logger.LogWarning("Brand with Id {BrandId} was not found!", id);
+                    logger.LogWarning(BrandLog.NotFound, id);
                     return NotFound();
                 }
 
@@ -210,8 +216,8 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
             }
             catch (Exception e)
             {
-                logger.LogError(e, "Exception while preparing Delete brand form for brand with Id {BrandId}!", id);
-                TempData["ErrorMessage"] = "An error occurred while preparing the Delete brand form.";
+                logger.LogError(e, BrandLog.DeleteBrandPageLoadError, id);
+                TempData[TempDataKeys.ErrorMessage] = BrandUi.DeleteBrandPageLoadError;
                 return this.RedirectToAction(nameof(Manage), "ControlPanelBrand");
             }
         }
@@ -225,8 +231,7 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
             {
                 if (!this.ModelState.IsValid)
                 {
-                    logger.LogWarning("Attempt to delete brand with Id {BrandId} with invalid model state by user {UserId}", model.Id, this.GetUserId());
-                    ModelState.AddModelError(string.Empty, "Please do not modify the page");
+                    logger.LogWarning(BrandLog.DeleteWithInvalidModelState, model.Id, this.GetUserId());
                     return this.View(model);
                 }
 
@@ -235,18 +240,18 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
 
                 if (result == false)
                 {
-                    logger.LogWarning("Failed to delete brand with Id {BrandId} by user {UserId}!", model.Id, this.GetUserId());
-                    this.ModelState.AddModelError(string.Empty, "Error occured while deleting the brand!");
+                    logger.LogWarning(BrandLog.DeleteFailed, model.Id, this.GetUserId());
+                    this.ModelState.AddModelError(string.Empty, BrandUi.DeleteFailed);
                     return this.View(model);
                 }
 
-                logger.LogInformation("Brand with Id {BrandId} successfully deleted by user {UserId}.", model.Id, this.GetUserId());
+                logger.LogInformation(BrandLog.DeleteSuccess, model.Id, this.GetUserId());
                 return this.RedirectToAction(nameof(Manage), "ControlPanelBrand");
             }
             catch (Exception e)
             {
-                logger.LogError(e, "Exception occurred while deleting brand with Id {BrandId}.", model.Id);
-                TempData["ErrorMessage"] = "An error occurred while deleting the brand. Please try again.";
+                logger.LogError(e, BrandLog.DeleteError, model.Id);
+                TempData[TempDataKeys.ErrorMessage] = BrandUi.DeleteError;
                 return this.RedirectToAction(nameof(Manage), "ControlPanelBrand");
             }
         }

@@ -2,6 +2,10 @@
 using TechStore.Services.Core.Interfaces;
 using TechStore.Web.ViewModels.Order;
 
+using TechStore.GCommon;
+using OrderLog = TechStore.GCommon.LogMessages.Order;
+using OrderUi = TechStore.GCommon.UiMessages.Order;
+
 namespace TechStore.Web.Controllers
 {
     public class OrderController : BaseController
@@ -43,7 +47,7 @@ namespace TechStore.Web.Controllers
 
             if (!ModelState.IsValid)
             {
-                logger.LogInformation("Checkout form submitted by user {UserId} is invalid.", userId);
+                logger.LogInformation(OrderLog.InvalidCheckoutForm, userId);
                 return View(model);
             }
 
@@ -61,19 +65,19 @@ namespace TechStore.Web.Controllers
 
                 if (orderId == null)
                 {
-                    logger.LogWarning("User {UserId} failed to create an order.", userId);
-                    ModelState.AddModelError(string.Empty, "Failed to create order. Please check product availability.");
+                    logger.LogWarning(OrderLog.CreateFailed, userId);
+                    ModelState.AddModelError(string.Empty, OrderUi.CreateFailed);
                     
                     return View(model);
                 }
 
-                logger.LogInformation("User {UserId} successfully created order {OrderId}.", userId, orderId.Value);
+                logger.LogInformation(OrderLog.Create, userId, orderId.Value);
                 return this.RedirectToAction("Payment", "Payment", new { id = orderId.Value });
             }
             catch (Exception e)
             {
-                logger.LogError(e, "An unexpected error occurred while user {UserId} tried to checkout.", userId);
-                TempData["ErrorMessage"] = "An unexpected error occurred. Please try again later.";
+                logger.LogError(e, OrderLog.CheckoutError, userId);
+                TempData[TempDataKeys.ErrorMessage] = OrderUi.CheckoutError;
                 
                 return this.RedirectToAction("Checkout");
             }

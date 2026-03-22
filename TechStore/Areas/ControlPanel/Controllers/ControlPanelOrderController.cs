@@ -5,6 +5,10 @@ using TechStore.Data.Models.Enums;
 using TechStore.Services.Core.Interfaces;
 using TechStore.Web.ViewModels.Order;
 
+using TechStore.GCommon;
+using OrderLog = TechStore.GCommon.LogMessages.Order;
+using OrderUi = TechStore.GCommon.UiMessages.Order;
+
 namespace TechStore.Web.Areas.ControlPanel.Controllers
 {
     [Area("ControlPanel")]
@@ -32,7 +36,7 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
 
                 if (page == null)
                 {
-                    return NotFound();
+                    return OrderNotFound(id);
                 }
 
                 ViewBag.AllowedStatuses = ToSelectListItems(page.AllowedStatuses);
@@ -40,8 +44,8 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
             }
             catch (Exception e)
             {
-                logger.LogError(e, "Error while preparing Edit order form for order with Id {OrderId}!", id);
-                TempData["ErrorMessage"] = "An error occurred while preparing the Edit order form.";
+                logger.LogError(e, OrderLog.EditOrderPageLoadError, id);
+                TempData[TempDataKeys.ErrorMessage] = OrderUi.EditOrderPageLoadError;
                 return RedirectToAction(nameof(Index), "Home");
             }
         }
@@ -59,8 +63,7 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
 
                     if (page == null)
                     {
-                        logger.LogWarning("Order with Id {OrderId} was not found.", model.Id);
-                        return NotFound();
+                        return OrderNotFound(model.Id);
                     }
 
                     page.Status.NewStatus = model.NewStatus;
@@ -73,13 +76,13 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
 
                 if (!success)
                 {
-                    ModelState.AddModelError(string.Empty, "Invalid status transition or order is locked.");
+                    logger.LogWarning(OrderLog.EditStatusFailed, model.Id);
+                    ModelState.AddModelError(string.Empty, OrderUi.EditStatusFailed);
 
                     OrderEditPageViewModel? page = await orderService.GetEditPageAsync(model.Id);
                     if (page == null)
                     {
-                        logger.LogWarning("Order with Id {OrderId} was not found.", model.Id);
-                        return NotFound();
+                        return OrderNotFound(model.Id);
                     }
 
                     page.Status.NewStatus = model.NewStatus;
@@ -88,13 +91,14 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
                     return View("Edit", page);
                 }
 
-                TempData["SuccessMessage"] = "Order status updated successfully.";
+                logger.LogInformation(OrderLog.EditStatusSuccess, model.Id);
+                TempData[TempDataKeys.SuccessMessage] = OrderUi.EditStatusSuccess;
                 return RedirectToAction(nameof(Edit), new { id = model.Id });
             }
             catch (Exception e)
             {
-                logger.LogError(e, "Exception occurred while changing status for order with Id {OrderId}.", model.Id);
-                TempData["ErrorMessage"] = "An unexpected error occurred while changing the order status.";
+                logger.LogError(e, OrderLog.EditStatusError, model.Id);
+                TempData[TempDataKeys.ErrorMessage] = OrderUi.EditStatusError;
                 return RedirectToAction(nameof(Edit), new { id = model.Id });
             }
         }
@@ -112,8 +116,7 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
 
                     if (page == null)
                     {
-                        logger.LogWarning("Order with Id {OrderId} was not found.", model.Id);
-                        return NotFound();
+                        return OrderNotFound(model.Id);
                     }
 
                     page.Shipping = model;
@@ -126,14 +129,14 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
 
                 if (!success)
                 {
-                    ModelState.AddModelError(string.Empty, "Shipping details cannot be updated. The order may be locked.");
+                    logger.LogWarning(OrderLog.EditShippingDetailsFailed, model.Id);
+                    ModelState.AddModelError(string.Empty, OrderUi.EditShippingDetailsFailed);
 
                     OrderEditPageViewModel? page = await orderService.GetEditPageAsync(model.Id);
 
                     if (page == null)
                     {
-                        logger.LogWarning("Order with Id {OrderId} was not found.", model.Id);
-                        return NotFound();
+                        return OrderNotFound(model.Id);
                     }
 
                     page.Shipping = model;
@@ -142,13 +145,14 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
                     return View("Edit", page);
                 }
 
-                TempData["SuccessMessage"] = "Shipping details updated successfully.";
+                logger.LogInformation(OrderLog.EditShippingDetailsSuccess, model.Id);
+                TempData[TempDataKeys.SuccessMessage] = OrderUi.EditShippingDetailsSuccess;
                 return RedirectToAction(nameof(Edit), new { id = model.Id });
             }
             catch (Exception e)
             {
-                logger.LogError(e, "Exception occurred while editing shipping details for order with Id {OrderId}.", model.Id);
-                TempData["ErrorMessage"] = "An unexpected error occurred while updating shipping details.";
+                logger.LogError(e, OrderLog.EditShippingDetailsError, model.Id);
+                TempData[TempDataKeys.ErrorMessage] = OrderUi.EditShippingDetailsError;
                 return RedirectToAction(nameof(Edit), new { id = model.Id });
             }
         }
@@ -177,5 +181,11 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
             });
         }
 
+        private IActionResult OrderNotFound(long orderId)
+        {
+            logger.LogWarning(OrderLog.NotFound, orderId);
+            TempData[TempDataKeys.ErrorMessage] = OrderUi.NotFound;
+            return NotFound();
+        }
     }
 }

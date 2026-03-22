@@ -2,6 +2,10 @@
 using TechStore.Services.Core.Interfaces;
 using TechStore.Web.ViewModels.Product;
 
+using TechStore.GCommon;
+using ProductLog = TechStore.GCommon.LogMessages.Product;
+using ProductUi = TechStore.GCommon.UiMessages.Product;
+
 namespace TechStore.Web.Controllers
 {
     public class ProductController : BaseController
@@ -29,7 +33,7 @@ namespace TechStore.Web.Controllers
 
                 if (products == null)
                 {
-                    logger.LogWarning("Attempt to access IndexByCategory with non-existing categoryId - {CategoryId}", categoryId);
+                    logger.LogWarning(ProductLog.CategoryNotFound, categoryId);
                     return NotFound();
                 }
 
@@ -37,8 +41,8 @@ namespace TechStore.Web.Controllers
             }
             catch (Exception e)
             {
-                logger.LogError(e, "Error in IndexByCategory with categoryId {CategoryId}", categoryId);
-                TempData["ErrorMessage"] = "An unexpected error occurred while loading products from this category.";
+                logger.LogError(e, ProductLog.CategoryProductsLoadError, categoryId);
+                TempData[TempDataKeys.ErrorMessage] = ProductUi.LoadProductsError;
                 return this.RedirectToAction(nameof(Index), "Home");
             }
         }
@@ -53,7 +57,7 @@ namespace TechStore.Web.Controllers
 
                 if (productDetails == null)
                 {
-                    logger.LogWarning("Product with ID {ProductId} was not found", id);
+                    logger.LogWarning(ProductLog.NotFound, id);
                     return NotFound();
                 }
 
@@ -61,8 +65,8 @@ namespace TechStore.Web.Controllers
             }
             catch (Exception e)
             {
-                logger.LogError(e, "An error occurred while loading details for product with Id {ProductId}", id);
-                TempData["ErrorMessage"] = "An error occurred while loading the product details. Please try again later.";
+                logger.LogError(e, ProductLog.DetailsLoadError, id);
+                TempData[TempDataKeys.ErrorMessage] = ProductUi.DetailsLoadError;
                 return this.RedirectToAction(nameof(Index), "Home");
             }
         }
@@ -72,14 +76,23 @@ namespace TechStore.Web.Controllers
         {
             if (string.IsNullOrWhiteSpace(query))
             {
-                ViewBag.Message = "Please enter a keyword to search.";
+                ViewBag.Message = ProductUi.EmptySearchQuery;
+                logger.LogInformation(ProductLog.EmptySearchQueryAttempt);
                 return View(Enumerable.Empty<ProductInCategoryViewModel>());
             }
 
-            IEnumerable<ProductInCategoryViewModel?> products = await productService.SearchByKeywordAsync(query);
-
-            ViewBag.Query = query;
-            return View(products);
+            try
+            {
+                IEnumerable<ProductInCategoryViewModel?> products = await productService.SearchByKeywordAsync(query);
+                ViewBag.Query = query;
+                return View(products);
+            }
+            catch (Exception e  )
+            {
+                logger.LogError(e, ProductLog.SearchError, query);
+                TempData[TempDataKeys.ErrorMessage] = ProductUi.SearchError;
+                return RedirectToAction(nameof(Index), "Home");
+            }
         }
     }
 }

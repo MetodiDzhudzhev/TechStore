@@ -2,6 +2,10 @@
 using TechStore.Services.Core.Interfaces;
 using TechStore.Web.ViewModels.User;
 
+using TechStore.GCommon;
+using AccountLog = TechStore.GCommon.LogMessages.Account;
+using AccountUi = TechStore.GCommon.UiMessages.Account;
+
 namespace TechStore.Web.Areas.Account.Controllers
 {
     [Area("Account")]
@@ -46,6 +50,7 @@ namespace TechStore.Web.Areas.Account.Controllers
 
             if (!Guid.TryParse(userId, out Guid currentUserId))
             {
+                logger.LogWarning(AccountLog.InvalidUserId);
                 return Unauthorized();
             }
 
@@ -56,8 +61,7 @@ namespace TechStore.Web.Areas.Account.Controllers
             }
             catch (InvalidOperationException e)
             {
-                logger.LogWarning(e, "Delivery details requested for non-existing user. UserId: {UserId}", currentUserId);
-
+                logger.LogWarning(e, AccountLog.DeliveryDetailsUserNotFound, currentUserId);
                 return Unauthorized();
             }
 
@@ -83,12 +87,13 @@ namespace TechStore.Web.Areas.Account.Controllers
 
             if (!updated)
             {
-                ModelState.AddModelError(string.Empty, "Unable to update delivery details. Please try again.");
+                ModelState.AddModelError(string.Empty, AccountUi.DeliveryDetailsUpdateError);
+                logger.LogWarning(AccountLog.DeliveryDetailsUpdateFailed, currentUserId);
                 return View(model);
             }
 
-            TempData["Success"] = "Delivery details updated successfully.";
-            logger.LogInformation("Delivery details for user {UserId} updated successfully!", currentUserId);
+            TempData[TempDataKeys.SuccessMessage] = AccountUi.DeliveryDetailsUpdateSuccess;
+            logger.LogInformation(AccountLog.DeliveryDetailsUpdateSuccess, currentUserId);
             return RedirectToAction(nameof(DeliveryDetails));
         }
 

@@ -2,6 +2,10 @@
 using Microsoft.AspNetCore.Mvc;
 using TechStore.Services.Core.Interfaces;
 
+using TechStore.GCommon;
+using ReviewLog = TechStore.GCommon.LogMessages.Review;
+using ReviewUi = TechStore.GCommon.UiMessages.Review;
+
 namespace TechStore.Web.Areas.ControlPanel.Controllers
 {
     [Area("ControlPanel")]
@@ -9,12 +13,15 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
     {
 
         private readonly IReviewService reviewService;
+        private readonly ILogger<ControlPanelReviewController> logger;
 
         private const int PageSize = 5;
 
-        public ControlPanelReviewController(IReviewService reviewService)
+        public ControlPanelReviewController(IReviewService reviewService,
+            ILogger<ControlPanelReviewController> logger)
         {
             this.reviewService = reviewService;
+            this.logger = logger;
         }
 
         [HttpPost]
@@ -22,15 +29,26 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(long id)
         {
-            bool deleted = await reviewService.SoftDeleteReviewAsync(id);
-
-            if (!deleted)
+            try
             {
-                TempData["ErrorMessage"] = $"Review #{id} not found or already deleted.";
-            }
+                bool deleted = await reviewService.SoftDeleteReviewAsync(id);
 
-            TempData["SuccessMessage"] = $"Review #{id} was successfully deleted.";
-            return RedirectToAction(nameof(Manage));
+                if (!deleted)
+                {
+                    logger.LogWarning(ReviewLog.DeleteFailed, id);
+                    TempData[TempDataKeys.ErrorMessage] = string.Format(ReviewUi.DeleteFailed, id);
+                }
+
+                logger.LogInformation(ReviewLog.DeleteSuccess, id);
+                TempData[TempDataKeys.SuccessMessage] = string.Format(ReviewUi.DeleteSuccess, id);
+                return RedirectToAction(nameof(Manage));
+            }
+            catch(Exception e)
+            {
+                logger.LogError(e, ReviewLog.DeleteError, id);
+                TempData[TempDataKeys.ErrorMessage] = string.Format(ReviewUi.DeleteError, id);
+                return RedirectToAction(nameof(Manage));
+            }
         }
 
 
@@ -42,6 +60,7 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
 
             if (!Guid.TryParse(userId, out Guid currentUserId))
             {
+                logger.LogWarning(ReviewLog.InvalidUserId);
                 return Unauthorized();
             }
 
