@@ -28,7 +28,7 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
 
         [HttpGet]
         [Authorize(Roles = "Admin,Manager")]
-        public async Task<IActionResult> Add()
+        public IActionResult Add()
         {
             return this.View();
         }
