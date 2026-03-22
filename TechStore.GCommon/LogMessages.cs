@@ -161,5 +161,14 @@
             public const string DeleteSuccess = "Category with Id {CategoryId} successfully deleted by user {UserId}";
             public const string DeleteError = "Exception occurred while deleting category with Id {CategoryId}";
         }
+
+        public static class User
+        {
+            public const string InvalidUserId = "Invalid userId received: {UserId}";
+            public const string RoleNotSelected = "Role not selected for user {UserId}";
+            public const string RoleAssignSuccess = "Role '{Role}' assigned to user {UserId}";
+            public const string RoleAssignFailed = "Failed to assign role '{Role}' to user {UserId}";
+            public const string RoleAssignError = "Exception occurred while assigning role '{Role}' to user {UserId}";
+        }
     }
 }

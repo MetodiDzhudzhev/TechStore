@@ -32,20 +32,64 @@ namespace TechStore.Services.Core
             return roles;
         }
 
-        public async Task AssignRoleAsync(Guid userId, string role)
+        public async Task<bool> AssignRoleAsync(Guid userId, string role)
         {
             User? user = await this.userManager.FindByIdAsync(userId.ToString());
 
-            if (user != null)
+            if (user == null)
             {
-                IList<string> currentRoles = await this.userManager.GetRolesAsync(user);
-                await this.userManager.RemoveFromRolesAsync(user, currentRoles);
-                await this.userManager.AddToRoleAsync(user, role);
+                return false;
             }
+
+            IList<string> currentRoles = await this.userManager.GetRolesAsync(user);
+
+            if (currentRoles.Count == 1 && currentRoles.Contains(role))
+            {
+                return true;
+            }
+
+            IdentityResult removeResult = await this.userManager.RemoveFromRolesAsync(user, currentRoles);
+
+            if (!removeResult.Succeeded)
+            {
+                return false;
+            }
+
+            IdentityResult addResult = await this.userManager.AddToRoleAsync(user, role);
+
+            return addResult.Succeeded;
         }
 
-        public async Task<IEnumerable<UserManageViewModel>> GetPagedAsync(int page, int pageSize, Guid currentUserId)
+        public async Task<UserManageListViewModel> GetPagedAsync(int page, int pageSize, Guid currentUserId)
         {
+            if (page < 1)
+            {
+                page = 1;
+            }
+
+            if (pageSize < 1)
+            {
+                pageSize = 10;
+            }
+
+            int totalUsers = await userRepository.GetCountAsync();
+            int totalPages = (int)Math.Ceiling((double)totalUsers / pageSize);
+
+            if (totalPages == 0)
+            {
+                return new UserManageListViewModel
+                {
+                    Users = new List<UserManageViewModel>(),
+                    CurrentPage = 1,
+                    TotalPages = 0
+                };
+            }
+
+            if (page > totalPages)
+            {
+                page = totalPages;
+            }
+
             IEnumerable<User> users = await this.userRepository
                         .GetAllAttached()
                         .Where(u => u.Id != currentUserId)
@@ -69,7 +113,17 @@ namespace TechStore.Services.Core
                 });
             }
 
-            return userViewModels;
+            List<string> allRoles = await roleManager.Roles
+                .Select(r => r.Name!)
+                .ToListAsync();
+
+            return new UserManageListViewModel
+            {
+                Users = userViewModels,
+                CurrentPage = page,
+                TotalPages = totalPages,
+                AllRoles = allRoles
+            };
         }
 
         public async Task<int> GetTotalCountAsync()

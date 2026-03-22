@@ -1,8 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using TechStore.Services.Core.Interfaces;
 using TechStore.Web.ViewModels.User;
+
+using TechStore.GCommon;
+using UserLog = TechStore.GCommon.LogMessages.User;
+using UserUi = TechStore.GCommon.UiMessages.User;
 
 namespace TechStore.Web.Areas.ControlPanel.Controllers
 {
@@ -13,7 +16,7 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
 
         private readonly ILogger<ControlPanelUserController> logger;
 
-        private const int PageSize = 10;
+        private const int PageSize = 5;
 
         public ControlPanelUserController(IUserService userService, 
             ILogger<ControlPanelUserController> logger)
@@ -27,37 +30,15 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
         [Authorize(Roles = "Manager")]
         public async Task<IActionResult> Manage(int page = 1)
         {
-            int totalUsers = await userService.GetTotalCountAsync();
-            int totalPages = (int)Math.Ceiling((double)totalUsers / PageSize);
 
-            if (page < 1)
-            {
-                page = 1;
-            }
-
-            if (page > totalPages && totalPages > 0)
-            {
-                page = totalPages;
-            }
-
-            string userId = this.GetUserId();
+            string? userId = this.GetUserId();
 
             if (!Guid.TryParse(userId, out Guid currentUserId))
             {
                 return Unauthorized();
             }
 
-            IEnumerable<UserManageViewModel> users = await this.userService.GetPagedAsync(page, PageSize, currentUserId);
-
-            List<string> allRoles = await this.userService.GetAllRolesAsync();
-
-            UserManageListViewModel viewModel = new UserManageListViewModel
-            {
-                Users = users,
-                AllRoles = allRoles,
-                CurrentPage = page,
-                TotalPages = totalPages,
-            };
+            UserManageListViewModel viewModel = await this.userService.GetPagedAsync(page, PageSize, currentUserId);
 
             return View(viewModel);
         }
@@ -67,17 +48,38 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
         [Authorize(Roles = "Manager")]
         public async Task<IActionResult> AssignRole(Guid userId, string selectedRole, int currentPage)
         {
-            if (string.IsNullOrWhiteSpace(selectedRole))
+            try
             {
-                ModelState.AddModelError("", "Please, select a role.");
-            }
-            else
-            {
-                await this.userService.AssignRoleAsync(userId, selectedRole);
-                logger.LogInformation("Role '{Role}' assigned to user {UserId}", selectedRole, userId);
-            }
+                if (string.IsNullOrWhiteSpace(selectedRole))
+                {
+                    logger.LogWarning(UserLog.RoleNotSelected, userId);
+                    TempData[TempDataKeys.ErrorMessage] = UserUi.RoleNotSelected;
 
-            return RedirectToAction(nameof(Manage), new { page = currentPage });
+                    return RedirectToAction(nameof(Manage), new { page = currentPage });
+                }
+
+                bool result = await userService.AssignRoleAsync(userId, selectedRole);
+
+                if (!result)
+                {
+                    logger.LogWarning(UserLog.RoleAssignFailed, userId, selectedRole);
+                    TempData[TempDataKeys.ErrorMessage] = UserUi.RoleAssignFailed;
+
+                    return RedirectToAction(nameof(Manage), new { page = currentPage });
+                }
+
+                logger.LogInformation(UserLog.RoleAssignSuccess, userId, selectedRole);
+                TempData[TempDataKeys.SuccessMessage] = UserUi.RoleAssignSuccess;
+
+                return RedirectToAction(nameof(Manage), new { page = currentPage });
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, UserLog.RoleAssignError, userId, selectedRole);
+                TempData[TempDataKeys.ErrorMessage] = UserUi.RoleAssignError;
+
+                return RedirectToAction(nameof(Manage), new { page = currentPage });
+            }
         }
     }
 }

@@ -5,5 +5,6 @@ namespace TechStore.Data.Repository.Interfaces
     public interface IUserRepository 
         : IRepository<User, Guid>, IAsyncRepository<User, Guid>
     {
+        Task<int> GetCountAsync();
     }
 }

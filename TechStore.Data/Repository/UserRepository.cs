@@ -1,4 +1,5 @@
-﻿using TechStore.Data.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using TechStore.Data.Models;
 using TechStore.Data.Repository.Interfaces;
 
 namespace TechStore.Data.Repository
@@ -7,6 +8,14 @@ namespace TechStore.Data.Repository
     {
         public UserRepository(ApplicationDbContext dbContext) : base(dbContext)
         {
+        }
+
+        public async Task<int> GetCountAsync()
+        {
+            return await this
+                .GetAllAttached()
+                .AsNoTracking()
+                .CountAsync();
         }
     }
 }

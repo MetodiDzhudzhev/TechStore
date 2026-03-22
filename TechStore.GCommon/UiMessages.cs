@@ -104,5 +104,13 @@
             public const string DeleteFailed = "Failed to delete the category!";
             public const string DeleteError = "An error occurred while deleting the category. Please try again.";
         }
+
+        public static class User
+        {
+            public const string RoleNotSelected = "Please select a role.";
+            public const string RoleAssignSuccess = "Role assigned successfully.";
+            public const string RoleAssignFailed = "Failed to assign role.";
+            public const string RoleAssignError = "An error occurred while assigning the role. Please try again.";
+        }
     }
 }
