@@ -11,12 +11,10 @@ namespace TechStore.Services.Core
     public class BrandService : IBrandService
     {
         private readonly IBrandRepository brandRepository;
-        private readonly IUserRepository userRepository;
 
-        public BrandService(IBrandRepository brandRepository, IUserRepository userRepository)
+        public BrandService(IBrandRepository brandRepository)
         {
             this.brandRepository = brandRepository;
-            this.userRepository = userRepository;
         }
 
         public async Task<BrandDetailsViewModel?> GetBrandDetailsViewModelAsync(int? id)
@@ -32,13 +30,7 @@ namespace TechStore.Services.Core
 
                 if (brand != null)
                 {
-                    brandModel = new BrandDetailsViewModel
-                    {
-                        Id = brand.Id,
-                        Name = brand.Name,
-                        Description = brand.Description,
-                        logoUrl = brand.LogoUrl,
-                    };
+                    brandModel = MapToBrandDetailsViewModel(brand);
                 }
             }
 
@@ -60,31 +52,27 @@ namespace TechStore.Services.Core
             return brandsAsDropDown;
         }
 
-        public async Task<bool> AddBrandAsync(string userId, BrandFormInputViewModel inputModel)
+        public async Task<bool> AddBrandAsync(BrandFormInputViewModel inputModel)
         {
-            bool result = false;
-
-            User? user = await this.userRepository
-                .GetByIdAsync(Guid.Parse(userId));
-
-            if (user != null)
+            if (string.IsNullOrWhiteSpace(inputModel.Name))
             {
-                Brand brand = new Brand()
-                {
-                    Name = inputModel.Name.Trim(),
-                    LogoUrl = inputModel.LogoUrl ?? DefaultImageUrl,
-                    Description = inputModel.Description,
-                };
-
-                await this.brandRepository.AddAsync(brand);
-                await this.brandRepository.SaveChangesAsync();
-                result = true;
+                return false;
             }
 
-            return result;
+            Brand brand = new Brand
+            {
+                Name = inputModel.Name.Trim(),
+                LogoUrl = inputModel.LogoUrl ?? DefaultImageUrl,
+                Description = inputModel.Description,
+            };
+
+            await this.brandRepository.AddAsync(brand);
+            await this.brandRepository.SaveChangesAsync();
+
+            return true;
         }
 
-        public async Task<BrandFormInputViewModel?> GetEditableBrandByIdAsync(string userId, int? brandId)
+        public async Task<BrandFormInputViewModel?> GetEditableBrandByIdAsync(int? brandId)
         {
 
             if (brandId == null || brandId <= 0)
@@ -94,72 +82,49 @@ namespace TechStore.Services.Core
 
             BrandFormInputViewModel? editableBrand = null;
 
-            User? user = await this.userRepository
-                .GetByIdAsync(Guid.Parse(userId));
+            Brand? brand = await this.brandRepository
+                .GetAllAttached()
+                .AsNoTracking()
+                .SingleOrDefaultAsync(b => b.Id == brandId);
 
-            if (user != null)
+            if (brand == null)
             {
-                Brand? brand = await this.brandRepository
-                    .GetAllAttached()
-                    .AsNoTracking()
-                    .SingleOrDefaultAsync(b => b.Id == brandId);
-
-                if (brand == null)
-                {
-                    return null;
-                }
-
-                editableBrand = new BrandFormInputViewModel()
-                {
-                    Id = brand.Id,
-                    Name = brand.Name,
-                    LogoUrl = brand.LogoUrl ?? DefaultImageUrl,
-                    Description = brand.Description,
-                };
+                return null;
             }
+
+            editableBrand = MapToBrandFormInputViewModel(brand);
 
             return editableBrand;
         }
 
-        public async Task<bool> EditBrandAsync(string userId, BrandFormInputViewModel inputModel)
+        public async Task<bool> EditBrandAsync(BrandFormInputViewModel inputModel)
         {
             bool result = false;
 
-            User? user = await this.userRepository
-                .GetByIdAsync(Guid.Parse(userId));
+            Brand? editableBrand = await this.brandRepository
+            .GetByIdAsync(inputModel.Id);
 
-            if (user != null)
+            if (editableBrand != null)
             {
-                Brand? editableBrand = await this.brandRepository
-                .GetByIdAsync(inputModel.Id);
+                editableBrand.Name = inputModel.Name.Trim();
+                editableBrand.LogoUrl = inputModel.LogoUrl ?? DefaultImageUrl;
+                editableBrand.Description = inputModel.Description;
 
-                if (editableBrand != null)
-                {
-                    editableBrand.Id = inputModel.Id;
-                    editableBrand.Name = inputModel.Name.Trim();
-                    editableBrand.LogoUrl = inputModel.LogoUrl ?? DefaultImageUrl;
-                    editableBrand.Description = inputModel.Description;
+                this.brandRepository.Update(editableBrand);
+                await this.brandRepository.SaveChangesAsync();
 
-                    this.brandRepository.Update(editableBrand);
-                    await this.brandRepository.SaveChangesAsync();
-
-                    result = true;
-                }
+                result = true;
             }
 
             return result;
         }
 
-        public async Task<DeleteBrandViewModel?> GetBrandForDeleteByIdAsync(string userId, int? brandId)
+        public async Task<DeleteBrandViewModel?> GetBrandForDeleteByIdAsync(int? brandId)
         {
             DeleteBrandViewModel? brandForDeleteViewModel = null;
 
-            User? user = await this.userRepository
-                .GetByIdAsync(Guid.Parse(userId));
-
-            if (user != null && brandId != null)
+            if (brandId != null)
             {
-
                 Brand? brand = await this.brandRepository
                     .GetAllAttached()
                     .AsNoTracking()
@@ -167,30 +132,21 @@ namespace TechStore.Services.Core
 
                 if (brand != null && brand.IsDeleted == false)
                 {
-                    brandForDeleteViewModel = new DeleteBrandViewModel()
-                    {
-                        Id = brand.Id,
-                        Name = brand.Name,
-                        LogoUrl = brand.LogoUrl,
-                        Description = brand.Description,
-                    };
+                    brandForDeleteViewModel = MapToDeleteBrandViewModel(brand);
                 }
             }
 
             return brandForDeleteViewModel;
         }
 
-        public async Task<bool> SoftDeleteBrandAsync(string userId, DeleteBrandViewModel deleteModel)
+        public async Task<bool> SoftDeleteBrandAsync(DeleteBrandViewModel deleteModel)
         {
             bool result = false;
-
-            User? user = await this.userRepository
-                .GetByIdAsync(Guid.Parse(userId));
 
             Brand? brandToDelete = await this.brandRepository
                 .GetByIdAsync(deleteModel.Id);
 
-            if (user != null && brandToDelete != null)
+            if (brandToDelete != null)
             {
                 this.brandRepository.Delete(brandToDelete);
                 await this.brandRepository.SaveChangesAsync();
@@ -213,13 +169,7 @@ namespace TechStore.Services.Core
                 return null;
             }
 
-            BrandFormInputViewModel modelToRestore = new BrandFormInputViewModel()
-            {
-                Id = brand.Id,
-                Name = brand.Name,
-                LogoUrl = brand.LogoUrl ?? DefaultImageUrl,
-                Description = brand.Description,
-            };
+            BrandFormInputViewModel modelToRestore = MapToBrandFormInputViewModel(brand);
 
             return modelToRestore;
         }
@@ -229,7 +179,6 @@ namespace TechStore.Services.Core
             Brand? brand = await this.brandRepository
                 .GetAllAttached()
                 .IgnoreQueryFilters()
-                .AsNoTracking()
                 .FirstOrDefaultAsync(b => b.Id == id && b.IsDeleted);
 
             if (brand == null)
@@ -258,6 +207,7 @@ namespace TechStore.Services.Core
         {
             return await this.brandRepository
                 .GetAllAttached()
+                .AsNoTracking()
                 .OrderBy(b => b.Name)
                 .Select(b => new BrandManageViewModel
                 {
@@ -267,6 +217,45 @@ namespace TechStore.Services.Core
                     Description = b.Description,
                 })
                 .ToListAsync();
+        }
+
+        private static BrandDetailsViewModel MapToBrandDetailsViewModel(Brand brand)
+        {
+            BrandDetailsViewModel viewModel = new BrandDetailsViewModel()
+            {
+                Id = brand.Id,
+                Name = brand.Name,
+                Description = brand.Description,
+                logoUrl = brand.LogoUrl,
+            };
+
+            return viewModel;
+        }
+
+        private static BrandFormInputViewModel MapToBrandFormInputViewModel(Brand brand)
+        {
+            BrandFormInputViewModel viewModel = new BrandFormInputViewModel()
+            {
+                Id = brand.Id,
+                Name = brand.Name,
+                LogoUrl = brand.LogoUrl ?? DefaultImageUrl,
+                Description = brand.Description,
+            };
+
+            return viewModel;
+        }
+
+        private static DeleteBrandViewModel MapToDeleteBrandViewModel(Brand brand)
+        {
+            DeleteBrandViewModel viewModel = new DeleteBrandViewModel()
+            {
+                Id = brand.Id,
+                Name = brand.Name,
+                LogoUrl = brand.LogoUrl,
+                Description = brand.Description,
+            };
+
+            return viewModel;
         }
     }
 }

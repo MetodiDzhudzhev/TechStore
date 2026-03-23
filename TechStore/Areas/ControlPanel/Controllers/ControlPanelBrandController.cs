@@ -63,7 +63,7 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
                         return View(inputModel);
                     }
                 }
-                bool result = await this.brandService.AddBrandAsync(this.GetUserId()!, inputModel);
+                bool result = await this.brandService.AddBrandAsync(inputModel);
 
                 if (result == false)
                 {
@@ -82,7 +82,6 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
                 return this.RedirectToAction(nameof(Manage), "ControlPanelBrand");
             }
         }
-
 
         [HttpGet]
         [Authorize(Roles = "Admin,Manager")]
@@ -134,7 +133,7 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
             try
             {
                 BrandFormInputViewModel? editableBrand = await this.brandService
-                    .GetEditableBrandByIdAsync(this.GetUserId(), brandId);
+                    .GetEditableBrandByIdAsync(brandId);
 
                 if (editableBrand == null)
                 {
@@ -178,7 +177,7 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
                     return View(inputModel);
                 }
 
-                bool result = await this.brandService.EditBrandAsync(this.GetUserId()!, inputModel);
+                bool result = await this.brandService.EditBrandAsync(inputModel);
 
                 if (result == false)
                 {
@@ -204,7 +203,7 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
             try
             {
                 DeleteBrandViewModel? brandToDelete = await this.brandService
-                    .GetBrandForDeleteByIdAsync(this.GetUserId(), id);
+                    .GetBrandForDeleteByIdAsync(id);
 
                 if (brandToDelete == null)
                 {
@@ -236,7 +235,7 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
                 }
 
                 bool result = await this.brandService
-                    .SoftDeleteBrandAsync(this.GetUserId()!, model);
+                    .SoftDeleteBrandAsync(model);
 
                 if (result == false)
                 {

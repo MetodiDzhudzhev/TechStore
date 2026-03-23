@@ -7,27 +7,16 @@ namespace TechStore.Services.Core.Interfaces
     public interface IBrandService
     {
         Task<IEnumerable<AddProductBrandDropDownModel>> GetBrandsDropDownDataAsync();
-
         Task<BrandDetailsViewModel?> GetBrandDetailsViewModelAsync(int? id);
-
-        Task<bool> AddBrandAsync(string userId, BrandFormInputViewModel inputModel);
-
-        Task<BrandFormInputViewModel?> GetEditableBrandByIdAsync(string userId, int? brandId);
-
-        Task<bool> EditBrandAsync(string userId, BrandFormInputViewModel inputModel);
-
-        Task<DeleteBrandViewModel?> GetBrandForDeleteByIdAsync(string userId, int? brandId);
-
-        Task<bool> SoftDeleteBrandAsync(string userId, DeleteBrandViewModel deleteModel);
-
+        Task<bool> AddBrandAsync(BrandFormInputViewModel inputModel);
+        Task<BrandFormInputViewModel?> GetEditableBrandByIdAsync(int? brandId);
+        Task<bool> EditBrandAsync(BrandFormInputViewModel inputModel);
+        Task<DeleteBrandViewModel?> GetBrandForDeleteByIdAsync(int? brandId);
+        Task<bool> SoftDeleteBrandAsync(DeleteBrandViewModel deleteModel);
         Task<bool> ExistsByNameAsync(string name, int brandIdToSkip);
-
         Task<Brand?> GetDeletedBrandByNameAsync(string name);
-
         Task<BrandFormInputViewModel?> GetBrandForRestoreByIdAsync(int id);
-
         Task<bool> RestoreByIdAsync(int id);
-
         Task<IEnumerable<BrandManageViewModel>> GetAllAsync();
     }
 }
