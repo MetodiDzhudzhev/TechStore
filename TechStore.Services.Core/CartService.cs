@@ -9,26 +9,16 @@ namespace TechStore.Services.Core
     {
         private readonly ICartRepository cartRepository;
         private readonly IProductRepository productRepository;
-        private readonly IUserRepository userRepository;
 
         public CartService(ICartRepository cartRepository,
-            IProductRepository productRepository,
-            IUserRepository userRepository)
+            IProductRepository productRepository)
         {
             this.cartRepository = cartRepository;
             this.productRepository = productRepository;
-            this.userRepository = userRepository;
         }
 
-        public async Task<CartViewModel?> GetCartAsync(string? id)
+        public async Task<CartViewModel?> GetCartAsync(Guid cartId)
         {
-            bool isIdValid = Guid.TryParse(id, out Guid cartId);
-
-            if (!isIdValid)
-            {
-                return null;
-            }
-
             Cart? cart = await cartRepository.GetCartWithProductsAsync(cartId);
 
             if (cart == null)
@@ -49,27 +39,27 @@ namespace TechStore.Services.Core
             };
         }
 
-        public async Task<bool> AddProductAsync(string cartId, string? productId, int quantity)
+        public async Task<bool> AddProductAsync(Guid cartId, Guid productId, int quantity)
         {
             return await AddQuantityInternalAsync(cartId, productId, quantity);
         }
 
-        public async Task<bool> IncreaseProductQuantityAsync(string cartId, string? productId)
+        public async Task<bool> IncreaseProductQuantityAsync(Guid cartId, Guid productId)
         {
             return await AddQuantityInternalAsync(cartId, productId, 1);
 
         }
 
-        public async Task<bool> RemoveProductAsync(string cartId, string? productId)
+        public async Task<bool> RemoveProductAsync(Guid cartId, Guid productId)
         {
-            Cart? cart = await GetValidCartAsync(cartId);
+            Cart? cart = await GetCartAsyncInternal(cartId);
 
             if (cart == null)
             {
                 return false;
             }
 
-            Product? product = await GetValidProductAsync(productId);
+            Product? product = await GetProductAsyncInternal(productId);
 
             if (product == null)
             {
@@ -91,16 +81,16 @@ namespace TechStore.Services.Core
             }
         }
 
-        public async Task<bool> DecreaseProductAsync(string cartId, string? productId)
+        public async Task<bool> DecreaseProductAsync(Guid cartId, Guid productId)
         {
-            Cart? cart = await GetValidCartAsync(cartId);
+            Cart? cart = await GetCartAsyncInternal(cartId);
 
             if (cart == null)
             {
                 return false;
             }
 
-            Product? product = await GetValidProductAsync(productId);
+            Product? product = await GetProductAsyncInternal(productId);
 
             if (product == null)
             {
@@ -129,9 +119,9 @@ namespace TechStore.Services.Core
             }
         }
 
-        public async Task<bool> ClearCartAsync(string? cartId)
+        public async Task<bool> ClearCartAsync(Guid cartId)
         {
-            Cart? cart = await GetValidCartAsync(cartId);
+            Cart? cart = await GetCartAsyncInternal(cartId);
 
             if (cart == null)
             {
@@ -144,25 +134,27 @@ namespace TechStore.Services.Core
             return true;
         }
 
-        public async Task<int> GetCartItemsCountAsync(Guid userId)
+        public async Task<int> GetCartItemsCountAsync(Guid cartId)
         {
-            return await cartRepository.GetCartItemsCountAsync(userId);
+            return await cartRepository.GetCartItemsCountAsync(cartId);
         }
 
-        private async Task<bool> AddQuantityInternalAsync(string cartId, string? productId, int quantityToAdd)
+        private async Task<bool> AddQuantityInternalAsync(Guid cartId, Guid productId, int quantityToAdd)
         {
             if (quantityToAdd < 1)
             {
                 return false;
             }
 
-            Cart? cart = await GetValidCartAsync(cartId);
+            Cart? cart = await GetCartAsyncInternal(cartId);
+
             if (cart == null)
             {
                 return false;
             }
 
-            Product? product = await GetValidProductAsync(productId);
+            Product? product = await GetProductAsyncInternal(productId);
+
             if (product == null)
             {
                 return false;
@@ -196,39 +188,14 @@ namespace TechStore.Services.Core
             return true;
         }
 
-
-
-        private static Guid? ParseGuidOrNull(string? id)
+        private async Task<Cart?> GetCartAsyncInternal(Guid cartId)
         {
-            return Guid.TryParse(id, out Guid result) ? result : null;
+            return await cartRepository.GetCartWithProductsAsync(cartId);
         }
 
-        private async Task<Cart?> GetValidCartAsync(string? cartId)
+        private async Task<Product?> GetProductAsyncInternal(Guid productId)
         {
-            Guid? validCartId = ParseGuidOrNull(cartId);
-
-            if (validCartId == null)
-            {
-                return null;
-            }
-
-            Cart? cart = await cartRepository.GetCartWithProductsAsync(validCartId.Value);
-
-            return cart;
-        }
-
-        private async Task<Product?> GetValidProductAsync(string? productId)
-        {
-            Guid? validProductId = ParseGuidOrNull(productId);
-
-            if (validProductId == null)
-            {
-                return null;
-            }
-
-            Product? product = await productRepository.GetByIdAsync(validProductId.Value);
-
-            return product;
+            return await productRepository.GetByIdAsync(productId);
         }
     }
 }
