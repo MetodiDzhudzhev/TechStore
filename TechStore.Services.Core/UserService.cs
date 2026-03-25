@@ -22,19 +22,9 @@ namespace TechStore.Services.Core
             this.roleManager = roleManager;
         }
 
-        public async Task<List<string>> GetAllRolesAsync()
-        {
-            List<string> roles = await this.roleManager
-            .Roles
-            .Select(r => r.Name!)
-            .ToListAsync();
-
-            return roles;
-        }
-
         public async Task<bool> AssignRoleAsync(Guid userId, string role)
         {
-            User? user = await this.userManager.FindByIdAsync(userId.ToString());
+            User? user = await GetUserAsync(userId);
 
             if (user == null)
             {
@@ -126,20 +116,13 @@ namespace TechStore.Services.Core
             };
         }
 
-        public async Task<int> GetTotalCountAsync()
+        public async Task<DeliveryDetailsViewModel?> GetDeliveryDetailsAsync(Guid userId)
         {
-            int countOfUsers = await this.userRepository
-                .CountAsync();
+            User? user = await GetUserAsync(userId);
 
-            return countOfUsers;
-        }
-
-        public async Task<DeliveryDetailsViewModel> GetDeliveryDetailsAsync(Guid userId)
-        {
-            User? user = await userManager.FindByIdAsync(userId.ToString());
             if (user == null)
             {
-                throw new InvalidOperationException($"User not found: {userId}");
+                return null;
             }
 
             return new DeliveryDetailsViewModel
@@ -152,7 +135,7 @@ namespace TechStore.Services.Core
 
         public async Task<bool> UpdateDeliveryDetailsAsync(Guid userId, DeliveryDetailsViewModel model)
         {
-            User? user = await userManager.FindByIdAsync(userId.ToString());
+            User? user = await GetUserAsync(userId);
 
             if (user == null)
             {
@@ -165,6 +148,11 @@ namespace TechStore.Services.Core
 
             IdentityResult result = await userManager.UpdateAsync(user);
             return result.Succeeded;
+        }
+
+        private async Task<User?> GetUserAsync(Guid userId)
+        {
+            return await userManager.FindByIdAsync(userId.ToString());
         }
     }
 }
