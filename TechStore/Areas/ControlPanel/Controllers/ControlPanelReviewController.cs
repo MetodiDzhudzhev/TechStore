@@ -9,6 +9,7 @@ using ReviewUi = TechStore.GCommon.UiMessages.Review;
 namespace TechStore.Web.Areas.ControlPanel.Controllers
 {
     [Area("ControlPanel")]
+    [Authorize]
     public class ControlPanelReviewController : BaseControlPanelController
     {
 
@@ -51,19 +52,10 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
             }
         }
 
-
         [HttpGet]
         [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> Manage(int page = 1)
         {
-            string? userId = this.GetUserId();
-
-            if (!Guid.TryParse(userId, out Guid currentUserId))
-            {
-                logger.LogWarning(ReviewLog.InvalidUserId);
-                return Unauthorized();
-            }
-
             var viewModel = await reviewService.GetManageReviewsPageAsync(page, PageSize);
             return View(viewModel);
         }

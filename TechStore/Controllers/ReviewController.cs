@@ -14,6 +14,8 @@ namespace TechStore.Web.Controllers
         private readonly IReviewService reviewService;
         private readonly ILogger<ReviewController> logger;
 
+        private Guid UserId => Guid.Parse(this.GetUserId()!);
+
         public ReviewController(IReviewService reviewService,
             ILogger<ReviewController> logger)
         {
@@ -30,21 +32,21 @@ namespace TechStore.Web.Controllers
             {
                 if (!this.ModelState.IsValid)
                 {
-                    logger.LogWarning(ReviewLog.InvalidModelState, this.GetUserId());
+                    logger.LogWarning(ReviewLog.InvalidModelState, this.UserId);
                     TempData[TempDataKeys.ErrorMessage] = ReviewUi.InvalidInput;
                     return Redirect($"/Product/Details/{inputModel.ProductId}#reviews");
                 }
 
-                bool result = await reviewService.Add(GetUserId()!, inputModel);
+                bool result = await reviewService.Add(this.UserId, inputModel);
 
                 if (result == false)
                 {
-                    logger.LogWarning(ReviewLog.AddFailed, this.GetUserId(), inputModel.ProductId);
+                    logger.LogWarning(ReviewLog.AddFailed, this.UserId, inputModel.ProductId);
                     TempData[TempDataKeys.ErrorMessage] = ReviewUi.AlreadyAdded;
                     return Redirect($"/Product/Details/{inputModel.ProductId}#reviews");
                 }
 
-                logger.LogInformation(ReviewLog.AddSuccess, this.GetUserId(), inputModel.ProductId);
+                logger.LogInformation(ReviewLog.AddSuccess, this.UserId, inputModel.ProductId);
                 TempData[TempDataKeys.SuccessMessage] = ReviewUi.AddSuccess;
                 return Redirect($"/Product/Details/{inputModel.ProductId}#reviews");
             }
@@ -64,7 +66,7 @@ namespace TechStore.Web.Controllers
 
             if (isAuthenticated)
             {
-                userId = Guid.Parse(GetUserId()!);
+                userId = this.UserId;
             }
 
             ReviewsPanelViewModel viewModel = await reviewService.GetPanelAsync(productId, userId, page, pageSize);
