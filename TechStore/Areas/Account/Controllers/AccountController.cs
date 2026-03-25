@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TechStore.Services.Core.Interfaces;
 using TechStore.Web.ViewModels.User;
+using Microsoft.AspNetCore.Authorization;
 
 using TechStore.GCommon;
 using AccountLog = TechStore.GCommon.LogMessages.Account;
@@ -9,12 +10,15 @@ using AccountUi = TechStore.GCommon.UiMessages.Account;
 namespace TechStore.Web.Areas.Account.Controllers
 {
     [Area("Account")]
+    [Authorize]
     public class AccountController : BaseAccountController
     {
         private readonly IOrderService orderService;
         private readonly IUserService userService;
         private readonly IReviewService reviewService;
         private readonly ILogger<AccountController> logger;
+
+        private Guid UserId => Guid.Parse(this.GetUserId()!);
 
         private const int PageSize = 5;
         
@@ -32,12 +36,7 @@ namespace TechStore.Web.Areas.Account.Controllers
         [HttpGet]
         public async Task<IActionResult> MyOrders(int page = 1)
         {
-            string? userId = this.GetUserId();
-
-            if (!Guid.TryParse(userId, out Guid currentUserId))
-            {
-                return Unauthorized();
-            }
+            Guid currentUserId = this.UserId;
 
             var viewModel = await orderService.GetMyOrdersPagedAsync(currentUserId, page, PageSize);
             return View(viewModel);
@@ -46,13 +45,7 @@ namespace TechStore.Web.Areas.Account.Controllers
         [HttpGet]
         public async Task<IActionResult> DeliveryDetails()
         {
-            string? userId = this.GetUserId();
-
-            if (!Guid.TryParse(userId, out Guid currentUserId))
-            {
-                logger.LogWarning(AccountLog.InvalidUserId);
-                return Unauthorized();
-            }
+            Guid currentUserId = this.UserId;
 
             try
             {
@@ -71,12 +64,7 @@ namespace TechStore.Web.Areas.Account.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeliveryDetails(DeliveryDetailsViewModel model)
         {
-            string? userId = this.GetUserId();
-
-            if (!Guid.TryParse(userId, out Guid currentUserId))
-            {
-                return Unauthorized();
-            }
+            Guid currentUserId = this.UserId;
 
             if (!ModelState.IsValid)
             {
@@ -100,12 +88,7 @@ namespace TechStore.Web.Areas.Account.Controllers
         [HttpGet]
         public async Task<IActionResult> MyReviews(int page = 1)
         {
-            string? userId = this.GetUserId();
-
-            if (!Guid.TryParse(userId, out Guid currentUserId))
-            {
-                return Unauthorized();
-            }
+            Guid currentUserId = this.UserId;
 
             var viewModel = await reviewService.GetMyReviewsPagedAsync(currentUserId, page, PageSize);
             return View(viewModel);
