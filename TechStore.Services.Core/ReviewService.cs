@@ -9,25 +9,15 @@ namespace TechStore.Services.Core
     public class ReviewService : IReviewService
     {
         private readonly IReviewRepository reviewRepository;
-        private readonly IUserRepository userRepository;
 
-        public ReviewService(IReviewRepository reviewRepository,
-            IUserRepository userRepository)
+        public ReviewService(IReviewRepository reviewRepository)
         {
             this.reviewRepository = reviewRepository;
-            this.userRepository = userRepository;
         }
 
-        public async Task<bool> Add(string userId, ReviewFormInputModel inputModel)
+        public async Task<bool> Add(Guid userId, ReviewFormInputModel inputModel)
         {
-            User? user = await userRepository.GetByIdAsync(Guid.Parse(userId));
-
-            if (user == null)
-            {
-                return false;
-            }
-
-            bool exist = await reviewRepository.ReviewExistsAsync(user.Id, inputModel.ProductId); 
+            bool exist = await reviewRepository.ReviewExistsAsync(userId, inputModel.ProductId); 
 
             if (exist)
             {
@@ -36,11 +26,11 @@ namespace TechStore.Services.Core
 
             Review review = new Review
             {
-                Rating = inputModel.Rating!.Value,
+                Rating = inputModel.Rating,
                 Comment = inputModel.Comment,
                 CreatedAt = DateTime.UtcNow,
                 ProductId = inputModel.ProductId,
-                UserId = user.Id,
+                UserId = userId,
             };
 
             await this.reviewRepository.AddAsync(review);
@@ -51,15 +41,7 @@ namespace TechStore.Services.Core
 
         public async Task<ReviewsPanelViewModel> GetPanelAsync(Guid productId, Guid? userId, int page, int pageSize)
         {
-            if (page < 1)
-            {
-                page = 1;
-            }
-
-            if (pageSize < 1)
-            {
-                pageSize = 5;
-            }
+            (page, pageSize) = NormalizePaging(page, pageSize);
 
             int totalCount = await reviewRepository.GetCountByProductAsync(productId);
             int totalPages = Math.Max(1, (int)Math.Ceiling(totalCount / (double)pageSize));
@@ -119,15 +101,7 @@ namespace TechStore.Services.Core
 
         public async Task<MyReviewsListViewModel> GetMyReviewsPagedAsync(Guid userId, int page, int pageSize)
         {
-            if (page < 1)
-            {
-                page = 1;
-            }
-
-            if (pageSize < 1)
-            {
-                pageSize = 5;
-            }
+            (page, pageSize) = NormalizePaging(page, pageSize);
 
             int totalCount = await reviewRepository.GetCountByUserAsync(userId);
             int totalPages = Math.Max(1, (int)Math.Ceiling(totalCount / (double)pageSize));
@@ -160,15 +134,7 @@ namespace TechStore.Services.Core
 
         public async Task<ReviewManageListViewModel> GetManageReviewsPageAsync(int page, int pageSize)
         {
-            if (page < 1)
-            {
-                page = 1;
-            }
-
-            if (pageSize < 1)
-            {
-                pageSize = 5;
-            }
+            (page, pageSize) = NormalizePaging(page, pageSize);
 
             int totalCount = await reviewRepository.GetCountAsync();
             int totalPages = Math.Max(1, (int)Math.Ceiling(totalCount / (double)pageSize));
@@ -203,6 +169,7 @@ namespace TechStore.Services.Core
         public async Task<bool> SoftDeleteReviewAsync(long reviewId)
         {
             Review? review = await reviewRepository.GetByIdAsync(reviewId);
+
             if (review == null)
             {
                 return false;
@@ -213,6 +180,19 @@ namespace TechStore.Services.Core
 
             return true;
         }
+        private static (int page, int pageSize) NormalizePaging(int page, int pageSize)
+        {
+            if (page < 1)
+            {
+                page = 1;
+            }
 
+            if (pageSize < 1)
+            {
+                pageSize = 5;
+            }
+
+            return (page, pageSize);
+        }
     }
 }

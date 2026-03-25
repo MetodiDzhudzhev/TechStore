@@ -10,7 +10,8 @@ namespace TechStore.Web.ViewModels.Review
         [MaxLength(CommentMaxLength)]
         public string? Comment { get; set; }
 
+        [Required]
         [Range(1, 5)]
-        public int? Rating { get; set; }
+        public int Rating { get; set; }
     }
 }
