@@ -11,11 +11,14 @@ using CategoryUi = TechStore.GCommon.UiMessages.Category;
 namespace TechStore.Web.Areas.ControlPanel.Controllers
 {
     [Area("ControlPanel")]
+    [Authorize(Roles = "Admin,Manager")]
     public class ControlPanelCategoryController : BaseControlPanelController
     {
         private readonly ICategoryService categoryService;
 
         private readonly ILogger<ControlPanelCategoryController> logger;
+
+        private Guid UserId => Guid.Parse(this.GetUserId()!);
 
         public ControlPanelCategoryController(ICategoryService categoryService,
             ILogger<ControlPanelCategoryController> logger)
@@ -25,7 +28,6 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin,Manager")]
         public IActionResult Add()
         {
             return this.View();
@@ -33,14 +35,13 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> Add(CategoryFormInputViewModel inputModel)
         {
             try
             {
                 if (!this.ModelState.IsValid)
                 {
-                    logger.LogWarning(CategoryLog.AddWithInvalidModelState, this.GetUserId());
+                    logger.LogWarning(CategoryLog.AddWithInvalidModelState, this.UserId);
                     return this.View(inputModel);
                 }
 
@@ -61,35 +62,28 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
                         return View(inputModel);
                     }
                 }
-                bool result = await this.categoryService.AddCategoryAsync(this.GetUserId()!, inputModel);
 
-                if (result == false)
-                {
-                    logger.LogWarning(CategoryLog.AddFailed, inputModel.Name, this.GetUserId());
-                    ModelState.AddModelError(string.Empty, CategoryUi.AddError);
-                    return this.View(inputModel);
-                }
+                await this.categoryService.AddCategoryAsync(inputModel);
 
-                logger.LogInformation(CategoryLog.AddSuccess, inputModel.Name, this.GetUserId());
-                return this.RedirectToAction(nameof(Index), "Category", new { area = "" });
+                logger.LogInformation(CategoryLog.AddSuccess, inputModel.Name, this.UserId);
+                return RedirectToCategoryIndex();
             }
             catch (Exception e)
             {
                 logger.LogError(e, CategoryLog.AddError, inputModel.Name);
                 TempData[TempDataKeys.ErrorMessage] = CategoryUi.AddError;
-                return this.RedirectToAction(nameof(Index), "Category", new { area = "" });
+                return RedirectToCategoryIndex();
             }
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> Restore(int id)
         {
             CategoryFormInputViewModel? category = await this.categoryService.GetCategoryForRestoreByIdAsync(id);
 
             if (category == null)
             {
-                logger.LogWarning(CategoryLog.RestoreInvalidCategory, id, this.GetUserId());
+                logger.LogWarning(CategoryLog.RestoreInvalidCategory, id, this.UserId);
                 return NotFound();
             }
 
@@ -98,7 +92,6 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> RestoreConfirmed(int id)
         {
             try
@@ -109,29 +102,28 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
                 {
                     logger.LogWarning(CategoryLog.RestoreFailed, id);
                     TempData[TempDataKeys.ErrorMessage] = CategoryUi.RestoreFailed;
-                    return this.RedirectToAction(nameof(Index), "Category", new { area = "" });
+                    return RedirectToCategoryIndex();
                 }
 
-                logger.LogInformation(CategoryLog.RestoreSuccess, id, this.GetUserId());
+                logger.LogInformation(CategoryLog.RestoreSuccess, id, this.UserId);
                 TempData[TempDataKeys.SuccessMessage] = CategoryUi.RestoreSuccess;
-                return this.RedirectToAction(nameof(Index), "Category", new { area = "" });
+                return RedirectToCategoryIndex();
             }
             catch (Exception e)
             {
                 logger.LogError(e, CategoryLog.RestoreError, id);
                 TempData[TempDataKeys.ErrorMessage] = CategoryUi.RestoreError;
-                return this.RedirectToAction(nameof(Index), "Category", new { area = "" });
+                return RedirectToCategoryIndex();
             }
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> Edit(int? categoryId)
         {
             try
             {
                 CategoryFormInputViewModel? editableCategory = await this.categoryService
-                    .GetEditableCategoryByIdAsync(this.GetUserId(), categoryId);
+                    .GetEditableCategoryByIdAsync(categoryId);
 
                 if (editableCategory == null)
                 {
@@ -145,13 +137,12 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
             {
                 logger.LogError(e, CategoryLog.EditCategoryPageLoadError, categoryId);
                 TempData[TempDataKeys.ErrorMessage] = CategoryUi.EditCategoryPageLoadError;
-                return this.RedirectToAction(nameof(Index), "Category", new { area = "" });
+                return RedirectToCategoryIndex();
             }
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> Edit(CategoryFormInputViewModel inputModel)
         {
             try
@@ -163,7 +154,7 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
 
                 if (!this.ModelState.IsValid)
                 {
-                    logger.LogWarning(CategoryLog.EditWithInvalidModelState, inputModel.Id, this.GetUserId());
+                    logger.LogWarning(CategoryLog.EditWithInvalidModelState, inputModel.Id, this.UserId);
                     ModelState.AddModelError(string.Empty, CategoryUi.EditWithInvalidModelState);
                     return this.View(inputModel);
                 }
@@ -175,7 +166,7 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
                     return View(inputModel);
                 }
 
-                bool result = await this.categoryService.EditCategoryAsync(this.GetUserId()!, inputModel);
+                bool result = await this.categoryService.EditCategoryAsync(inputModel);
 
                 if (result == false)
                 {
@@ -183,25 +174,24 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
                     return View(inputModel);
                 }
 
-                logger.LogInformation(CategoryLog.EditSuccess, inputModel.Name, this.GetUserId());
-                return this.RedirectToAction(nameof(Index), "Category", new { area = "" });
+                logger.LogInformation(CategoryLog.EditSuccess, inputModel.Name, this.UserId);
+                return RedirectToCategoryIndex();
             }
             catch (Exception e)
             {
                 logger.LogError(e, CategoryLog.EditError, inputModel.Name);
                 TempData[TempDataKeys.ErrorMessage] = CategoryUi.EditError;
-                return this.RedirectToAction(nameof(Index), "Category", new { area = "" });
+                return RedirectToCategoryIndex();
             }
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> Delete(int? id)
         {
             try
             {
                 DeleteCategoryViewModel? categoryToDelete = await this.categoryService
-                    .GetCategoryForDeleteByIdAsync(this.GetUserId(), id);
+                    .GetCategoryForDeleteByIdAsync(id);
 
                 if (categoryToDelete == null)
                 {
@@ -215,46 +205,44 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
             {
                 logger.LogError(e, CategoryLog.DeleteCategoryPageLoadError, id);
                 TempData[TempDataKeys.ErrorMessage] = CategoryUi.DeleteCategoryPageLoadError;
-                return this.RedirectToAction(nameof(Index), "Category", new { area = "" });
+                return RedirectToCategoryIndex();
             }
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> Delete(DeleteCategoryViewModel model)
         {
             try
             {
                 if (!this.ModelState.IsValid)
                 {
-                    logger.LogWarning(CategoryLog.DeleteWithInvalidModelState, model.Id, this.GetUserId());
+                    logger.LogWarning(CategoryLog.DeleteWithInvalidModelState, model.Id, this.UserId);
                     return this.View(model);
                 }
 
                 bool result = await this.categoryService
-                    .SoftDeleteCategoryAsync(this.GetUserId()!, model);
+                    .SoftDeleteCategoryAsync(model);
 
                 if (result == false)
                 {
-                    logger.LogWarning(CategoryLog.DeleteFailed, model.Id, this.GetUserId());
+                    logger.LogWarning(CategoryLog.DeleteFailed, model.Id, this.UserId);
                     this.ModelState.AddModelError(string.Empty, CategoryUi.DeleteFailed);
                     return this.View(model);
                 }
 
-                logger.LogInformation(CategoryLog.DeleteSuccess, model.Id, this.GetUserId());
-                return this.RedirectToAction(nameof(Index), "Category", new { area = "" });
+                logger.LogInformation(CategoryLog.DeleteSuccess, model.Id, this.UserId);
+                return RedirectToCategoryIndex();
             }
             catch (Exception e)
             {
                 logger.LogError(e, CategoryLog.DeleteError, model.Id);
                 TempData[TempDataKeys.ErrorMessage] = CategoryUi.DeleteError;
-                return this.RedirectToAction(nameof(Index), "Category", new { area = "" });
+                return RedirectToCategoryIndex();
             }
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> Manage()
         {
             IEnumerable<CategoryManageViewModel> categories = await categoryService.GetAllAsync();
@@ -265,6 +253,11 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
             };
 
             return View(viewModel);
+        }
+
+        private IActionResult RedirectToCategoryIndex()
+        {
+            return this.RedirectToAction(nameof(Index), "Category", new { area = "" });
         }
     }
 }

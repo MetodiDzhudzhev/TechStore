@@ -11,12 +11,10 @@ namespace TechStore.Services.Core
     public class CategoryService : ICategoryService
     {
         private readonly ICategoryRepository categoryRepository;
-        private readonly IUserRepository userRepository;
 
-        public CategoryService(ICategoryRepository categoryRepository, IUserRepository userRepository)
+        public CategoryService(ICategoryRepository categoryRepository)
         {
             this.categoryRepository = categoryRepository;
-            this.userRepository = userRepository;
         }
 
         public async Task<IEnumerable<AllCategoriesIndexViewModel>> GetAllCategoriesAsync()
@@ -34,30 +32,19 @@ namespace TechStore.Services.Core
 
             return allCategories;
         }
-        public async Task<bool> AddCategoryAsync(string userId, CategoryFormInputViewModel inputModel)
+        public async Task AddCategoryAsync(CategoryFormInputViewModel inputModel)
         {
-            bool result = false;
-
-            User? user = await this.userRepository
-                .GetByIdAsync(Guid.Parse(userId));
-
-            if (user != null)
+            Category category = new Category()
             {
-                Category category = new Category()
-                {
-                    Name = inputModel.Name.Trim(),
-                    ImageUrl = inputModel.ImageUrl ?? DefaultImageUrl,
-                };
+                Name = inputModel.Name.Trim(),
+                ImageUrl = inputModel.ImageUrl ?? DefaultImageUrl,
+            };
 
-                await this.categoryRepository.AddAsync(category);
-                await this.categoryRepository.SaveChangesAsync();
-                result = true;
-            }
-
-            return result;
+            await this.categoryRepository.AddAsync(category);
+            await this.categoryRepository.SaveChangesAsync();
         }
 
-        public async Task<CategoryFormInputViewModel?> GetEditableCategoryByIdAsync(string userId, int? categoryId)
+        public async Task<CategoryFormInputViewModel?> GetEditableCategoryByIdAsync(int? categoryId)
         {
 
             if (categoryId == null || categoryId <= 0)
@@ -67,68 +54,47 @@ namespace TechStore.Services.Core
 
             CategoryFormInputViewModel? editableCategory = null;
 
-            User? user = await this.userRepository
-                .GetByIdAsync(Guid.Parse(userId));
+            Category? category = await this.categoryRepository
+                .GetAllAttached()
+                .AsNoTracking()
+                .SingleOrDefaultAsync(c => c.Id == categoryId);
 
-            if (user != null)
+            if (category == null)
             {
-                Category? category = await this.categoryRepository
-                    .GetAllAttached()
-                    .AsNoTracking()
-                    .SingleOrDefaultAsync(c => c.Id == categoryId);
-
-                if (category == null)
-                {
-                    return null;
-                }
-
-                editableCategory = new CategoryFormInputViewModel()
-                {
-                    Id = category.Id,
-                    Name = category!.Name,
-                    ImageUrl = category.ImageUrl ?? DefaultImageUrl,
-                };
+                return null;
             }
+
+            editableCategory = MapToCategoryFormInputViewModel(category);
+
             return editableCategory;
         }
 
-        public async Task<bool> EditCategoryAsync(string userId, CategoryFormInputViewModel inputModel)
+        public async Task<bool> EditCategoryAsync(CategoryFormInputViewModel inputModel)
         {
             bool result = false;
 
-            User? user = await this.userRepository
-                .GetByIdAsync(Guid.Parse(userId));
+            Category? editableCategory = await this.categoryRepository
+            .GetByIdAsync(inputModel.Id);
 
-            if (user != null)
+            if (editableCategory != null)
             {
-                Category? editableCategory = await this.categoryRepository
-                .GetByIdAsync(inputModel.Id);
+                editableCategory.Name = inputModel.Name.Trim();
+                editableCategory.ImageUrl = inputModel.ImageUrl ?? DefaultImageUrl;
+                this.categoryRepository.Update(editableCategory);
+                await this.categoryRepository.SaveChangesAsync();
 
-                if (editableCategory != null)
-                {
-                    editableCategory.Id = inputModel.Id;
-                    editableCategory.Name = inputModel.Name.Trim();
-                    editableCategory.ImageUrl = inputModel.ImageUrl ?? DefaultImageUrl;
-                    this.categoryRepository.Update(editableCategory);
-                    await this.categoryRepository.SaveChangesAsync();
-
-                    result = true;
-                }
+                result = true;
             }
 
             return result;
         }
 
-        public async Task<DeleteCategoryViewModel?> GetCategoryForDeleteByIdAsync(string userId, int? categoryId)
+        public async Task<DeleteCategoryViewModel?> GetCategoryForDeleteByIdAsync(int? categoryId)
         {
             DeleteCategoryViewModel? categoryForDeleteViewModel = null;
 
-            User? user = await this.userRepository
-                .GetByIdAsync(Guid.Parse(userId));
-
-            if (user != null && categoryId != null)
+            if (categoryId != null)
             {
-
                 Category? category = await this.categoryRepository
                     .GetAllAttached()
                     .AsNoTracking()
@@ -136,29 +102,21 @@ namespace TechStore.Services.Core
 
                 if (category != null && category.IsDeleted == false)
                 {
-                    categoryForDeleteViewModel = new DeleteCategoryViewModel()
-                    {
-                        Id = category.Id,
-                        Name = category.Name,
-                        ImageUrl = category.ImageUrl,
-                    };
+                    categoryForDeleteViewModel = MapToDeleteCategoryViewModel(category);
                 }
             }
 
             return categoryForDeleteViewModel;
         }
 
-        public async Task<bool> SoftDeleteCategoryAsync(string userId, DeleteCategoryViewModel deleteModel)
+        public async Task<bool> SoftDeleteCategoryAsync(DeleteCategoryViewModel deleteModel)
         {
             bool result = false;
-
-            User? user = await this.userRepository
-                .GetByIdAsync(Guid.Parse(userId));
 
             Category? categoryToDelete = await this.categoryRepository
                 .GetByIdAsync(deleteModel.Id);
 
-            if (user != null && categoryToDelete != null)
+            if (categoryToDelete != null)
             {
                 this.categoryRepository.Delete(categoryToDelete);
                 await this.categoryRepository.SaveChangesAsync();
@@ -176,7 +134,7 @@ namespace TechStore.Services.Core
                 .Select(c => new AddProductCategoryDropDownModel()
                 {
                     Id = c.Id,
-                    Name = c.Name.Trim(),
+                    Name = c.Name,
                 })
                 .ToListAsync();
 
@@ -211,12 +169,7 @@ namespace TechStore.Services.Core
                 return null;
             }
 
-            CategoryFormInputViewModel modelToRestore = new CategoryFormInputViewModel()
-            {
-                Id = category.Id,
-                Name = category.Name,
-                ImageUrl = category.ImageUrl ?? DefaultImageUrl,
-            };
+            CategoryFormInputViewModel modelToRestore = MapToCategoryFormInputViewModel(category);
 
             return modelToRestore;
         }
@@ -226,7 +179,6 @@ namespace TechStore.Services.Core
             Category? category = await this.categoryRepository
                 .GetAllAttached()
                 .IgnoreQueryFilters()
-                .AsNoTracking()
                 .FirstOrDefaultAsync(c => c.Id == id && c.IsDeleted);
 
             if (category == null)
@@ -256,6 +208,26 @@ namespace TechStore.Services.Core
                 .ToListAsync();
 
             return categories;
+        }
+
+        private static CategoryFormInputViewModel MapToCategoryFormInputViewModel(Category category)
+        {
+            return new CategoryFormInputViewModel
+            {
+                Id = category.Id,
+                Name = category.Name,
+                ImageUrl = category.ImageUrl ?? DefaultImageUrl,
+            };
+        }
+
+        private static DeleteCategoryViewModel MapToDeleteCategoryViewModel(Category category)
+        {
+            return new DeleteCategoryViewModel
+            {
+                Id = category.Id,
+                Name = category.Name,
+                ImageUrl = category.ImageUrl,
+            };
         }
     }
 }
