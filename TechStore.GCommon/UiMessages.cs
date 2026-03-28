@@ -45,6 +45,7 @@
         public static class Payment
         {
             public const string InitializationFailed = "Payment initialization failed. Please try again.";
+            public const string CancelPageLoadError = "An unexpected error occurred while loading cancel payment page.";
         }
 
         public static class Product

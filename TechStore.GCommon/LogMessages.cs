@@ -77,6 +77,7 @@
             public const string StripeSessionCreationFailed = "Stripe session creation failed. OrderId={OrderId}";
             public const string MissingOrderIdMetadata = "Stripe session missing orderId metadata. SessionId={SessionId}";
             public const string UnauthenticatedPaymentAccess = "Unauthenticated user attempted to access payment functionality.";
+            public const string PaymentCancelPageLoadError = "Unexpected error while loading cancel payment page. OrderId: {OrderId}";
         }
 
         public static class Product

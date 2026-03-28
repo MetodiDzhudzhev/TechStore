@@ -17,6 +17,8 @@ namespace TechStore.Web.Controllers
         private readonly IOrderService orderService;
         private readonly ILogger<PaymentController> logger;
 
+        private Guid UserId => Guid.Parse(this.GetUserId()!);
+
         public PaymentController(IOrderService orderService,
             ILogger<PaymentController> logger)
         {
@@ -29,19 +31,11 @@ namespace TechStore.Web.Controllers
         {
             try
             {
-                string? userId = this.GetUserId();
-
-                if (userId == null)
-                {
-                    logger.LogWarning(UnauthenticatedPaymentAccess);
-                    return RedirectToAction("Login", "Account");
-                }
-
-                PaymentSummaryViewModel? model = await orderService.GetPaymentSummaryAsync(userId, id);
+                PaymentSummaryViewModel? model = await orderService.GetPaymentSummaryAsync(this.UserId, id);
 
                 if (model == null)
                 {
-                    logger.LogWarning(PaymentSummaryNotFound, id, userId);
+                    logger.LogWarning(PaymentSummaryNotFound, id, this.UserId);
                     return NotFound();
                 }
 
@@ -58,28 +52,20 @@ namespace TechStore.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateCheckoutSession(long orderId)
         {
-            string? userId = GetUserId();
-
-            if (userId == null)
-            {
-                logger.LogWarning(UnauthenticatedPaymentAccess);
-                return RedirectToAction("Login", "Account");
-            }
-
             PaymentSummaryViewModel? summary =
-                await orderService.GetPaymentSummaryAsync(userId, orderId);
+                await orderService.GetPaymentSummaryAsync(this.UserId, orderId);
 
             if (summary == null)
             {
-                logger.LogWarning(PaymentSummaryNotFound, orderId, userId);
+                logger.LogWarning(PaymentSummaryNotFound, orderId, this.UserId);
                 return NotFound();
             }
 
-            var products = await orderService.GetOrderProductsAsync(userId, orderId);
+            var products = await orderService.GetOrderProductsAsync(this.UserId, orderId);
 
             if (products == null || products.Count == 0)
             {
-                logger.LogWarning(OrderProductsNotFound, orderId, userId);
+                logger.LogWarning(OrderProductsNotFound, orderId, this.UserId);
                 return NotFound();
             }
 
@@ -144,14 +130,6 @@ namespace TechStore.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> Success(string session_id)
         {
-            string? userId = GetUserId();
-
-            if (userId == null)
-            {
-                logger.LogWarning(UnauthenticatedPaymentAccess);
-                return RedirectToAction("Login", "Account");
-            }
-
             if (string.IsNullOrWhiteSpace(session_id) || session_id.Length > 80)
             {
                 return BadRequest();
@@ -186,11 +164,12 @@ namespace TechStore.Web.Controllers
                 return RedirectToAction(nameof(Cancel), new { orderId });
             }
 
-            var model = await orderService.GetPaymentSuccessAsync(userId, orderId);
+            await orderService.MarkOrderAsPaidByOrderIdAsync(orderId);
+            var model = await orderService.GetPaymentSuccessAsync(this.UserId, orderId);
 
             if (model == null)
             {
-                logger.LogWarning(PaymentSuccessDataMissing, orderId, userId);
+                logger.LogWarning(PaymentSuccessDataMissing, orderId, this.UserId);
                 return NotFound();
             }
 
@@ -198,37 +177,52 @@ namespace TechStore.Web.Controllers
         }
 
         [HttpGet]
-        public IActionResult Cancel(long orderId)
+        public async Task<IActionResult> Cancel(long orderId)
         {
-            var model = new PaymentCancelViewModel 
-            { 
-                OrderId = orderId 
-            };
-            return View(model);
-        }
+            try
+            {
+                var summary = await orderService.GetPaymentSummaryAsync(this.UserId, orderId);
 
+                if (summary == null)
+                {
+                    logger.LogWarning(PaymentSummaryNotFound, orderId, this.UserId);
+                    return NotFound();
+                }
+
+                var model = new PaymentCancelViewModel
+                {
+                    OrderId = orderId
+                };
+
+                return View(model);
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, PaymentCancelPageLoadError, orderId);
+                TempData[TempDataKeys.ErrorMessage] = CancelPageLoadError;
+
+                return RedirectToAction(nameof(Index), "Home");
+            }
+        }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ConfirmCashOnDelivery(long orderId)
         {
-            string? userId = GetUserId();
-
-            if (userId == null)
-            {
-                logger.LogWarning(UnauthenticatedPaymentAccess);
-                return RedirectToAction("Login", "Account");
-            }
-
-            PaymentSummaryViewModel? summary = await orderService.GetPaymentSummaryAsync(userId, orderId);
+            PaymentSummaryViewModel? summary = await orderService.GetPaymentSummaryAsync(this.UserId, orderId);
             
             if (summary == null)
             {
-                logger.LogWarning(PaymentSummaryNotFound, orderId, userId);
+                logger.LogWarning(PaymentSummaryNotFound, orderId, this.UserId);
                 return NotFound();
             }
 
-            await orderService.MarkOrderAsCashOnDeliveryAsync(userId, orderId);
+            bool success = await orderService.MarkOrderAsCashOnDeliveryAsync(this.UserId, orderId);
+
+            if (success == false)
+            {
+                return NotFound();
+            }
             
             return RedirectToAction(nameof(SuccessCashOnDelivery), new { orderId });
         }
