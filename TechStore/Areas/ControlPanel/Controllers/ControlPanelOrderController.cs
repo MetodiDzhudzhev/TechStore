@@ -12,6 +12,7 @@ using OrderUi = TechStore.GCommon.UiMessages.Order;
 namespace TechStore.Web.Areas.ControlPanel.Controllers
 {
     [Area("ControlPanel")]
+    [Authorize(Roles = "Admin,Manager")]
     public class ControlPanelOrderController : BaseControlPanelController
     {
         private readonly IOrderService orderService;
@@ -27,7 +28,6 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> Edit(long id)
         {
             try
@@ -52,7 +52,6 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> ChangeStatus([Bind(Prefix = "Status")] OrderEditStatusInputModel model)
         {
             try
@@ -105,7 +104,6 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> EditShipping([Bind(Prefix = "Shipping")] OrderEditShippingDetailsInputModel model)
         {
             try
@@ -158,16 +156,8 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> Manage(int page = 1)
         {
-            string? userId = this.GetUserId();
-
-            if (!Guid.TryParse(userId, out Guid currentUserId))
-            {
-                return Unauthorized();
-            }
-
             var viewModel = await orderService.GetManageOrdersPageAsync(page, PageSize);
             return View(viewModel);
         }
