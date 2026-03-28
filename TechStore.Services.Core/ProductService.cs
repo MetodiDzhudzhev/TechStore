@@ -11,18 +11,12 @@ namespace TechStore.Services.Core
     {
         private readonly IProductRepository productRepository;
         private readonly ICategoryRepository categoryRepository;
-        private readonly IBrandRepository brandRepository;
-        private readonly IUserRepository userRepository;
 
         public ProductService(IProductRepository productRepository,
-                            ICategoryRepository categoryRepository,
-                             IBrandRepository brandRepository,
-                             IUserRepository userRepository)
+                            ICategoryRepository categoryRepository)
         {
             this.productRepository = productRepository;
             this.categoryRepository = categoryRepository;
-            this.brandRepository = brandRepository;
-            this.userRepository = userRepository;
         }
 
         public async Task<ProductsByCategoryViewModel?> GetProductsByCategoryAsync(int categoryId, ProductSort sort)
@@ -71,136 +65,121 @@ namespace TechStore.Services.Core
             };
         }
 
-        public async Task<ProductDetailsViewModel?> GetProductDetailsViewModelAsync(string? id)
+        public async Task<ProductDetailsViewModel?> GetProductDetailsViewModelAsync(Guid productId)
         {
+            Product? currentProduct = await this.productRepository
+                    .GetAllAttached()
+                    .Include(p => p.Brand)
+                    .FirstOrDefaultAsync(p => p.Id == productId);
 
-            bool isIdValid = Guid.TryParse(id, out Guid productId);
-
-            if (isIdValid)
+            if (currentProduct != null)
             {
+                ProductDetailsViewModel viewModel = MapToProductDetailsViewModel(currentProduct);
 
-                Product? currentProduct = await this.productRepository
-                        .GetAllAttached()
-                        .Include(p => p.Brand)
-                        .FirstOrDefaultAsync(p => p.Id == productId);
-
-                if (currentProduct != null)
-                {
-                    ProductDetailsViewModel viewModel = new ProductDetailsViewModel
-                    {
-
-                        Id = currentProduct.Id,
-                        Name = currentProduct.Name,
-                        BrandId = currentProduct.BrandId,
-                        Brand = currentProduct.Brand.Name,
-                        Description = currentProduct.Description,
-                        ImageUrl = currentProduct.ImageUrl ?? DefaultImageUrl,
-                        Price = currentProduct.Price,
-                        QuantityInStock = currentProduct.QuantityInStock,
-                        CategoryId = currentProduct.CategoryId,
-                    };
-
-                    return viewModel;
-                }
+                return viewModel;
             }
 
             return null;
         }
-        public async Task<bool> AddProductAsync(string userId, ProductFormInputModel inputModel)
+        public async Task AddProductAsync(ProductFormInputModel inputModel)
+        {
+            Product product = new Product
+            {
+                Name = inputModel.Name.Trim(),
+                Description = inputModel.Description,
+                ImageUrl = inputModel.ImageUrl ?? DefaultImageUrl,
+                Price = inputModel.Price,
+                QuantityInStock = inputModel.QuantityInStock,
+                CategoryId = inputModel.CategoryId,
+                BrandId = inputModel.BrandId
+            };
+
+            await this.productRepository.AddAsync(product);
+            await this.productRepository.SaveChangesAsync();
+        }
+
+        public async Task<ProductFormInputModel?> GetEditableProductByIdAsync(Guid productId)
+        {
+            ProductFormInputModel? model = null;
+
+            Product? product = await this.productRepository.GetByIdAsync(productId);
+
+            if (product != null)
+            {
+                model = MapToProductFormInputModel(product);
+            }
+
+            return model;
+        }
+
+        public async Task<bool> EditProductAsync(ProductFormInputModel inputModel)
         {
             bool result = false;
 
-            User? user = await this.userRepository
-                .GetByIdAsync(Guid.Parse(userId));
+            Product? product = await this.productRepository.GetByIdAsync(inputModel.Id);
 
-            bool categoryExists = await this.categoryRepository
-                    .ExistsAsync(inputModel.CategoryId);
-
-            bool brandExists = await this.brandRepository
-                        .ExistsAsync(inputModel.BrandId);
-
-            if ((user != null) && categoryExists && brandExists)
+            if (product != null)
             {
-                Product product = new Product
-                {
-                    Name = inputModel.Name.Trim(),
-                    Description = inputModel.Description,
-                    ImageUrl = inputModel.ImageUrl ?? DefaultImageUrl,
-                    Price = inputModel.Price,
-                    QuantityInStock = inputModel.QuantityInStock,
-                    CategoryId = inputModel.CategoryId,
-                    BrandId = inputModel.BrandId
-                };
+                product.Name = inputModel.Name.Trim();
+                product.Description = inputModel.Description;
+                product.ImageUrl = inputModel.ImageUrl ?? DefaultImageUrl;
+                product.Price = inputModel.Price;
+                product.QuantityInStock = inputModel.QuantityInStock;
+                product.CategoryId = inputModel.CategoryId;
+                product.BrandId = inputModel.BrandId;
 
-                await this.productRepository.AddAsync(product);
+                this.productRepository.Update(product);
                 await this.productRepository.SaveChangesAsync();
+
                 result = true;
             }
 
             return result;
         }
 
-        public async Task<ProductFormInputModel?> GetEditableProductByIdAsync(string userId, string? id)
+        public async Task<DeleteProductViewModel?> GetProductForDeleteAsync(Guid productId)
         {
-            ProductFormInputModel? model = null;
+            DeleteProductViewModel? modelForDelete = null;
 
-            bool isIdValid = Guid.TryParse(id, out Guid productId);
+            Product? product = await this.productRepository
+                        .GetAllAttached()
+                        .AsNoTracking()
+                        .Include(p => p.OrdersProducts)
+                        .ThenInclude(op => op.Order)
+                        .SingleOrDefaultAsync(p => p.Id == productId);
 
-            User? user = await this.userRepository
-                .GetByIdAsync(Guid.Parse(userId));
-
-            if (user != null && isIdValid)
+            if (product != null && product.IsDeleted == false)
             {
-                Product? product = await this.productRepository.GetByIdAsync(productId);
+                bool hasPendingOrders = HasPendingOrders(product);
 
-                if (product != null)
+                if (!hasPendingOrders)
                 {
-                    model = new ProductFormInputModel
-                    {
-                        Id = product.Id.ToString(),
-                        Name = product.Name,
-                        Description = product.Description,
-                        ImageUrl = product.ImageUrl,
-                        Price = product.Price,
-                        QuantityInStock = product.QuantityInStock,
-                        CategoryId = product.CategoryId,
-                        BrandId = product.BrandId
-                    };
+                    modelForDelete = MapToDeleteProductViewModel(product);
                 }
             }
 
-            return model;
+            return modelForDelete;
         }
 
-        public async Task<bool> EditProductAsync(string userId, ProductFormInputModel inputModel)
+        public async Task<bool> SoftDeleteProductAsync(DeleteProductViewModel inputModel)
         {
             bool result = false;
 
-            User? user = await this.userRepository
-                .GetByIdAsync(Guid.Parse(userId));
+            Product?  product = await this.productRepository
+                .GetAllAttached()
+                .Include(p => p.OrdersProducts)
+                .ThenInclude(op => op.Order)
+                .FirstOrDefaultAsync(p => p.Id == inputModel.Id);
 
-            bool categoryExists = await this.categoryRepository
-                    .ExistsAsync(inputModel.CategoryId);
-
-            bool brandExists = await this.brandRepository
-                        .ExistsAsync(inputModel.BrandId);
-
-            if ((user != null) && categoryExists && brandExists)
+            if (product != null && product.IsDeleted == false)
             {
-                Product? product = await this.productRepository.GetByIdAsync(Guid.Parse(inputModel.Id));
+                bool hasPendingOrders = HasPendingOrders(product);
 
-                if (product != null)
+                if (!hasPendingOrders)
                 {
-                    product.Name = inputModel.Name.Trim();
-                    product.Description = inputModel.Description;
-                    product.ImageUrl = inputModel.ImageUrl ?? DefaultImageUrl;
-                    product.Price = inputModel.Price;
-                    product.QuantityInStock = inputModel.QuantityInStock;
-                    product.CategoryId = inputModel.CategoryId;
-                    product.BrandId = inputModel.BrandId;
-
-                    this.productRepository.Update(product);
+                    this.productRepository.Delete(product);
                     await this.productRepository.SaveChangesAsync();
+
                     result = true;
                 }
             }
@@ -208,109 +187,20 @@ namespace TechStore.Services.Core
             return result;
         }
 
-        public async Task<DeleteProductViewModel?> GetProductForDeleteAsync(string? productId, string userId)
+        public async Task<IEnumerable<ProductInCategoryViewModel>> SearchByKeywordAsync(string keyword)
         {
-            bool isProductIdValid = Guid.TryParse(productId, out Guid productForDeleteId);
+            IEnumerable<Product> products = await productRepository.SearchByKeywordAsync(keyword);
 
-            if (!isProductIdValid)
-            {
-                return null;
-            }
-
-            User? user = await this.userRepository
-                .GetByIdAsync(Guid.Parse(userId));
-
-            DeleteProductViewModel? modelForDelete = null;
-
-            if (user != null)
-            {
-                Product? product = await this.productRepository
-                            .GetAllAttached()
-                            .AsNoTracking()
-                            .Include(p => p.OrdersProducts)
-                            .ThenInclude(op => op.Order)
-                            .SingleOrDefaultAsync(p => p.Id == productForDeleteId);
-
-                if (product != null && product.IsDeleted == false)
+            return products
+                .OrderBy(p => p.Name)
+                .Select(p => new ProductInCategoryViewModel
                 {
-                    bool hasPendingOrders = product.OrdersProducts
-                        .Any(op => op.Order.Status == 0);
-
-                    if (!hasPendingOrders)
-                    {
-                        modelForDelete = new DeleteProductViewModel
-                        {
-                            Id = product.Id.ToString(),
-                            Name = product.Name,
-                            Description = product.Description,
-                            CategoryId = product.CategoryId,
-                            ImageUrl = product.ImageUrl ?? DefaultImageUrl,
-                        };
-                    }
-
-                }
-            }
-
-            return modelForDelete;
-        }
-
-        public async Task<bool> SoftDeleteProductAsync(string userId, DeleteProductViewModel inputModel)
-        {
-            bool result = false;
-
-            bool isProductIdValid = Guid.TryParse(inputModel.Id, out Guid productId);
-
-            if (!isProductIdValid)
-            {
-                return result;
-            }
-
-            User? user = await this.userRepository
-                .GetByIdAsync(Guid.Parse(userId));
-
-            if (user != null)
-            {
-                Product? product = await this.productRepository.GetByIdAsync(productId);
-
-                if (product != null && product.IsDeleted == false)
-                {
-                    bool hasPendingOrders = product.OrdersProducts
-                        .Any(op => op.Order.Status == 0);
-
-                    if (!hasPendingOrders)
-                    {
-                        this.productRepository.Delete(product);
-                        await this.productRepository.SaveChangesAsync();
-
-                        result = true;
-                    }
-                }
-            }
-
-            return result;
-        }
-
-        public async Task<IEnumerable<ProductInCategoryViewModel?>> SearchByKeywordAsync(string keyword)
-        {
-            IEnumerable<ProductInCategoryViewModel?> result = null;
-
-            IEnumerable<Product?> products = await productRepository.SearchByKeywordAsync(keyword);
-
-            if (products != null)
-            {
-                result = products
-               .OrderBy(p => p.Name)
-               .Select(p => new ProductInCategoryViewModel
-               {
                    Id = p.Id,
                    Name = p.Name,
                    ImageUrl = p.ImageUrl ?? DefaultImageUrl,
                    Price = p.Price,
                    QuantityInStock = p.QuantityInStock
-               });
-            }
-
-            return result;
+                });
         }
 
         public async Task<bool> ExistsByNameAsync(string name, string? productIdToSkip)
@@ -323,15 +213,8 @@ namespace TechStore.Services.Core
             return await this.productRepository.GetDeletedProductByNameAsync(name);
         }
 
-        public async Task<ProductFormInputModel?> GetProductForRestoreByIdAsync(string id)
+        public async Task<ProductFormInputModel?> GetProductForRestoreByIdAsync(Guid productId)
         {
-            var isIdValid = Guid.TryParse(id, out Guid productId);
-
-            if (!isIdValid)
-            {
-                return null;
-            }
-
             Product? product = await this.productRepository
                 .GetAllAttached()
                 .IgnoreQueryFilters()
@@ -343,30 +226,13 @@ namespace TechStore.Services.Core
                 return null;
             }
 
-            ProductFormInputModel modelToRestore = new ProductFormInputModel()
-            {
-                Id = product.Id.ToString(),
-                Name = product.Name,
-                Description = product.Description,
-                ImageUrl = product.ImageUrl ?? DefaultImageUrl,
-                Price = product.Price,
-                QuantityInStock = product.QuantityInStock,
-                CategoryId = product.CategoryId,
-                BrandId = product.BrandId
-            };
+            ProductFormInputModel modelToRestore = MapToProductFormInputModel(product);
 
             return modelToRestore;
         }
 
-        public async Task<bool> RestoreByIdAsync(string id)
+        public async Task<bool> RestoreByIdAsync(Guid productId)
         {
-            var isIdValid = Guid.TryParse(id, out Guid productId);
-
-            if (!isIdValid)
-            {
-                return false;
-            }
-
             Product? product = await this.productRepository
                 .GetAllAttached()
                 .IgnoreQueryFilters()
@@ -385,25 +251,10 @@ namespace TechStore.Services.Core
             return true;
         }
 
-        public async Task<Product?> GetProductByIdAsync(string id)
-        {
-            return await this.productRepository
-                .GetAllAttached()
-                .AsNoTracking()
-                .FirstOrDefaultAsync(p => p.Id == Guid.Parse(id));
-        }
-
         public async Task<ProductManageListViewModel> GetPagedAsync(int page, int pageSize)
         {
-            if (page < 1)
-            {
-                page = 1;
-            }
+            (page, pageSize) = NormalizePaging(page, pageSize);
 
-            if (pageSize < 1)
-            {
-                pageSize = 10;
-            }
 
             int totalCount = await productRepository.CountAsync();
             int totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
@@ -447,6 +298,69 @@ namespace TechStore.Services.Core
                 Products = products,
                 CurrentPage = page,
                 TotalPages = totalPages,
+            };
+        }
+
+        private static (int page, int pageSize) NormalizePaging(int page, int pageSize)
+        {
+            if (page < 1)
+            {
+                page = 1;
+            }
+
+            if (pageSize < 1)
+            {
+                pageSize = 5;
+            }
+
+            return (page, pageSize);
+        }
+
+        private static bool HasPendingOrders(Product product)
+        {
+            return product.OrdersProducts.Any(op => op.Order.Status == 0);
+        }
+
+        private static ProductDetailsViewModel MapToProductDetailsViewModel(Product product)
+        {
+            return new ProductDetailsViewModel
+            {
+                Id = product.Id,
+                Name = product.Name,
+                BrandId = product.BrandId,
+                Brand = product.Brand.Name,
+                Description = product.Description,
+                ImageUrl = product.ImageUrl ?? DefaultImageUrl,
+                Price = product.Price,
+                QuantityInStock = product.QuantityInStock,
+                CategoryId = product.CategoryId,
+            };
+        }
+
+        private static ProductFormInputModel MapToProductFormInputModel(Product product)
+        {
+            return new ProductFormInputModel
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Description = product.Description,
+                ImageUrl = product.ImageUrl,
+                Price = product.Price,
+                QuantityInStock = product.QuantityInStock,
+                CategoryId = product.CategoryId,
+                BrandId = product.BrandId
+            };
+        }
+
+        private static DeleteProductViewModel MapToDeleteProductViewModel(Product product)
+        {
+            return new DeleteProductViewModel
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Description = product.Description,
+                CategoryId = product.CategoryId,
+                ImageUrl = product.ImageUrl ?? DefaultImageUrl,
             };
         }
     }
