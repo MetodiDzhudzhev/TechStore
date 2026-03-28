@@ -14,6 +14,7 @@ namespace TechStore.Services.Core.Interfaces
         Task<DeleteBrandViewModel?> GetBrandForDeleteByIdAsync(int? brandId);
         Task<bool> SoftDeleteBrandAsync(DeleteBrandViewModel deleteModel);
         Task<bool> ExistsByNameAsync(string name, int brandIdToSkip);
+        Task<bool> ExistsAsync(int id);
         Task<Brand?> GetDeletedBrandByNameAsync(string name);
         Task<BrandFormInputViewModel?> GetBrandForRestoreByIdAsync(int id);
         Task<bool> RestoreByIdAsync(int id);

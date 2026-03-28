@@ -198,6 +198,11 @@ namespace TechStore.Services.Core
             return await this.brandRepository.ExistsByNameAsync(name, brandIdToSkip);
         }
 
+        public async Task<bool> ExistsAsync(int id)
+        {
+            return await this.brandRepository.ExistsAsync(id);
+        }
+
         public async Task<Brand?> GetDeletedBrandByNameAsync(string name)
         {
             return await this.brandRepository.GetDeletedBrandByNameAsync(name);
