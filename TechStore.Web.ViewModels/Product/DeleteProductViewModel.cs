@@ -5,7 +5,7 @@ namespace TechStore.Web.ViewModels.Product
     public class DeleteProductViewModel
     {
         [Required]
-        public string Id { get; set; } = null!;
+        public Guid Id { get; set; }
         public string Name { get; set; } = null!;
 
         public string Description { get; set; } = null!;
