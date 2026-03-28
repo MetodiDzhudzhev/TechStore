@@ -32,15 +32,9 @@ namespace TechStore.Services.Core
             this.unitOfWork = unitOfWork;
         }
 
-        public async Task<OrderDeliveryDetailsViewModel?> GetCheckoutDeliveryDetailsAsync(string userId)
+        public async Task<OrderDeliveryDetailsViewModel?> GetCheckoutDeliveryDetailsAsync(Guid userId)
         {
-            bool isUserIdValid = Guid.TryParse(userId, out Guid currentUserId);
-            if (!isUserIdValid)
-            {
-                return null;
-            }
-
-            User? user = await userRepository.GetByIdAsync(currentUserId);
+            User? user = await userRepository.GetByIdAsync(userId);
 
             if (user == null)
             {
@@ -55,22 +49,9 @@ namespace TechStore.Services.Core
                 Email = user.Email ?? string.Empty,
             };
         }
-        public async Task<long?> CreateOrderAsync(string userId, CreateOrderViewModel model)
+        public async Task<long?> CreateOrderAsync(Guid userId, CreateOrderViewModel model)
         {
-            bool isUserIdValid = Guid.TryParse(userId, out Guid currentUserId);
-            if (!isUserIdValid)
-            {
-                return null;
-            }
-
-            User? user = await userRepository.GetByIdAsync(currentUserId);
-
-            if (user == null)
-            {
-                return null;
-            }
-
-            Cart? cart = await cartRepository.GetCartWithProductsAsync(user.Id);
+            Cart? cart = await cartRepository.GetCartWithProductsAsync(userId);
 
             if (cart == null || !cart.Products.Any())
             {
@@ -85,20 +66,21 @@ namespace TechStore.Services.Core
                 {
                     if (product.Quantity > product.Product.QuantityInStock)
                     {
+                        await unitOfWork.RollbackAsync();
                         return null;
                     }
                 }
 
                 Order order = new Order
                 {
-                    RecipientName = model.RecipientName,
+                    RecipientName = model.RecipientName.Trim(),
                     OrderDate = DateTime.UtcNow,
-                    ShippingAddress = model.ShippingAddress,
+                    ShippingAddress = model.ShippingAddress.Trim(),
                     Status = Status.PendingPayment,
                     PaymentMethod = PaymentMethod.Unknown,
-                    UserId = user.Id,
-                    PhoneNumber = model.PhoneNumber,
-                    Email = model.Email,
+                    UserId = userId,
+                    PhoneNumber = model.PhoneNumber.Trim(),
+                    Email = model.Email.Trim(),
                     OrdersProducts = cart.Products.Select(cp => new OrderProduct
                     {
                         ProductId = cp.ProductId,
@@ -131,15 +113,9 @@ namespace TechStore.Services.Core
             }
         }
 
-        public async Task<PaymentSummaryViewModel?> GetPaymentSummaryAsync(string userId, long orderId)
+        public async Task<PaymentSummaryViewModel?> GetPaymentSummaryAsync(Guid userId, long orderId)
         {
-            bool isUserIdValid = Guid.TryParse(userId, out Guid currentUserId);
-            if (!isUserIdValid)
-            {
-                return null;
-            }
-
-            Order? order = await orderRepository.GetOrderDetailsAsync(currentUserId, orderId);
+            Order? order = await orderRepository.GetOrderDetailsAsync(userId, orderId);
 
             if (order == null || order.Status != Status.PendingPayment)
             {
@@ -181,17 +157,11 @@ namespace TechStore.Services.Core
             return true;
         }
 
-        public async Task<PaymentSuccessViewModel?> GetPaymentSuccessAsync(string userId, long orderId)
+        public async Task<PaymentSuccessViewModel?> GetPaymentSuccessAsync(Guid userId, long orderId)
         {
-            bool isUserIdValid = Guid.TryParse(userId, out Guid currentUserId);
-            if (!isUserIdValid)
-            {
-                return null;
-            }
-
-            var order = await orderRepository
+            Order? order = await orderRepository
                 .GetAllAttached()
-                .Where(o => o.Id == orderId && o.UserId == currentUserId)
+                .Where(o => o.Id == orderId && o.UserId == userId)
                 .Include(o => o.OrdersProducts)
                 .ThenInclude(op => op.Product)
                 .FirstOrDefaultAsync();
@@ -229,16 +199,9 @@ namespace TechStore.Services.Core
             await orderRepository.SaveChangesAsync();
         }
 
-        public async Task<List<OrderProduct>?> GetOrderProductsAsync(string userId, long orderId)
+        public async Task<List<OrderProduct>?> GetOrderProductsAsync(Guid userId, long orderId)
         {
-            bool isUserIdValid = Guid.TryParse(userId, out Guid currentUserId);
-
-            if (!isUserIdValid)
-            {
-                return null;
-            }
-
-            Order? order = await orderRepository.GetOrderDetailsAsync(currentUserId, orderId);
+            Order? order = await orderRepository.GetOrderDetailsAsync(userId, orderId);
 
             if (order == null)
             {
@@ -248,16 +211,9 @@ namespace TechStore.Services.Core
             return order.OrdersProducts.ToList();
         }
 
-        public async Task<bool> MarkOrderAsCashOnDeliveryAsync(string userId, long orderId)
+        public async Task<bool> MarkOrderAsCashOnDeliveryAsync(Guid userId, long orderId)
         {
-            bool isUserIdValid = Guid.TryParse(userId, out Guid currentUserId);
-
-            if (!isUserIdValid)
-            {
-                return false;
-            }
-
-            Order? order = await orderRepository.GetOrderDetailsAsync(currentUserId, orderId);
+            Order? order = await orderRepository.GetOrderDetailsAsync(userId, orderId);
 
             if (order == null)
             {
@@ -280,15 +236,7 @@ namespace TechStore.Services.Core
 
         public async Task<MyOrdersViewModel> GetMyOrdersPagedAsync(Guid userId, int page, int pageSize)
         {
-            if (page < 1)
-            {
-                page = 1;
-            }
-
-            if (pageSize < 1)
-            {
-                pageSize = 5;
-            }
+            (page, pageSize) = NormalizePaging(page, pageSize);
 
             int totalCount = await orderRepository.GetCountByUserAsync(userId);
             int totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
@@ -310,25 +258,7 @@ namespace TechStore.Services.Core
 
             IReadOnlyList<Order> orders = await orderRepository.GetPagedByUserAsync(userId, page, pageSize);
 
-            List<OrderDetailsViewModel> mappedOrders = orders.Select(o => new OrderDetailsViewModel
-            {
-                Id = o.Id,
-                RecipientName = o.RecipientName,
-                Date = o.OrderDate.ToString(OrderDateFormat),
-                Status = o.Status.ToString(),
-                ShippingAddress = o.ShippingAddress,
-                PaymentMethod = o.PaymentMethod.ToString(),
-                PhoneNumber = o.PhoneNumber,
-                Email = o.Email,
-                Products = o.OrdersProducts.Select(op => new OrderProductDetailsViewModel
-                {
-                    ProductName = op.Product.Name,
-                    Description = op.Product.Description,
-                    ImageUrl = op.Product.ImageUrl,
-                    Price = op.UnitPrice,
-                    Quantity = op.Quantity,
-                }).ToList()
-            }).ToList();
+            List<OrderDetailsViewModel> mappedOrders = orders.Select(MapToOrderDetailsViewModel).ToList();
 
             return new MyOrdersViewModel
             {
@@ -452,15 +382,7 @@ namespace TechStore.Services.Core
 
         public async Task<OrderManageListViewModel> GetManageOrdersPageAsync(int page, int pageSize)
         {
-            if (page < 1)
-            {
-                page = 1;
-            }
-
-            if (pageSize < 1)
-            {
-                pageSize = 5;
-            }
+            (page, pageSize) = NormalizePaging(page, pageSize);
 
             int totalCount = await orderRepository.GetCountAsync();
             int totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
@@ -482,25 +404,7 @@ namespace TechStore.Services.Core
 
             var orders = await orderRepository.GetOrdersPagedAsync(page, pageSize);
 
-            List<OrderDetailsViewModel> mappedOrders = orders.Select(o => new OrderDetailsViewModel
-            {
-                Id = o.Id,
-                RecipientName = o.RecipientName,
-                Date = o.OrderDate.ToString(OrderDateFormat),
-                Status = o.Status.ToString(),
-                ShippingAddress = o.ShippingAddress,
-                PaymentMethod = o.PaymentMethod.ToString(),
-                PhoneNumber = o.PhoneNumber,
-                Email = o.Email,
-                Products = o.OrdersProducts.Select(op => new OrderProductDetailsViewModel
-                {
-                    ProductName = op.Product.Name,
-                    Description = op.Product.Description,
-                    ImageUrl = op.Product.ImageUrl,
-                    Price = op.UnitPrice,
-                    Quantity = op.Quantity,
-                }).ToList()
-            }).ToList();
+            List<OrderDetailsViewModel> mappedOrders = orders.Select(MapToOrderDetailsViewModel).ToList();
 
             return new OrderManageListViewModel
             {
@@ -539,6 +443,44 @@ namespace TechStore.Services.Core
             }
 
             return result;
+        }
+
+        private static (int page, int pageSize) NormalizePaging(int page, int pageSize)
+        {
+            if (page < 1)
+            {
+                page = 1;
+            }
+
+            if (pageSize < 1)
+            {
+                pageSize = 5;
+            }
+
+            return (page, pageSize);
+        }
+
+        private static OrderDetailsViewModel MapToOrderDetailsViewModel(Order order)
+        {
+            return new OrderDetailsViewModel
+            {
+                Id = order.Id,
+                RecipientName = order.RecipientName,
+                Date = order.OrderDate.ToString(OrderDateFormat),
+                Status = order.Status.ToString(),
+                ShippingAddress = order.ShippingAddress,
+                PaymentMethod = order.PaymentMethod.ToString(),
+                PhoneNumber = order.PhoneNumber,
+                Email = order.Email,
+                Products = order.OrdersProducts.Select(op => new OrderProductDetailsViewModel
+                {
+                    ProductName = op.Product.Name,
+                    Description = op.Product.Description,
+                    ImageUrl = op.Product.ImageUrl,
+                    Price = op.UnitPrice,
+                    Quantity = op.Quantity,
+                }).ToList()
+            };
         }
     }
 }

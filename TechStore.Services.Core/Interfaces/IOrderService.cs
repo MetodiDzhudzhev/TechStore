@@ -7,14 +7,14 @@ namespace TechStore.Services.Core.Interfaces
 {
     public interface IOrderService
     {
-        Task<OrderDeliveryDetailsViewModel?> GetCheckoutDeliveryDetailsAsync(string userId);
-        Task<long?> CreateOrderAsync(string userId, CreateOrderViewModel model);
-        Task<PaymentSummaryViewModel?> GetPaymentSummaryAsync(string userId, long orderId);
+        Task<OrderDeliveryDetailsViewModel?> GetCheckoutDeliveryDetailsAsync(Guid userId);
+        Task<long?> CreateOrderAsync(Guid userId, CreateOrderViewModel model);
+        Task<PaymentSummaryViewModel?> GetPaymentSummaryAsync(Guid userId, long orderId);
         Task<bool> AttachStripeSessionAsync(long orderId, string sessionId);
-        Task<PaymentSuccessViewModel?> GetPaymentSuccessAsync(string userId, long orderId);
-        Task<List<OrderProduct>?> GetOrderProductsAsync(string userId, long orderId);
+        Task<PaymentSuccessViewModel?> GetPaymentSuccessAsync(Guid userId, long orderId);
+        Task<List<OrderProduct>?> GetOrderProductsAsync(Guid userId, long orderId);
         Task MarkOrderAsPaidByOrderIdAsync(long orderId);
-        Task<bool> MarkOrderAsCashOnDeliveryAsync(string userId, long orderId);
+        Task<bool> MarkOrderAsCashOnDeliveryAsync(Guid userId, long orderId);
         Task<MyOrdersViewModel> GetMyOrdersPagedAsync(Guid userId, int page, int pageSize);
         Task<OrderEditPageViewModel?> GetEditPageAsync(long orderId);
         Task<bool> EditStatusAsync(long orderId, Status newStatus);
