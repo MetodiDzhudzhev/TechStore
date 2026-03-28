@@ -89,6 +89,7 @@
             public const string SearchError = "Error occurred while searching products. Query={Query}";
             public const string NameAlreadyExist = "Attempt to add product name that already exists - {ProductName}";
             public const string CategoryNotValid = "Invalid category selected.";
+            public const string BrandNotValid = "Invalid brand selected.";
             public const string AddProductPageLoadError = "Error while preparing Add product form.";
             public const string AddWithInvalidModelState = "Attempt by user {UserId} to add product with invalid model state.";
             public const string AddFailed = "Failed to add product with name '{ProductName}' by user {UserId}";

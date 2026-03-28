@@ -53,7 +53,7 @@ namespace TechStore.Web.Controllers
             try
             {
                 ProductDetailsViewModel? productDetails = await this.productService
-                    .GetProductDetailsViewModelAsync(id);
+                    .GetProductDetailsViewModelAsync(Guid.Parse(id));
 
                 if (productDetails == null)
                 {

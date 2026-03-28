@@ -10,6 +10,7 @@ using ProductUi = TechStore.GCommon.UiMessages.Product;
 namespace TechStore.Web.Areas.ControlPanel.Controllers
 {
     [Area("ControlPanel")]
+    [Authorize(Roles = "Admin,Manager")]
     public class ControlPanelProductController : BaseControlPanelController
     {
         private readonly IProductService productService;
@@ -17,6 +18,7 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
         private readonly IBrandService brandService;
 
         private readonly ILogger<ControlPanelProductController> logger;
+        private Guid UserId => Guid.Parse(this.GetUserId()!);
 
         private const int PageSize = 10;
         public ControlPanelProductController(IProductService productService, ICategoryService categoryService,
@@ -29,16 +31,13 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> Add(int? categoryId)
         {
             try
             {
-                var categories = await this.categoryService.GetCategoriesDropDownDataAsync();
-
                 ProductFormInputModel inputModel = new ProductFormInputModel()
                 {
-                    Categories = categories,
+                    Categories = await this.categoryService.GetCategoriesDropDownDataAsync(),
                     Brands = await this.brandService.GetBrandsDropDownDataAsync(),
                 };
 
@@ -48,27 +47,26 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
             {
                 logger.LogError(e, ProductLog.AddProductPageLoadError);
                 TempData[TempDataKeys.ErrorMessage] = ProductUi.AddProductPageLoadError;
-                return this.RedirectToAction("IndexByCategory", "Product", new { area = "", categoryId = categoryId });
+                return RedirectToProductCategory(categoryId);
             }
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> Add(ProductFormInputModel inputModel)
         {
             try
             {
                 if (!this.ModelState.IsValid)
                 {
-                    logger.LogWarning(ProductLog.AddWithInvalidModelState, this.GetUserId());
+                    logger.LogWarning(ProductLog.AddWithInvalidModelState, this.UserId);
                     await PopulateDropdowns(inputModel);
                     return this.View(inputModel);
                 }
 
-                bool exist = await categoryService.ExistsAsync(inputModel.CategoryId);
+                bool categoryExist = await categoryService.ExistsAsync(inputModel.CategoryId);
 
-                if (inputModel.CategoryId == 0 || exist == false)
+                if (categoryExist == false)
                 {
                     logger.LogWarning(ProductLog.CategoryNotValid);
                     ModelState.AddModelError(nameof(inputModel.CategoryId), ProductUi.CategoryNotValid);
@@ -76,7 +74,17 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
                     return View(inputModel);
                 }
 
-                if (await productService.ExistsByNameAsync(inputModel.Name, inputModel.Id))
+                bool brandExist = await brandService.ExistsAsync(inputModel.BrandId);
+
+                if (brandExist == false)
+                {
+                    logger.LogWarning(ProductLog.BrandNotValid);
+                    ModelState.AddModelError(nameof(inputModel.BrandId), ProductUi.BrandNotValid);
+                    await PopulateDropdowns(inputModel);
+                    return View(inputModel);
+                }
+
+                if (await productService.ExistsByNameAsync(inputModel.Name, inputModel.Id.ToString()))
                 {
                     logger.LogWarning(ProductLog.NameAlreadyExist, inputModel.Name);
 
@@ -96,37 +104,33 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
                     }
                 }
 
-                bool result = await this.productService.AddProductAsync(this.GetUserId()!, inputModel);
+                await this.productService.AddProductAsync(inputModel);
 
-                if (result == false)
-                {
-                    logger.LogWarning(ProductLog.AddFailed, inputModel.Name, this.GetUserId());
-                    ModelState.AddModelError(string.Empty, ProductUi.AddFailed);
-                    await PopulateDropdowns(inputModel);
-                    return this.View(inputModel);
-                }
-
-                logger.LogInformation(ProductLog.AddSuccess, inputModel.Name, this.GetUserId());
+                logger.LogInformation(ProductLog.AddSuccess, inputModel.Name, this.UserId);
                 TempData[TempDataKeys.SuccessMessage] = ProductUi.AddSuccess;
-                return this.RedirectToAction("IndexByCategory", "Product", new { area = "", categoryId = inputModel.CategoryId });
+                return RedirectToProductCategory(inputModel.CategoryId);
             }
             catch (Exception e)
             {
                 logger.LogError(e, ProductLog.AddError, inputModel.Name);
                 TempData[TempDataKeys.ErrorMessage] = ProductUi.AddError;
-                return this.RedirectToAction("IndexByCategory", "Product", new { area = "", categoryId = inputModel.CategoryId });
+                return RedirectToProductCategory(inputModel.CategoryId);
             }
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> Restore(string id)
         {
-            ProductFormInputModel? product = await this.productService.GetProductForRestoreByIdAsync(id);
+            if (!TryParseId(id, out Guid productId))
+            {
+                return NotFound();
+            }
+
+            ProductFormInputModel? product = await this.productService.GetProductForRestoreByIdAsync(productId);
 
             if (product == null)
             {
-                logger.LogWarning(ProductLog.RestoreNonExistingProduct, id, this.GetUserId());
+                logger.LogWarning(ProductLog.RestoreNonExistingProduct, productId, this.UserId);
                 return NotFound();
             }
 
@@ -135,44 +139,52 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> RestoreConfirmed(string id)
         {
+            if (!TryParseId(id, out Guid productId))
+            {
+                return NotFound();
+            }
+
             try
             {
-                bool result = await this.productService.RestoreByIdAsync(id);
+                bool result = await this.productService.RestoreByIdAsync(productId);
 
                 if (result == false)
                 {
-                    logger.LogWarning(ProductLog.RestoreFailed, id);
+                    logger.LogWarning(ProductLog.RestoreFailed, productId);
                     TempData[TempDataKeys.ErrorMessage] = ProductUi.RestoreFailed;
                     return this.RedirectToAction(nameof(Index), "Home");
                 }
 
-                logger.LogInformation(ProductLog.RestoreSuccess, id, this.GetUserId());
+                logger.LogInformation(ProductLog.RestoreSuccess, productId, this.UserId);
                 TempData[TempDataKeys.SuccessMessage] = ProductUi.RestoreSuccess;
 
                 return this.RedirectToAction("Manage", "ControlPanelProduct", new { area = "ControlPanel"});
             }
             catch (Exception e)
             {
-                logger.LogError(e, ProductLog.RestoreError, id);
+                logger.LogError(e, ProductLog.RestoreError, productId);
                 TempData[TempDataKeys.ErrorMessage] = ProductUi.RestoreError;
                 return this.RedirectToAction(nameof(Index), "Home");
             }
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> Edit(string? id)
         {
+            if (!TryParseId(id, out Guid productId))
+            {
+                return NotFound();
+            }
+
             try
             {
-                ProductFormInputModel? model = await this.productService.GetEditableProductByIdAsync(this.GetUserId(), id);
+                ProductFormInputModel? model = await this.productService.GetEditableProductByIdAsync(productId);
 
                 if (model == null)
                 {
-                    logger.LogWarning(ProductLog.NotFound, id);
+                    logger.LogWarning(ProductLog.NotFound, productId);
                     return NotFound();
                 }
 
@@ -182,7 +194,7 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
             }
             catch (Exception e)
             {
-                logger.LogError(e, ProductLog.EditProductPageLoadError, id);
+                logger.LogError(e, ProductLog.EditProductPageLoadError, productId);
                 TempData[TempDataKeys.ErrorMessage] = ProductUi.EditProductPageLoadError;
                 return this.RedirectToAction(nameof(Index), "Home");
             }
@@ -190,28 +202,46 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> Edit(ProductFormInputModel inputModel)
         {
             try
             {
                 if (!this.ModelState.IsValid)
                 {
-                    logger.LogWarning(ProductLog.EditWithInvalidModelState, inputModel.Id, this.GetUserId());
+                    logger.LogWarning(ProductLog.EditWithInvalidModelState, inputModel.Id, this.UserId);
                     ModelState.AddModelError(string.Empty, ProductUi.EditWithInvalidModelState);
                     await PopulateDropdowns(inputModel);
                     return this.View(inputModel);
                 }
 
-                if (await productService.ExistsByNameAsync(inputModel.Name, inputModel.Id))
+                bool categoryExist = await categoryService.ExistsAsync(inputModel.CategoryId);
+
+                if (categoryExist == false)
+                {
+                    logger.LogWarning(ProductLog.CategoryNotValid);
+                    ModelState.AddModelError(nameof(inputModel.CategoryId), ProductUi.CategoryNotValid);
+                    await PopulateDropdowns(inputModel);
+                    return View(inputModel);
+                }
+
+                bool brandExist = await brandService.ExistsAsync(inputModel.BrandId);
+
+                if (brandExist == false)
+                {
+                    logger.LogWarning(ProductLog.BrandNotValid);
+                    ModelState.AddModelError(nameof(inputModel.BrandId), ProductUi.BrandNotValid);
+                    await PopulateDropdowns(inputModel);
+                    return View(inputModel);
+                }
+
+                if (await productService.ExistsByNameAsync(inputModel.Name, inputModel.Id.ToString()))
                 {
                     await PopulateDropdowns(inputModel);
                     ModelState.AddModelError(nameof(inputModel.Name), ProductUi.NameAlreadyExist);
                     return View(inputModel);
                 }
 
-                bool result = await this.productService
-                    .EditProductAsync(this.GetUserId()!, inputModel);
+                bool result = await this.productService.EditProductAsync(inputModel);
 
                 if (result == false)
                 {
@@ -221,7 +251,7 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
                     return this.View(inputModel);
                 }
 
-                logger.LogInformation(ProductLog.EditSuccess, inputModel.Name, this.GetUserId());
+                logger.LogInformation(ProductLog.EditSuccess, inputModel.Name, this.UserId);
                 return this.RedirectToAction("Details", "Product", new { area = "", id = inputModel.Id });
             }
             catch (Exception e)
@@ -233,19 +263,20 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> Delete(string? id)
         {
+            if (!TryParseId(id, out Guid productId))
+            {
+                return NotFound();
+            }
+
             try
             {
-                string userId = this.GetUserId();
-
-                DeleteProductViewModel? modelForDelete = await this.productService
-                    .GetProductForDeleteAsync(id, userId);
+                DeleteProductViewModel? modelForDelete = await this.productService.GetProductForDeleteAsync(productId);
 
                 if (modelForDelete == null)
                 {
-                    logger.LogWarning(ProductLog.NotFound, id);
+                    logger.LogWarning(ProductLog.NotFound, productId);
                     return NotFound();
                 }
 
@@ -253,7 +284,7 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
             }
             catch (Exception e)
             {
-                logger.LogError(e, ProductLog.DeleteProductPageLoadError, id);
+                logger.LogError(e, ProductLog.DeleteProductPageLoadError, productId);
                 TempData[TempDataKeys.ErrorMessage] = ProductUi.DeleteProductPageLoadError;
                 return this.RedirectToAction(nameof(Index), "Home");
             }
@@ -261,28 +292,26 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> Delete(DeleteProductViewModel model)
         {
             try
             {
                 if (!this.ModelState.IsValid)
                 {
-                    logger.LogWarning(ProductLog.DeleteWithInvalidModelState, model.Id, this.GetUserId());
+                    logger.LogWarning(ProductLog.DeleteWithInvalidModelState, model.Id, this.UserId);
                     return this.View(model);
                 }
 
-                bool deleteResult = await this.productService
-                    .SoftDeleteProductAsync(this.GetUserId()!, model);
+                bool deleteResult = await this.productService.SoftDeleteProductAsync(model);
 
                 if (deleteResult == false)
                 {
-                    logger.LogWarning(ProductLog.DeleteFailed, model.Id, this.GetUserId());
+                    logger.LogWarning(ProductLog.DeleteFailed, model.Id, this.UserId);
                     this.ModelState.AddModelError(string.Empty, ProductUi.DeleteFailed);
                     return this.View(model);
                 }
 
-                logger.LogInformation(ProductLog.DeleteSuccess, model.Id, this.GetUserId());
+                logger.LogInformation(ProductLog.DeleteSuccess, model.Id, this.UserId);
                 TempData[TempDataKeys.SuccessMessage] = ProductUi.DeleteSuccess;
                 return this.RedirectToAction("Manage", "ControlPanelProduct", new { area = "ControlPanel" });
 
@@ -296,7 +325,6 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> Manage(int page = 1)
         {
             ProductManageListViewModel viewModel = await productService.GetPagedAsync(page, PageSize);
@@ -307,6 +335,14 @@ namespace TechStore.Web.Areas.ControlPanel.Controllers
         {
             model.Categories = await categoryService.GetCategoriesDropDownDataAsync();
             model.Brands = await brandService.GetBrandsDropDownDataAsync();
+        }
+        private IActionResult RedirectToProductCategory(int? categoryId)
+        {
+            return this.RedirectToAction("IndexByCategory", "Product", new { area = "", categoryId });
+        }
+        private bool TryParseId(string? id, out Guid parsedId)
+        {
+            return Guid.TryParse(id, out parsedId);
         }
     }
 }

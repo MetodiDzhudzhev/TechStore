@@ -55,6 +55,7 @@
             public const string SearchError = "An unexpected error occurred. Please try again later.";
             public const string AddProductPageLoadError = "Unable to prepare the Add product form. Please try again later.";
             public const string CategoryNotValid = "Please select a valid category.";
+            public const string BrandNotValid = "Please select a valid brand.";
             public const string NameAlreadyExist = "Product with this name already exists.";
             public const string AddFailed = "Failed to add the product";
             public const string AddSuccess = "The product was added successfully!";
