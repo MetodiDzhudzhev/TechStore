@@ -3,6 +3,7 @@ using Moq;
 using NUnit.Framework;
 using TechStore.Data.Models;
 using TechStore.Data.Repository.Interfaces;
+using TechStore.GCommon;
 using TechStore.Web.ViewModels.Brand;
 
 namespace TechStore.Services.Core.Tests
@@ -10,18 +11,17 @@ namespace TechStore.Services.Core.Tests
     [TestFixture]
     public class BrandServiceTests
     {
-        private Mock<IBrandRepository> mockBrandRepository;
-        private Mock<IUserRepository> mockUserRepository;
-        private BrandService brandService;
+        private Mock<IBrandRepository> mockBrandRepository = null!;
+        private BrandService brandService = null!;
 
-        private const string DefaultImageUrl = "/images/NoImage.jpg";
+        private const string TestLogo = "https://example.com/logo.png";
+        private const string TestDescription = "Test Description";
 
         [SetUp]
         public void SetUp()
         {
             this.mockBrandRepository = new Mock<IBrandRepository>();
-            this.mockUserRepository = new Mock<IUserRepository>();
-            this.brandService = new BrandService(mockBrandRepository.Object, mockUserRepository.Object);
+            this.brandService = new BrandService(mockBrandRepository.Object);
         }
 
         [Test]
@@ -61,8 +61,8 @@ namespace TechStore.Services.Core.Tests
             {
                 Id = 1,
                 Name = "TestBrand",
-                Description = "Test Description",
-                LogoUrl = "https://example.com/logo.png"
+                Description = TestDescription,
+                LogoUrl = TestLogo
             };
 
             var mockBrands = MockHelper.CreateMockQueryable(new List<Brand> { testBrand });
@@ -81,302 +81,6 @@ namespace TechStore.Services.Core.Tests
         }
 
         [Test]
-        public async Task AddBrandAsync_ShouldReturnFalse_IfUserDoesNotExist()
-        {
-            var fakeUserId = Guid.NewGuid().ToString();
-
-            mockUserRepository
-                .Setup(r => r.GetByIdAsync(It.IsAny<Guid>()))
-                .ReturnsAsync((User?)null);
-
-            var input = new BrandFormInputViewModel
-            {
-                Name = "Test Brand",
-                LogoUrl = "someurl.jpg",
-                Description = "Some description"
-            };
-
-            var result = await brandService.AddBrandAsync(fakeUserId, input);
-
-            Assert.That(result, Is.False);
-            mockBrandRepository.Verify(r => r.AddAsync(It.IsAny<Brand>()), Times.Never);
-        }
-
-        [Test]
-        public async Task AddBrandAsync_ShouldAddBrandAndReturnTrue_WhenUserExists()
-        {
-            var userId = Guid.NewGuid().ToString();
-
-            mockUserRepository
-                .Setup(r => r.GetByIdAsync(It.IsAny<Guid>()))
-                .ReturnsAsync(new User());
-
-            Brand? addedBrand = null;
-            mockBrandRepository
-                .Setup(r => r.AddAsync(It.IsAny<Brand>()))
-                .Callback<Brand>(b => addedBrand = b)
-                .Returns(Task.CompletedTask);
-
-            var input = new BrandFormInputViewModel
-            {
-                Name = "  Test Brand  ", // Test Trim()
-                LogoUrl = "logo.jpg",
-                Description = "Description text"
-            };
-
-            var result = await brandService.AddBrandAsync(userId, input);
-
-            Assert.That(result, Is.True);
-            Assert.That(addedBrand, Is.Not.Null);
-            Assert.That(addedBrand!.Name, Is.EqualTo("Test Brand"));  //Trimmed
-            Assert.That(addedBrand.LogoUrl, Is.EqualTo("logo.jpg"));
-            Assert.That(addedBrand.Description, Is.EqualTo("Description text"));
-
-            mockBrandRepository.Verify(r => r.AddAsync(It.IsAny<Brand>()), Times.Once);
-        }
-
-        [Test]
-        public async Task AddBrandAsync_ShouldSetDefaultImageUrl_WhenInputLogoUrlIsNull()
-        {
-            var userId = Guid.NewGuid().ToString();
-
-            mockUserRepository
-                .Setup(r => r.GetByIdAsync(It.IsAny<Guid>()))
-                .ReturnsAsync(new User());
-
-            Brand? addedBrand = null;
-            mockBrandRepository
-                .Setup(r => r.AddAsync(It.IsAny<Brand>()))
-                .Callback<Brand>(b => addedBrand = b)
-                .Returns(Task.CompletedTask);
-
-            var input = new BrandFormInputViewModel
-            {
-                Name = "Brand Name",
-                LogoUrl = null,
-                Description = "Some description"
-            };
-
-            var result = await brandService.AddBrandAsync(userId, input);
-
-            Assert.That(result, Is.True);
-            Assert.That(addedBrand, Is.Not.Null);
-            Assert.That(addedBrand!.LogoUrl, Is.EqualTo(DefaultImageUrl));
-
-        }
-
-        [Test]
-        public async Task GetEditableBrandByIdAsync_ShouldReturnNull_WhenBrandIdIsNull()
-        {
-            var result = await brandService.GetEditableBrandByIdAsync(Guid.NewGuid().ToString(), null);
-
-            Assert.That(result, Is.Null);
-        }
-
-        [Test]
-        public async Task GetEditableBrandByIdAsync_ShouldReturnNull_WhenBrandIdIsLessThanOrEqualToZero()
-        {
-            var result = await brandService.GetEditableBrandByIdAsync(Guid.NewGuid().ToString(), 0);
-
-            Assert.That(result, Is.Null);
-        }
-
-        [Test]
-        public async Task GetEditableBrandByIdAsync_ShouldReturnNull_WhenUserDoesNotExist()
-        {
-            mockUserRepository
-                .Setup(x => x.GetByIdAsync(It.IsAny<Guid>()))
-                .ReturnsAsync((User?)null);
-
-            var result = await brandService.GetEditableBrandByIdAsync(Guid.NewGuid().ToString(), 1);
-
-            Assert.That(result, Is.Null);
-        }
-
-        [Test]
-        public async Task GetEditableBrandByIdAsync_ShouldReturnNull_WhenBrandDoesNotExist()
-        {
-            mockUserRepository
-        .Setup(x => x.GetByIdAsync(It.IsAny<Guid>()))
-        .ReturnsAsync(new User());
-
-            var mockQueryable = new List<Brand>().AsQueryable().BuildMock();
-
-            mockBrandRepository
-                .Setup(x => x.GetAllAttached())
-                .Returns(mockQueryable);
-
-            var result = await brandService.GetEditableBrandByIdAsync(Guid.NewGuid().ToString(), 1);
-
-            Assert.That(result, Is.Null);
-        }
-
-        [Test]
-        public async Task GetEditableBrandByIdAsync_ShouldReturnBrand_WhenUserAndBrandExist()
-        {
-            var brand = new Brand
-            {
-                Id = 1,
-                Name = "Test Brand",
-                LogoUrl = "logo.jpg",
-                Description = "Description"
-            };
-
-            mockUserRepository
-                .Setup(x => x.GetByIdAsync(It.IsAny<Guid>()))
-                .ReturnsAsync(new User());
-
-            var mockQueryable = new List<Brand> { brand }.AsQueryable().BuildMock();
-
-            mockBrandRepository
-                .Setup(x => x.GetAllAttached())
-                .Returns(mockQueryable);
-
-            var result = await brandService.GetEditableBrandByIdAsync(Guid.NewGuid().ToString(), 1);
-
-            Assert.That(result, Is.Not.Null);
-            Assert.That(result!.Id, Is.EqualTo(1));
-            Assert.That(result.Name, Is.EqualTo("Test Brand"));
-            Assert.That(result.LogoUrl, Is.EqualTo("logo.jpg"));
-            Assert.That(result.Description, Is.EqualTo("Description"));
-        }
-
-        [Test]
-        public async Task GetEditableBrandByIdAsync_ShouldReturnDefaultImage_WhenLogoUrlIsNull()
-        {
-            var brand = new Brand
-            {
-                Id = 2,
-                Name = "No Logo Brand",
-                LogoUrl = null,
-                Description = "No logo description"
-            };
-
-            mockUserRepository
-                .Setup(x => x.GetByIdAsync(It.IsAny<Guid>()))
-                .ReturnsAsync(new User());
-
-            var mockQueryable = new List<Brand> { brand }.AsQueryable().BuildMock();
-
-            mockBrandRepository
-                .Setup(x => x.GetAllAttached())
-                .Returns(mockQueryable);
-
-            var result = await brandService.GetEditableBrandByIdAsync(Guid.NewGuid().ToString(), 2);
-
-            Assert.That(result, Is.Not.Null);
-            Assert.That(result!.LogoUrl, Is.EqualTo(DefaultImageUrl));
-        }
-
-        [Test]
-        public async Task EditBrandAsync_ShouldReturnFalse_WhenUserDoesNotExist()
-        {
-            mockUserRepository
-                .Setup(x => x.GetByIdAsync(It.IsAny<Guid>()))
-                .ReturnsAsync((User?)null);
-
-            var model = new BrandFormInputViewModel { Id = 1, Name = "Test Brand" };
-
-            var result = await brandService.EditBrandAsync(Guid.NewGuid().ToString(), model);
-
-            Assert.That(result, Is.False);
-            mockBrandRepository.Verify(x => x.UpdateAsync(It.IsAny<Brand>()), Times.Never);
-        }
-
-        [Test]
-        public async Task EditBrandAsync_ShouldReturnFalse_WhenBrandDoesNotExist()
-        {
-            mockUserRepository
-                .Setup(x => x.GetByIdAsync(It.IsAny<Guid>()))
-                .ReturnsAsync(new User());
-
-            mockBrandRepository
-                .Setup(x => x.GetByIdAsync(It.IsAny<int>()))
-                .ReturnsAsync((Brand?)null);
-
-            var model = new BrandFormInputViewModel { Id = 2, Name = "Non-existent Brand" };
-
-            var result = await brandService.EditBrandAsync(Guid.NewGuid().ToString(), model);
-
-            Assert.That(result, Is.False);
-            mockBrandRepository.Verify(x => x.UpdateAsync(It.IsAny<Brand>()), Times.Never);
-        }
-
-        [Test]
-        public async Task EditBrandAsync_ShouldUpdateBrand_WhenAllValid()
-        {
-            var user = new User();
-            var brand = new Brand { Id = 3, Name = "Old Brand", LogoUrl = "old.jpg", Description = "Old" };
-
-            mockUserRepository
-                .Setup(x => x.GetByIdAsync(It.IsAny<Guid>()))
-                .ReturnsAsync(user);
-
-            mockBrandRepository
-                .Setup(x => x.GetByIdAsync(It.IsAny<int>()))
-                .ReturnsAsync(brand);
-
-            mockBrandRepository
-                .Setup(x => x.UpdateAsync(It.IsAny<Brand>()))
-                .Verifiable();
-
-            var model = new BrandFormInputViewModel
-            {
-                Id = 3,
-                Name = "  New Brand  ",
-                LogoUrl = "new.jpg",
-                Description = "Updated description"
-            };
-
-            var result = await brandService.EditBrandAsync(Guid.NewGuid().ToString(), model);
-
-            Assert.That(result, Is.True);
-            Assert.That(brand.Name, Is.EqualTo("New Brand")); // trimmed
-            Assert.That(brand.LogoUrl, Is.EqualTo("new.jpg"));
-            Assert.That(brand.Description, Is.EqualTo("Updated description"));
-
-            mockBrandRepository.Verify(x => x.UpdateAsync(It.Is<Brand>(b =>
-                b.Id == 3 &&
-                b.Name == "New Brand" &&
-                b.LogoUrl == "new.jpg" &&
-                b.Description == "Updated description"
-            )), Times.Once);
-        }
-
-        [Test]
-        public async Task EditBrandAsync_ShouldUseDefaultLogo_WhenLogoUrlIsNull()
-        {
-            var user = new User();
-            var brand = new Brand { Id = 4, Name = "Old", LogoUrl = null, Description = "Old Desc" };
-
-            mockUserRepository
-                .Setup(x => x.GetByIdAsync(It.IsAny<Guid>()))
-                .ReturnsAsync(user);
-
-            mockBrandRepository
-                .Setup(x => x.GetByIdAsync(It.IsAny<int>()))
-                .ReturnsAsync(brand);
-
-            mockBrandRepository
-                .Setup(x => x.UpdateAsync(It.IsAny<Brand>()))
-                .Verifiable();
-
-            var model = new BrandFormInputViewModel
-            {
-                Id = 4,
-                Name = "Updated",
-                LogoUrl = null,
-                Description = "Desc"
-            };
-
-            var result = await brandService.EditBrandAsync(Guid.NewGuid().ToString(), model);
-
-            Assert.That(result, Is.True);
-            Assert.That(brand.LogoUrl, Is.EqualTo(DefaultImageUrl));
-            mockBrandRepository.Verify(x => x.UpdateAsync(It.IsAny<Brand>()), Times.Once);
-        }
-
-        [Test]
         public async Task GetBrandsDropDownDataAsync_ShouldReturnMappedModels_WhenBrandsExist()
         {
             var brands = new List<Brand>
@@ -385,30 +89,28 @@ namespace TechStore.Services.Core.Tests
                 new Brand { Id = 2, Name = "Brand B" }
             };
 
-            var mockQueryable = brands.AsQueryable().BuildMock();
+            var mockQueryable = MockHelper.CreateMockQueryable(brands);
 
             mockBrandRepository
                 .Setup(r => r.GetAllAttached())
                 .Returns(mockQueryable);
 
-            var result = await brandService.GetBrandsDropDownDataAsync();
+            var result = (await brandService.GetBrandsDropDownDataAsync()).ToList();
 
-            var list = result.ToList();
-
-            Assert.That(list, Is.Not.Null);
-            Assert.That(list.Count, Is.EqualTo(2));
-            Assert.That(list[0].Id, Is.EqualTo(1));
-            Assert.That(list[0].Name, Is.EqualTo("Brand A"));
-            Assert.That(list[1].Id, Is.EqualTo(2));
-            Assert.That(list[1].Name, Is.EqualTo("Brand B"));
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Count, Is.EqualTo(2));
+            Assert.That(result[0].Id, Is.EqualTo(1));
+            Assert.That(result[0].Name, Is.EqualTo("Brand A"));
+            Assert.That(result[1].Id, Is.EqualTo(2));
+            Assert.That(result[1].Name, Is.EqualTo("Brand B"));
         }
 
         [Test]
         public async Task GetBrandsDropDownDataAsync_ShouldReturnEmptyList_WhenNoBrandsExist()
         {
-            var emptyBrands = new List<Brand>();
+            var brands = new List<Brand>();
 
-            var mockQueryable = emptyBrands.AsQueryable().BuildMock();
+            var mockQueryable = MockHelper.CreateMockQueryable(brands);
 
             mockBrandRepository
                 .Setup(r => r.GetAllAttached())
@@ -421,47 +123,266 @@ namespace TechStore.Services.Core.Tests
         }
 
         [Test]
-        public async Task GetBrandsDropDownDataAsync_ShouldHandleNullName_WhenBrandNameIsNull()
+        public async Task AddBrandAsync_ShouldReturnFalse_WhenNameIsNullOrWhiteSpace()
         {
-            var brands = new List<Brand>
+            var inputModel = new BrandFormInputViewModel
             {
-            new Brand { Id = 1, Name = null! }
+                Name = "   ",
+                LogoUrl = TestLogo,
+                Description = TestDescription
             };
 
-            var mockQueryable = brands.AsQueryable().BuildMock();
+            var result = await brandService.AddBrandAsync(inputModel);
 
-            mockBrandRepository
-                .Setup(r => r.GetAllAttached())
-                .Returns(mockQueryable);
+            Assert.That(result, Is.False);
 
-            var result = await brandService.GetBrandsDropDownDataAsync();
-
-            Assert.That(result, Is.Not.Null);
-            var brandResult = result.First();
-            Assert.That(brandResult.Id, Is.EqualTo(1));
-            Assert.That(brandResult.Name, Is.Null);
+            mockBrandRepository.Verify(r => r.AddAsync(It.IsAny<Brand>()), Times.Never);
+            mockBrandRepository.Verify(r => r.SaveChangesAsync(), Times.Never);
         }
 
         [Test]
-        public async Task GetBrandForDeleteByIdAsync_ShouldReturnNull_WhenUserDoesNotExist()
+        public async Task AddBrandAsync_ShouldAddBrandAndReturnTrue_WhenValidInput()
         {
-            mockUserRepository
-                .Setup(r => r.GetByIdAsync(It.IsAny<Guid>()))
-                .ReturnsAsync((User?)null);
+            Brand? addedBrand = null;
 
-            var result = await brandService.GetBrandForDeleteByIdAsync(Guid.NewGuid().ToString(), 1);
+            mockBrandRepository
+                .Setup(r => r.AddAsync(It.IsAny<Brand>()))
+                .Callback<Brand>(b => addedBrand = b);
+
+            var inputModel = new BrandFormInputViewModel
+            {
+                Name = " Tesla ",
+                LogoUrl = TestLogo,
+                Description = TestDescription
+            };
+
+            var result = await brandService.AddBrandAsync(inputModel);
+
+            Assert.That(result, Is.True);
+            Assert.That(addedBrand, Is.Not.Null);
+            Assert.That(addedBrand!.Name, Is.EqualTo("Tesla")); //Trimmed
+            Assert.That(addedBrand.LogoUrl, Is.EqualTo(inputModel.LogoUrl));
+            Assert.That(addedBrand.Description, Is.EqualTo(inputModel.Description));
+
+            mockBrandRepository.Verify(r => r.AddAsync(It.IsAny<Brand>()), Times.Once);
+            mockBrandRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
+        }
+
+        [Test]
+        public async Task AddBrandAsync_ShouldUseDefaultImageUrl_WhenLogoUrlIsNull()
+        {
+            Brand? addedBrand = null;
+
+            mockBrandRepository
+                .Setup(r => r.AddAsync(It.IsAny<Brand>()))
+                .Callback<Brand>(b => addedBrand = b);
+
+            var inputModel = new BrandFormInputViewModel
+            {
+                Name = "Tesla",
+                LogoUrl = null,
+                Description = TestDescription
+            };
+
+            var result = await brandService.AddBrandAsync(inputModel);
+
+            Assert.That(result, Is.True);
+            Assert.That(addedBrand, Is.Not.Null);
+            Assert.That(addedBrand!.Name, Is.EqualTo(inputModel.Name));
+            Assert.That(addedBrand.LogoUrl, Is.EqualTo(ApplicationConstants.DefaultImageUrl));
+            Assert.That(addedBrand.Description, Is.EqualTo(inputModel.Description));
+
+            mockBrandRepository.Verify(r => r.AddAsync(It.IsAny<Brand>()), Times.Once);
+            mockBrandRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
+        }
+
+        [Test]
+        public async Task GetEditableBrandByIdAsync_ShouldReturnNull_WhenBrandIdIsNull()
+        {
+            var result = await brandService.GetEditableBrandByIdAsync(null);
 
             Assert.That(result, Is.Null);
         }
 
         [Test]
+        public async Task GetEditableBrandByIdAsync_ShouldReturnNull_WhenBrandIdIsLessThanOrEqualToZero()
+        {
+            var result = await brandService.GetEditableBrandByIdAsync(0);
+
+            Assert.That(result, Is.Null);
+        }
+
+        [Test]
+        public async Task GetEditableBrandByIdAsync_ShouldReturnNull_WhenBrandDoesNotExist()
+        {
+            var brands = new List<Brand>();
+            var mockQueryable = MockHelper.CreateMockQueryable(brands);
+
+            mockBrandRepository
+                .Setup(r => r.GetAllAttached())
+                .Returns(mockQueryable);
+
+            var result = await brandService.GetEditableBrandByIdAsync(1);
+
+            Assert.That(result, Is.Null);
+        }
+
+        [Test]
+        public async Task GetEditableBrandByIdAsync_ShouldReturnBrand_WhenBrandExists()
+        {
+            var brand = new Brand
+            {
+                Id = 1,
+                Name = "Test Brand",
+                LogoUrl = TestLogo,
+                Description = TestDescription
+            };
+
+            var mockQueryable = MockHelper.CreateMockQueryable(new List<Brand> { brand });
+
+            mockBrandRepository
+                .Setup(r => r.GetAllAttached())
+                .Returns(mockQueryable);
+
+            var result = await brandService.GetEditableBrandByIdAsync(1);
+
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result!.Id, Is.EqualTo(brand.Id));
+            Assert.That(result.Name, Is.EqualTo(brand.Name));
+            Assert.That(result.LogoUrl, Is.EqualTo(brand.LogoUrl));
+            Assert.That(result.Description, Is.EqualTo(brand.Description));
+        }
+
+        [Test]
+        public async Task GetEditableBrandByIdAsync_ShouldReturnDefaultImage_WhenLogoUrlIsNull()
+        {
+            var brand = new Brand
+            {
+                Id = 1,
+                Name = "Test Brand",
+                LogoUrl = null,
+                Description = TestDescription
+            };
+
+            var mockQueryable = MockHelper.CreateMockQueryable(new List<Brand> { brand });
+
+            mockBrandRepository
+                .Setup(r => r.GetAllAttached())
+                .Returns(mockQueryable);
+
+            var result = await brandService.GetEditableBrandByIdAsync(1);
+
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result!.LogoUrl, Is.EqualTo(ApplicationConstants.DefaultImageUrl));
+        }
+
+        [Test]
+        public async Task EditBrandAsync_ShouldReturnFalse_WhenBrandDoesNotExist()
+        {
+            var inputModel = new BrandFormInputViewModel
+            {
+                Id = 1,
+                Name = "Tesla",
+                LogoUrl = TestLogo,
+                Description = TestDescription
+            };
+
+            mockBrandRepository
+                .Setup(r => r.GetByIdAsync(inputModel.Id))
+                .ReturnsAsync((Brand?)null);
+
+            var result = await brandService.EditBrandAsync(inputModel);
+
+            Assert.That(result, Is.False);
+
+            mockBrandRepository.Verify(r => r.Update(It.IsAny<Brand>()), Times.Never);
+            mockBrandRepository.Verify(r => r.SaveChangesAsync(), Times.Never);
+        }
+
+        [Test]
+        public async Task EditBrandAsync_ShouldUpdateBrandAndReturnTrue_WhenValidInput()
+        {
+            var existingBrand = new Brand
+            {
+                Id = 1,
+                Name = "OldName",
+                LogoUrl = "old.png",
+                Description = "old description"
+            };
+
+            Brand? updatedBrand = null;
+
+            mockBrandRepository
+                .Setup(r => r.GetByIdAsync(existingBrand.Id))
+                .ReturnsAsync(existingBrand);
+
+            mockBrandRepository
+                .Setup(r => r.Update(It.IsAny<Brand>()))
+                .Callback<Brand>(b => updatedBrand = b);
+
+            var inputModel = new BrandFormInputViewModel
+            {
+                Id = existingBrand.Id,
+                Name = " Tesla ",
+                LogoUrl = TestLogo,
+                Description = TestDescription
+            };
+
+            var result = await brandService.EditBrandAsync(inputModel);
+
+            Assert.That(result, Is.True);
+            Assert.That(updatedBrand, Is.Not.Null);
+            Assert.That(updatedBrand!.Name, Is.EqualTo("Tesla")); // Trimmed
+            Assert.That(updatedBrand.LogoUrl, Is.EqualTo(inputModel.LogoUrl));
+            Assert.That(updatedBrand.Description, Is.EqualTo(inputModel.Description));
+
+            mockBrandRepository.Verify(r => r.Update(It.IsAny<Brand>()), Times.Once);
+            mockBrandRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
+        }
+
+        [Test]
+        public async Task EditBrandAsync_ShouldUseDefaultImageUrl_WhenLogoUrlIsNull()
+        {
+            var existingBrand = new Brand
+            {
+                Id = 1,
+                Name = "OldName",
+                LogoUrl = "old.png",
+                Description = "old description"
+            };
+
+            Brand? updatedBrand = null;
+
+            mockBrandRepository
+                .Setup(r => r.GetByIdAsync(existingBrand.Id))
+                .ReturnsAsync(existingBrand);
+
+            mockBrandRepository
+                .Setup(r => r.Update(It.IsAny<Brand>()))
+                .Callback<Brand>(b => updatedBrand = b);
+
+            var inputModel = new BrandFormInputViewModel
+            {
+                Id = existingBrand.Id,
+                Name = "Tesla",
+                LogoUrl = null,
+                Description = TestDescription
+            };
+
+            var result = await brandService.EditBrandAsync(inputModel);
+
+            Assert.That(result, Is.True);
+            Assert.That(updatedBrand, Is.Not.Null);
+            Assert.That(updatedBrand!.LogoUrl, Is.EqualTo(ApplicationConstants.DefaultImageUrl));
+
+            mockBrandRepository.Verify(r => r.Update(It.IsAny<Brand>()), Times.Once);
+            mockBrandRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
+        }
+
+        [Test]
         public async Task GetBrandForDeleteByIdAsync_ShouldReturnNull_WhenBrandIdIsNull()
         {
-            mockUserRepository
-                .Setup(r => r.GetByIdAsync(It.IsAny<Guid>()))
-                .ReturnsAsync(new User());
-
-            var result = await brandService.GetBrandForDeleteByIdAsync(Guid.NewGuid().ToString(), null);
+            var result = await brandService.GetBrandForDeleteByIdAsync(null);
 
             Assert.That(result, Is.Null);
         }
@@ -469,17 +390,14 @@ namespace TechStore.Services.Core.Tests
         [Test]
         public async Task GetBrandForDeleteByIdAsync_ShouldReturnNull_WhenBrandDoesNotExist()
         {
-            mockUserRepository
-                .Setup(r => r.GetByIdAsync(It.IsAny<Guid>()))
-                .ReturnsAsync(new User());
-
-            var mockQueryable = new List<Brand>().AsQueryable().BuildMock();
+            var brands = new List<Brand>();
+            var mockQueryable = MockHelper.CreateMockQueryable(brands);
 
             mockBrandRepository
                 .Setup(r => r.GetAllAttached())
                 .Returns(mockQueryable);
 
-            var result = await brandService.GetBrandForDeleteByIdAsync(Guid.NewGuid().ToString(), 10);
+            var result = await brandService.GetBrandForDeleteByIdAsync(10);
 
             Assert.That(result, Is.Null);
         }
@@ -487,209 +405,188 @@ namespace TechStore.Services.Core.Tests
         [Test]
         public async Task GetBrandForDeleteByIdAsync_ShouldReturnNull_WhenBrandIsDeleted()
         {
-            mockUserRepository
-                .Setup(r => r.GetByIdAsync(It.IsAny<Guid>()))
-                .ReturnsAsync(new User());
-
-            var brands = new List<Brand>
+            Brand brand = new Brand
             {
-                 new Brand { Id = 2, Name = "Deleted Brand", IsDeleted = true }
+                Id = 1,
+                Name = "Deleted Brand",
+                IsDeleted = true
             };
-
-            var mockQueryable = brands.AsQueryable().BuildMock();
+            
+            var mockQueryable = MockHelper.CreateMockQueryable(new List<Brand> { brand });
 
             mockBrandRepository
                 .Setup(r => r.GetAllAttached())
                 .Returns(mockQueryable);
 
-            var result = await brandService.GetBrandForDeleteByIdAsync(Guid.NewGuid().ToString(), 2);
+            var result = await brandService.GetBrandForDeleteByIdAsync(1);
 
             Assert.That(result, Is.Null);
         }
 
         [Test]
-        public async Task GetBrandForDeleteByIdAsync_ShouldReturnBrandViewModel_WhenValid()
+        public async Task GetBrandForDeleteByIdAsync_ShouldReturnBrandViewModel_WhenBrandExistsAndIsNotDeleted()
         {
             var brand = new Brand
             {
-                Id = 3,
+                Id = 1,
                 Name = "Valid Brand",
-                Description = "Valid Description",
-                LogoUrl = "logo.png",
+                Description = TestDescription,
+                LogoUrl = TestLogo,
                 IsDeleted = false
             };
 
-            mockUserRepository
-                .Setup(r => r.GetByIdAsync(It.IsAny<Guid>()))
-                .ReturnsAsync(new User());
-
-            var mockQueryable = new List<Brand> { brand }.AsQueryable().BuildMock();
+            var mockQueryable = MockHelper.CreateMockQueryable(new List<Brand> { brand });
 
             mockBrandRepository
                 .Setup(r => r.GetAllAttached())
                 .Returns(mockQueryable);
 
-            var result = await brandService.GetBrandForDeleteByIdAsync(Guid.NewGuid().ToString(), 3);
+            var result = await brandService.GetBrandForDeleteByIdAsync(1);
 
             Assert.That(result, Is.Not.Null);
-            Assert.That(result!.Id, Is.EqualTo(3));
-            Assert.That(result.Name, Is.EqualTo("Valid Brand"));
-            Assert.That(result.Description, Is.EqualTo("Valid Description"));
-            Assert.That(result.LogoUrl, Is.EqualTo("logo.png"));
-        }
-
-        [Test]
-        public async Task SoftDeleteBrandAsync_ShouldReturnFalse_WhenUserDoesNotExist()
-        {
-            mockUserRepository
-                .Setup(r => r.GetByIdAsync(It.IsAny<Guid>()))
-                .ReturnsAsync((User?)null);
-
-            mockBrandRepository
-                .Setup(r => r.GetByIdAsync(It.IsAny<int>()))
-                .ReturnsAsync(new Brand());
-
-            var deleteModel = new DeleteBrandViewModel { Id = 1 };
-
-            var result = await brandService.SoftDeleteBrandAsync(Guid.NewGuid().ToString(), deleteModel);
-
-            Assert.That(result, Is.False);
+            Assert.That(result!.Id, Is.EqualTo(brand.Id));
+            Assert.That(result.Name, Is.EqualTo(brand.Name));
+            Assert.That(result.Description, Is.EqualTo(brand.Description));
+            Assert.That(result.LogoUrl, Is.EqualTo(brand.LogoUrl));
         }
 
         [Test]
         public async Task SoftDeleteBrandAsync_ShouldReturnFalse_WhenBrandDoesNotExist()
         {
-            mockUserRepository
-                .Setup(r => r.GetByIdAsync(It.IsAny<Guid>()))
-                .ReturnsAsync(new User());
-
             mockBrandRepository
                 .Setup(r => r.GetByIdAsync(It.IsAny<int>()))
                 .ReturnsAsync((Brand?)null);
 
             var deleteModel = new DeleteBrandViewModel { Id = 1 };
 
-            var result = await brandService.SoftDeleteBrandAsync(Guid.NewGuid().ToString(), deleteModel);
+            var result = await brandService.SoftDeleteBrandAsync(deleteModel);
 
             Assert.That(result, Is.False);
+
+            mockBrandRepository.Verify(r => r.Delete(It.IsAny<Brand>()), Times.Never);
+            mockBrandRepository.Verify(r => r.SaveChangesAsync(), Times.Never);
         }
 
         [Test]
-        public async Task SoftDeleteBrandAsync_ShouldReturnTrue_WhenUserAndBrandExist_AndDeletionSucceeds()
+        public async Task SoftDeleteBrandAsync_ShouldDeleteBrandAndReturnTrue_WhenBrandExists()
         {
-            mockUserRepository
-                .Setup(r => r.GetByIdAsync(It.IsAny<Guid>()))
-                .ReturnsAsync(new User());
-
-            var brand = new Brand { Id = 1 };
+            var brand = new Brand
+            {
+                Id = 1,
+                Name = "Test Brand",
+                Description = TestDescription,
+                LogoUrl = TestLogo,
+                IsDeleted = false
+            };
 
             mockBrandRepository
-                .Setup(r => r.GetByIdAsync(1))
+                .Setup(r => r.GetByIdAsync(brand.Id))
                 .ReturnsAsync(brand);
 
-            mockBrandRepository
-                .Setup(r => r.DeleteAsync(brand))
-                .ReturnsAsync(true);
+            var deleteModel = new DeleteBrandViewModel
+            {
+                Id = brand.Id
+            };
 
-            var deleteModel = new DeleteBrandViewModel { Id = 1 };
-
-            var result = await brandService.SoftDeleteBrandAsync(Guid.NewGuid().ToString(), deleteModel);
+            var result = await brandService.SoftDeleteBrandAsync(deleteModel);
 
             Assert.That(result, Is.True);
+
+            mockBrandRepository.Verify(r => r.Delete(brand), Times.Once);
+            mockBrandRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
         }
 
         [Test]
-        public async Task SoftDeleteBrandAsync_ShouldReturnFalse_WhenUserAndBrandExist_AndDeletionFails()
+        public async Task GetBrandForRestoreByIdAsync_ShouldReturnNull_WhenBrandDoesNotExist()
         {
-            mockUserRepository
-                .Setup(r => r.GetByIdAsync(It.IsAny<Guid>()))
-                .ReturnsAsync(new User());
-
-            var brand = new Brand { Id = 2 };
-
-            mockBrandRepository
-                .Setup(r => r.GetByIdAsync(2))
-                .ReturnsAsync(brand);
-
-            mockBrandRepository
-                .Setup(r => r.DeleteAsync(brand))
-                .ReturnsAsync(false);
-
-            var deleteModel = new DeleteBrandViewModel { Id = 2 };
-
-            var result = await brandService.SoftDeleteBrandAsync(Guid.NewGuid().ToString(), deleteModel);
-
-            Assert.That(result, Is.False);
-        }
-
-        [Test]
-        public async Task RestoreByIdAsync_BrandDoesNotExist_ReturnsFalse()
-        {
-            var data = new List<Brand>
-            {
-                new Brand { Id = 2, IsDeleted = true }
-            };
-
-            var mockData = MockHelper.CreateMockQueryable(data);
+            var brands = new List<Brand>();
+            var mockQueryable = MockHelper.CreateMockQueryable(brands);
 
             mockBrandRepository
                 .Setup(r => r.GetAllAttached())
-                .Returns(mockData);
+                .Returns(mockQueryable);
+
+            var result = await brandService.GetBrandForRestoreByIdAsync(10);
+
+            Assert.That(result, Is.Null);
+        }
+
+        [Test]
+        public async Task GetBrandForRestoreByIdAsync_ShouldReturnBrandViewModel_WhenBrandExistsAndIsDeleted()
+        {
+            Brand brand = new Brand
+            {
+                Id = 1,
+                Name = "Test Brand",
+                Description = TestDescription,
+                LogoUrl = TestLogo,
+                IsDeleted = true
+            };
+
+            var mockQueryable = MockHelper.CreateMockQueryable(new List<Brand> { brand });
+
+            mockBrandRepository
+                .Setup(r => r.GetAllAttached())
+                .Returns(mockQueryable);
+
+            var result = await brandService.GetBrandForRestoreByIdAsync(1);
+
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result!.Id, Is.EqualTo(brand.Id));
+            Assert.That(result.Name, Is.EqualTo(brand.Name));
+            Assert.That(result.Description, Is.EqualTo(brand.Description));
+            Assert.That(result.LogoUrl, Is.EqualTo(brand.LogoUrl));
+        }
+
+        [Test]
+        public async Task RestoreByIdAsync_ShouldReturnFalse_WhenBrandDoesNotExist()
+        {
+            var brands = new List<Brand>();
+            var mockQueryable = MockHelper.CreateMockQueryable(brands);
+
+            mockBrandRepository
+                .Setup(r => r.GetAllAttached())
+                .Returns(mockQueryable);
 
             var result = await brandService.RestoreByIdAsync(1);
 
             Assert.That(result, Is.False);
-            mockBrandRepository.Verify(r => r.UpdateAsync(It.IsAny<Brand>()), Times.Never);
+
+            mockBrandRepository.Verify(r => r.Update(It.IsAny<Brand>()), Times.Never);
+            mockBrandRepository.Verify(r => r.SaveChangesAsync(), Times.Never);
         }
 
         [Test]
-        public async Task RestoreByIdAsync_BrandIsNotDeleted_ReturnsFalse()
+        public async Task RestoreByIdAsync_ShouldRestoreBrandAndReturnTrue_WhenBrandExists()
         {
-            var data = new List<Brand>
+            Brand brand = new Brand
             {
-                new Brand { Id = 1, IsDeleted = false }
+                Id = 1,
+                Name = "Test Brand",
+                Description = TestDescription,
+                LogoUrl = TestLogo,
+                IsDeleted = true
             };
 
-            var mockData = MockHelper.CreateMockQueryable(data);
+            var mockQueryable = MockHelper.CreateMockQueryable(new List<Brand>() { brand });
 
             mockBrandRepository
                 .Setup(r => r.GetAllAttached())
-                .Returns(mockData);
-
-            var result = await brandService.RestoreByIdAsync(1);
-
-            Assert.That(result, Is.False);
-            mockBrandRepository.Verify(r => r.UpdateAsync(It.IsAny<Brand>()), Times.Never);
-        }
-
-        [Test]
-        public async Task RestoreByIdAsync_DeletedBrandExists_ReturnsTrueAndRestores()
-        {
-            var brand = new Brand { Id = 1, IsDeleted = true };
-
-            var data = new List<Brand> { brand };
-
-            var mockData = MockHelper.CreateMockQueryable(data);
-
-            mockBrandRepository
-                .Setup(r => r.GetAllAttached())
-                .Returns(mockData);
-
-            mockBrandRepository
-                .Setup(r => r.UpdateAsync(It.IsAny<Brand>()))
-                .ReturnsAsync(true);
+                .Returns(mockQueryable);
 
             var result = await brandService.RestoreByIdAsync(1);
 
             Assert.That(result, Is.True);
             Assert.That(brand.IsDeleted, Is.False);
-            mockBrandRepository.Verify(r => r.UpdateAsync(It.Is<Brand>(b => b.Id == 1 && !b.IsDeleted)), Times.Once);
+
+            mockBrandRepository.Verify(r => r.Update(It.IsAny<Brand>()), Times.Once);
+            mockBrandRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
         }
 
         [Test]
-        public async Task ExistsByNameAsync_WhenBrandExists_ReturnsTrue()
+        public async Task ExistsByNameAsync_ShouldReturnTrue_WhenBrandExists()
         {
-            string name = "Samsung";
+            string name = "Tesla";
             int skipId = 1;
 
             mockBrandRepository
@@ -699,10 +596,12 @@ namespace TechStore.Services.Core.Tests
             var result = await brandService.ExistsByNameAsync(name, skipId);
 
             Assert.That(result, Is.True);
+
+            mockBrandRepository.Verify(r => r.ExistsByNameAsync(name, skipId), Times.Once);
         }
 
         [Test]
-        public async Task ExistsByNameAsync_WhenBrandDoesNotExist_ReturnsFalse()
+        public async Task ExistsByNameAsync_ShouldReturnFalse_WhenBrandDoesNotExist()
         {
             string name = "NonExistingBrand";
             int skipId = 2;
@@ -714,14 +613,52 @@ namespace TechStore.Services.Core.Tests
             var result = await brandService.ExistsByNameAsync(name, skipId);
 
             Assert.That(result, Is.False);
+
+            mockBrandRepository.Verify(r => r.ExistsByNameAsync(name, skipId), Times.Once);
+        }
+
+        [Test]
+        public async Task ExistsAsync_ShouldReturnTrue_WhenBrandExists()
+        {
+            int id = 1;
+
+            mockBrandRepository
+                .Setup(r => r.ExistsAsync(id))
+                .ReturnsAsync(true);
+
+            var result = await brandService.ExistsAsync(id);
+
+            Assert.That(result, Is.True);
+
+            mockBrandRepository.Verify(r => r.ExistsAsync(id), Times.Once);
+        }
+
+        [Test]
+        public async Task ExistsAsync_ShouldReturnFalse_WhenBrandDoesNotExist()
+        {
+            int id = 2;
+
+            mockBrandRepository
+                .Setup(r => r.ExistsAsync(id))
+                .ReturnsAsync(false);
+
+            var result = await brandService.ExistsAsync(id);
+
+            Assert.That(result, Is.False);
+
+            mockBrandRepository.Verify(r => r.ExistsAsync(id), Times.Once);
         }
 
 
         [Test]
-        public async Task GetDeletedBrandByNameAsync_WhenDeletedBrandExists_ReturnsBrand()
+        public async Task GetDeletedBrandByNameAsync_ShouldReturnBrand_WhenDeletedBrandExists()
         {
-            string name = "DeletedBrand";
-            var deletedBrand = new Brand { Id = 5, Name = name, IsDeleted = true };
+            string name = "Deleted Brand";
+            var deletedBrand = new Brand {
+                Id = 5, 
+                Name = name, 
+                IsDeleted = true 
+            };
 
             mockBrandRepository
                 .Setup(r => r.GetDeletedBrandByNameAsync(name))
@@ -730,12 +667,13 @@ namespace TechStore.Services.Core.Tests
             var result = await brandService.GetDeletedBrandByNameAsync(name);
 
             Assert.That(result, Is.Not.Null);
-            Assert.That(result?.Name, Is.EqualTo(name));
-            Assert.That(result?.IsDeleted, Is.True);
+            Assert.That(result!.Name, Is.EqualTo(name));
+
+            mockBrandRepository.Verify(r => r.GetDeletedBrandByNameAsync(name), Times.Once);
         }
 
         [Test]
-        public async Task GetDeletedBrandByNameAsync_WhenDeletedBrandDoesNotExist_ReturnsNull()
+        public async Task GetDeletedBrandByNameAsync_ShouldReturnNull_WhenDeletedBrandDoesNotExist()
         {
             string name = "NonDeletedBrand";
 
@@ -746,83 +684,66 @@ namespace TechStore.Services.Core.Tests
             var result = await brandService.GetDeletedBrandByNameAsync(name);
 
             Assert.That(result, Is.Null);
+
+            mockBrandRepository.Verify(r => r.GetDeletedBrandByNameAsync(name), Times.Once);
         }
 
         [Test]
-        public async Task GetPagedAsync_WhenCalled_ReturnsCorrectPagedBrands()
+        public async Task GetAllAsync_ShouldReturnEmptyCollection_WhenNoBrandsAvailable()
         {
-            var brands = new List<Brand>
-            {
-                new Brand { Id = 1, Name = "Apple", LogoUrl = null, Description = "Tech" },
-                new Brand { Id = 2, Name = "Samsung", LogoUrl = "logo.png", Description = "Electronics" },
-                new Brand { Id = 3, Name = "Xiaomi", LogoUrl = null, Description = "Affordable" },
-            };
+            var brands = new List<Brand>();
 
-            var queryableBrands = brands.AsQueryable().BuildMock();
+            var mockQueryable = MockHelper.CreateMockQueryable(brands);
 
             mockBrandRepository
                 .Setup(r => r.GetAllAttached())
-                .Returns(queryableBrands);
+                .Returns(mockQueryable);
 
-            int page = 1;
-            int pageSize = 2;
+            var result = await brandService.GetAllAsync();
 
-            var result = (await brandService.GetPagedAsync(page, pageSize)).ToList();
-
-            Assert.That(result.Count, Is.EqualTo(2));
-            Assert.That(result[0].Name, Is.EqualTo("Apple"));
-            Assert.That(result[0].LogoUrl, Is.EqualTo(DefaultImageUrl));
-            Assert.That(result[1].Name, Is.EqualTo("Samsung"));
-            Assert.That(result[1].LogoUrl, Is.EqualTo("logo.png"));
-        }
-
-        [Test]
-        public async Task GetPagedAsync_WhenPageIsTooHigh_ReturnsEmptyList()
-        {
-            var brands = new List<Brand>
-            {
-                new Brand { Id = 1, Name = "Apple" },
-                new Brand { Id = 2, Name = "Samsung" }
-            };
-
-            var queryableBrands = brands.AsQueryable().BuildMock();
-
-            mockBrandRepository
-                .Setup(r => r.GetAllAttached())
-                .Returns(queryableBrands);
-
-            int page = 5;
-            int pageSize = 2;
-
-            var result = (await brandService.GetPagedAsync(page, pageSize)).ToList();
-
+            Assert.That(result, Is.Not.Null);
             Assert.That(result, Is.Empty);
         }
 
         [Test]
-        public async Task GetTotalCountAsync_WhenBrandsExist_ReturnsCorrectCount()
+        public async Task GetAllAsync_ShouldReturnOrderedBrandsWithCorrectMapping()
         {
-            int expectedCount = 5;
+            var brand1 = new Brand()
+            {
+                Id = 1,
+                Name = "Tesla2",
+                Description = TestDescription,
+                LogoUrl = TestLogo
+            };
+
+            var brand2 = new Brand()
+            {
+                Id = 2,
+                Name = "Tesla1",
+                Description = TestDescription,
+                LogoUrl = null
+            };
+
+            var brands = new List<Brand> { brand1, brand2 };
+
+            var mockQueryable = MockHelper.CreateMockQueryable(brands);
 
             mockBrandRepository
-                .Setup(r => r.CountAsync())
-                .ReturnsAsync(expectedCount);
+                .Setup(r => r.GetAllAttached())
+                .Returns(mockQueryable);
 
-            var result = await brandService.GetTotalCountAsync();
+            var result = (await brandService.GetAllAsync()).ToList();
 
-            Assert.That(result, Is.EqualTo(expectedCount));
-        }
-
-        [Test]
-        public async Task GetTotalCountAsync_WhenNoBrandsExist_ReturnsZero()
-        {
-            mockBrandRepository
-                .Setup(r => r.CountAsync())
-                .ReturnsAsync(0);
-
-            var result = await brandService.GetTotalCountAsync();
-
-            Assert.That(result, Is.EqualTo(0));
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Count, Is.EqualTo(2));
+            Assert.That(result[0].Id, Is.EqualTo(brand2.Id));  //Correct ordering
+            Assert.That(result[1].Id, Is.EqualTo(brand1.Id));
+            Assert.That(result[0].Name, Is.EqualTo(brand2.Name));
+            Assert.That(result[1].Name, Is.EqualTo(brand1.Name));
+            Assert.That(result[0].LogoUrl, Is.EqualTo(ApplicationConstants.DefaultImageUrl));  //Correct use of DefaultImageUrl
+            Assert.That(result[1].LogoUrl, Is.EqualTo(brand1.LogoUrl));
+            Assert.That(result[0].Description, Is.EqualTo(brand2.Description));
+            Assert.That(result[1].Description, Is.EqualTo(brand1.Description));
         }
     }
 }
